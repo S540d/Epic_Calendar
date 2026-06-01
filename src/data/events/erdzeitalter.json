@@ -1,0 +1,85 @@
+[
+  {
+    "id": "geo-hadaikum",
+    "title": "Hadaikum",
+    "description": "Frühestes Äon der Erdgeschichte.",
+    "startYear": -4600000000,
+    "endYear": -4000000000,
+    "category": "erdzeitalter",
+    "continent": "global",
+    "culture": "Äon",
+    "minZoomLevel": 0
+  },
+  {
+    "id": "geo-archaikum",
+    "title": "Archaikum",
+    "startYear": -4000000000,
+    "endYear": -2500000000,
+    "category": "erdzeitalter",
+    "continent": "global",
+    "culture": "Äon",
+    "minZoomLevel": 0
+  },
+  {
+    "id": "geo-proterozoikum",
+    "title": "Proterozoikum",
+    "startYear": -2500000000,
+    "endYear": -541000000,
+    "category": "erdzeitalter",
+    "continent": "global",
+    "culture": "Äon",
+    "minZoomLevel": 0
+  },
+  {
+    "id": "geo-phanerozoikum",
+    "title": "Phanerozoikum",
+    "startYear": -541000000,
+    "endYear": 0,
+    "category": "erdzeitalter",
+    "continent": "global",
+    "culture": "Äon",
+    "minZoomLevel": 0
+  },
+  {
+    "id": "geo-paläozoikum",
+    "title": "Paläozoikum",
+    "startYear": -541000000,
+    "endYear": -252000000,
+    "category": "erdzeitalter",
+    "continent": "global",
+    "culture": "Ära",
+    "minZoomLevel": 1
+  },
+  {
+    "id": "geo-mesozoikum",
+    "title": "Mesozoikum",
+    "description": "Zeitalter der Dinosaurier.",
+    "startYear": -252000000,
+    "endYear": -66000000,
+    "category": "erdzeitalter",
+    "continent": "global",
+    "culture": "Ära",
+    "minZoomLevel": 1
+  },
+  {
+    "id": "geo-känozoikum",
+    "title": "Känozoikum",
+    "startYear": -66000000,
+    "endYear": 0,
+    "category": "erdzeitalter",
+    "continent": "global",
+    "culture": "Ära",
+    "minZoomLevel": 1
+  },
+  {
+    "id": "geo-holozän",
+    "title": "Holozän",
+    "description": "Erdneuzeit — seit Ende der letzten Eiszeit.",
+    "startYear": -11700,
+    "endYear": 2026,
+    "category": "erdzeitalter",
+    "continent": "global",
+    "culture": "Epoche",
+    "minZoomLevel": 2
+  }
+]

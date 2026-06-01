@@ -1,0 +1,117 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  code-quality:
+    name: 🔍 Code Quality & Linting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Check for console.log in app code
+        run: |
+          echo "Checking for console.log/debug in src/ and App.tsx..."
+          if grep -rn "console\.log\|console\.debug" App.tsx src/ --include="*.ts" --include="*.tsx"; then
+            echo "❌ Found console.log/debug in production code!"
+            exit 1
+          fi
+          echo "✅ Clean"
+
+      - name: Check Web APIs are platform-safe
+        run: |
+          echo "Checking unguarded window./localStorage usage..."
+          OFFENDERS=$(grep -rn "window\.\|localStorage\." App.tsx src/ --include="*.ts" --include="*.tsx" \
+            | grep -v "Platform.OS === 'web'" \
+            | grep -v "// platform-safe" \
+            | grep -v "supportsMatchMedia" \
+            || true)
+          if [ -n "$OFFENDERS" ]; then
+            echo "❌ Found unguarded Web API usage:"
+            echo "$OFFENDERS"
+            exit 1
+          fi
+          echo "✅ Clean"
+
+      - name: TypeScript Type Check
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint || echo "⚠️ Lint reported issues (non-blocking until rules are stable)"
+
+      - name: Unit Tests
+        run: npm test -- --ci
+
+  platform-checks:
+    name: 🔧 Platform Compatibility
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check version consistency (package.json ↔ app.json)
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          APP_JSON_VERSION=$(node -p "require('./app.json').expo.version")
+          echo "package.json: $PACKAGE_VERSION"
+          echo "app.json:     $APP_JSON_VERSION"
+          if [ "$PACKAGE_VERSION" != "$APP_JSON_VERSION" ]; then
+            echo "❌ Version mismatch between package.json and app.json"
+            exit 1
+          fi
+          echo "✅ Versions consistent"
+
+      - name: Validate Expo config loads
+        run: |
+          node -e "
+            const c = require('./app.json');
+            if (!c.expo) { console.error('app.json missing expo block'); process.exit(1); }
+            if (!c.expo.android || !c.expo.android.package) { console.error('android.package missing'); process.exit(1); }
+            if (!c.expo.ios || !c.expo.ios.bundleIdentifier) { console.error('ios.bundleIdentifier missing'); process.exit(1); }
+            console.log('✅ Expo config valid');
+          "
+
+  security:
+    name: 🔒 Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies (for audit)
+        run: npm install --no-audit --no-fund
+
+      - name: npm audit
+        run: npm audit --audit-level=high || true
+
+      - name: Check for obvious secrets
+        run: |
+          if grep -rE "(api[_-]?key|secret|password)\s*=\s*['\"][A-Za-z0-9_\-]{16,}" \
+              App.tsx src/ --include="*.ts" --include="*.tsx" 2>/dev/null; then
+            echo "❌ Possible hardcoded secret"
+            exit 1
+          fi
+          echo "✅ No obvious secrets in source"

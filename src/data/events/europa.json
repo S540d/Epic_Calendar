@@ -1,0 +1,165 @@
+[
+  {
+    "id": "eu-minoisch",
+    "title": "Minoische Kultur",
+    "description": "Bronzezeitliche Hochkultur auf Kreta.",
+    "startYear": -2700,
+    "endYear": -1450,
+    "category": "zivilisation",
+    "continent": "europa",
+    "culture": "minoisch",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "eu-mykenisch",
+    "title": "Mykenische Kultur",
+    "startYear": -1600,
+    "endYear": -1100,
+    "category": "zivilisation",
+    "continent": "europa",
+    "culture": "mykenisch",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "eu-griechen-archaik",
+    "title": "Archaisches Griechenland",
+    "startYear": -800,
+    "endYear": -500,
+    "category": "zivilisation",
+    "continent": "europa",
+    "culture": "griechisch",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "eu-griechen-klassik",
+    "title": "Klassisches Griechenland",
+    "description": "Athen, Sparta, Perserkriege, Peloponnesischer Krieg.",
+    "startYear": -500,
+    "endYear": -323,
+    "category": "zivilisation",
+    "continent": "europa",
+    "culture": "griechisch",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "eu-hellenismus",
+    "title": "Hellenismus",
+    "startYear": -323,
+    "endYear": -30,
+    "category": "zivilisation",
+    "continent": "europa",
+    "culture": "griechisch",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "eu-roem-republik",
+    "title": "Römische Republik",
+    "startYear": -509,
+    "endYear": -27,
+    "category": "zivilisation",
+    "continent": "europa",
+    "culture": "römisch",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "eu-roem-kaiserzeit",
+    "title": "Römische Kaiserzeit",
+    "description": "Von Augustus bis zum Fall Westroms.",
+    "startYear": -27,
+    "endYear": 476,
+    "category": "zivilisation",
+    "continent": "europa",
+    "culture": "römisch",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "eu-kelten",
+    "title": "Keltische Kulturen",
+    "startYear": -800,
+    "endYear": 100,
+    "category": "zivilisation",
+    "continent": "europa",
+    "culture": "keltisch",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "eu-voelkerwanderung",
+    "title": "Völkerwanderung",
+    "startYear": 375,
+    "endYear": 568,
+    "category": "zivilisation",
+    "continent": "europa",
+    "culture": "germanisch",
+    "minZoomLevel": 3
+  },
+  {
+    "id": "eu-byzanz",
+    "title": "Byzantinisches Reich",
+    "startYear": 330,
+    "endYear": 1453,
+    "category": "zivilisation",
+    "continent": "europa",
+    "culture": "byzantinisch",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "eu-fruehmittelalter",
+    "title": "Frühmittelalter",
+    "startYear": 500,
+    "endYear": 1050,
+    "category": "zivilisation",
+    "continent": "europa",
+    "culture": "mittelalterlich",
+    "minZoomLevel": 3
+  },
+  {
+    "id": "eu-hochmittelalter",
+    "title": "Hochmittelalter",
+    "startYear": 1050,
+    "endYear": 1250,
+    "category": "zivilisation",
+    "continent": "europa",
+    "culture": "mittelalterlich",
+    "minZoomLevel": 3
+  },
+  {
+    "id": "eu-spaetmittelalter",
+    "title": "Spätmittelalter",
+    "startYear": 1250,
+    "endYear": 1500,
+    "category": "zivilisation",
+    "continent": "europa",
+    "culture": "mittelalterlich",
+    "minZoomLevel": 3
+  },
+  {
+    "id": "eu-renaissance",
+    "title": "Renaissance",
+    "startYear": 1400,
+    "endYear": 1600,
+    "category": "zivilisation",
+    "continent": "europa",
+    "culture": "neuzeitlich",
+    "minZoomLevel": 3
+  },
+  {
+    "id": "eu-aufklaerung",
+    "title": "Aufklärung",
+    "startYear": 1685,
+    "endYear": 1815,
+    "category": "zivilisation",
+    "continent": "europa",
+    "culture": "neuzeitlich",
+    "minZoomLevel": 3
+  },
+  {
+    "id": "eu-industrialisierung",
+    "title": "Industrialisierung",
+    "startYear": 1760,
+    "endYear": 1900,
+    "category": "zivilisation",
+    "continent": "europa",
+    "culture": "modern",
+    "minZoomLevel": 3
+  }
+]
