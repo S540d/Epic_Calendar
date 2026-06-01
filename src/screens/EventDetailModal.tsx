@@ -10,10 +10,11 @@ type Props = {
 };
 
 function formatYear(y: number): string {
-  if (Math.abs(y) >= 1_000_000) return `${(y / 1_000_000).toFixed(1)} Mio.`;
-  if (Math.abs(y) >= 10_000) return `${(y / 1000).toFixed(1)} Tsd.`;
-  if (y < 0) return `${Math.abs(y)} v.Chr.`;
-  return `${y} n.Chr.`;
+  const suffix = y < 0 ? ' v.Chr.' : ' n.Chr.';
+  const a = Math.abs(y);
+  if (a >= 1_000_000) return `${(a / 1_000_000).toFixed(1)} Mio.${suffix}`;
+  if (a >= 10_000) return `${(a / 1_000).toFixed(1)} Tsd.${suffix}`;
+  return `${a}${suffix}`;
 }
 
 export function EventDetailModal({ event, onClose }: Props) {

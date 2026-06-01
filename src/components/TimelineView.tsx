@@ -1,13 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { StyleSheet, View, Text, useWindowDimensions } from 'react-native';
-import { Canvas, Group, Rect, Text as SkiaText, useFont } from '@shopify/react-native-skia';
+import { Canvas, Group, Rect } from '@shopify/react-native-skia';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, {
-  useSharedValue,
-  useDerivedValue,
-  useAnimatedReaction,
-  runOnJS,
-} from 'react-native-reanimated';
+import { useSharedValue, useAnimatedReaction, runOnJS } from 'react-native-reanimated';
 
 import { ALL_EVENTS } from '@/data/events';
 import { filterVisible } from '@/timeline/culling';

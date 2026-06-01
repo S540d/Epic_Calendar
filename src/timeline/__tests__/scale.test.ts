@@ -2,7 +2,7 @@ import { yearToT, tToYear, pixelToYear, yearToPixel } from '../scale';
 
 describe('timeline/scale', () => {
   it('yearToT is monotonic across the full range', () => {
-    const ys = [-13_800_000_000, -1_000_000, -1, 0, 1, 1_000_000, 2026];
+    const ys = [-13_800_000_000, -1_000_000, -1, 0, 1, 2026, 1_000_000, 1_000_000_000];
     let prev = -Infinity;
     for (const y of ys) {
       const t = yearToT(y);
