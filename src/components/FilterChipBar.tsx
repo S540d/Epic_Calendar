@@ -17,6 +17,7 @@ export function FilterChipBar({ active, onToggle }: Props) {
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
+      style={styles.scrollView}
       contentContainerStyle={styles.row}
     >
       {CHIPS.map((cat) => {
@@ -53,7 +54,13 @@ export function FilterChipBar({ active, onToggle }: Props) {
 }
 
 const styles = StyleSheet.create({
+  scrollView: {
+    flexShrink: 0,
+    flexGrow: 0,
+  },
   row: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     gap: spacing.sm,
