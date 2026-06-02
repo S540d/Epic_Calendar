@@ -31,6 +31,13 @@ jobs:
       - name: Build for web
         run: npm run build:web
 
+      - name: Fix asset paths for GitHub Pages subpath
+        run: |
+          # Expo Metro baut mit absolutem Pfad-Prefix "/" – für GitHub Pages muss
+          # der Repo-Name vorangestellt werden.
+          find dist -name "*.html" -exec sed -i 's|src="/_expo/|src="/Epic_Calendar/_expo/|g' {} +
+          find dist -name "*.html" -exec sed -i 's|href="/_expo/|href="/Epic_Calendar/_expo/|g' {} +
+
       - name: Add .nojekyll
         run: touch dist/.nojekyll
 
