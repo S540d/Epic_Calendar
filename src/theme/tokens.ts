@@ -50,3 +50,34 @@ export const typography = {
 export const LANE_HEIGHT = 84;
 export const LANE_GAP = 8;
 export const LANE_LABEL_WIDTH = 96;
+
+// Per-category palettes: visually distinct hues that stay within each
+// category's tonal range so the lane color still reads as one group.
+const CATEGORY_PALETTES: Record<Category, string[]> = {
+  erdzeitalter: ['#7A5C35', '#9C7A4A', '#B8955E', '#6B4F2E', '#D4A96A', '#5A3F22', '#C2845A'],
+  natur:        ['#3D9957', '#5ABF72', '#2E7A45', '#7AD68A', '#4FB06A', '#236634', '#8FD4A0'],
+  zivilisation: ['#B87C3A', '#D49A52', '#C86030', '#E8B468', '#A05C28', '#F0C878', '#7A4420'],
+  nation:       ['#5A7AE8', '#8AACFF', '#3A5CC4', '#7090D8', '#A0C0FF', '#4468B0', '#C0D4FF'],
+  herrscher:    ['#BF7020', '#D98C38', '#A05810', '#E8A050', '#8C4808', '#F0B868', '#704000'],
+};
+
+/** Deterministic hash of a string → integer 0..N-1 */
+function hashIndex(s: string, n: number): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = (Math.imul(31, h) + s.charCodeAt(i)) >>> 0;
+  }
+  return h % n;
+}
+
+/**
+ * Returns a stable event color. Uses ev.color if set, otherwise picks a
+ * deterministic color from the category palette based on ev.culture ?? ev.id.
+ * Events sharing the same culture get the same color.
+ */
+export function eventColor(ev: { id: string; color?: string; category: Category; culture?: string }): string {
+  if (ev.color) return ev.color;
+  const palette = CATEGORY_PALETTES[ev.category] ?? CATEGORY_PALETTES.zivilisation;
+  const key = ev.culture ?? ev.id;
+  return (palette[hashIndex(key, palette.length)] ?? palette[0]) as string;
+}

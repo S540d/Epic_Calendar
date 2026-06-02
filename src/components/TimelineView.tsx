@@ -33,6 +33,7 @@ import {
   LANE_HEIGHT,
   LANE_LABEL_WIDTH,
   colors,
+  eventColor,
   spacing,
   typography,
   type Category,
@@ -230,7 +231,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent }: Pro
                           top: top + 18,
                           width: w,
                           height: LANE_HEIGHT - 36,
-                          backgroundColor: ev.color ?? colors.category[cat],
+                          backgroundColor: eventColor(ev),
                           borderRadius: 2,
                         }}
                       />
@@ -292,7 +293,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent }: Pro
                         y={top + 18}
                         width={w}
                         height={LANE_HEIGHT - 36}
-                        color={ev.color ?? colors.category[cat]}
+                        color={eventColor(ev)}
                       />
                     );
                   })}
