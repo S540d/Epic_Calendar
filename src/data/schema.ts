@@ -35,7 +35,8 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   erdzeitalter: 'Erdzeitalter',
   natur: 'Natur',
   zivilisation: 'Zivilisationen',
-  nation: 'Nationen',
+  nation: 'Reiche',
+  herrscher: 'Herrscher',
 };
 
 export const CONTINENT_LABELS: Record<Continent, string> = {

@@ -30,7 +30,7 @@ type Props = {
   onSelectEvent: (event: TimelineEvent) => void;
 };
 
-const LANE_ORDER: Category[] = ['erdzeitalter', 'zivilisation', 'natur', 'nation'];
+const LANE_ORDER: Category[] = ['erdzeitalter', 'zivilisation', 'nation', 'herrscher', 'natur'];
 
 export function TimelineView({ activeCategories, continent, onSelectEvent }: Props) {
   const { width: screenWidth } = useWindowDimensions();

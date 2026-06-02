@@ -9,8 +9,8 @@ type Props = {
   onToggle: (cat: Category) => void;
 };
 
-const CHIPS: Category[] = ['erdzeitalter', 'zivilisation', 'natur', 'nation'];
-const DISABLED: Category[] = ['natur', 'nation'];
+const CHIPS: Category[] = ['erdzeitalter', 'zivilisation', 'nation', 'herrscher', 'natur'];
+const DISABLED: Category[] = ['natur'];
 
 export function FilterChipBar({ active, onToggle }: Props) {
   return (

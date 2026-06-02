@@ -1,4 +1,4 @@
-export type Category = 'erdzeitalter' | 'natur' | 'zivilisation' | 'nation';
+export type Category = 'erdzeitalter' | 'natur' | 'zivilisation' | 'nation' | 'herrscher';
 
 export const colors = {
   bg: '#0E1116',
@@ -14,12 +14,14 @@ export const colors = {
     natur: '#4FA86A',
     zivilisation: '#C28B4A',
     nation: '#7C9CFF',
+    herrscher: '#CF8A30',
   } as Record<Category, string>,
   laneBg: {
     erdzeitalter: 'rgba(139, 111, 71, 0.10)',
     natur: 'rgba(79, 168, 106, 0.10)',
     zivilisation: 'rgba(194, 139, 74, 0.10)',
     nation: 'rgba(124, 156, 255, 0.10)',
+    herrscher: 'rgba(207, 138, 48, 0.10)',
   } as Record<Category, string>,
 };
 
