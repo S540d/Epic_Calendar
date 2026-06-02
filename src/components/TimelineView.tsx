@@ -21,7 +21,7 @@ if (Platform.OS !== 'web') {
 import { ALL_EVENTS } from '@/data/events';
 import { filterVisible } from '@/timeline/culling';
 import { clampPixelsPerUnit, pixelsPerUnitToZoomLevel } from '@/timeline/lod';
-import { viewportYearRange, yearToT } from '@/timeline/scale';
+import { viewportYearRange, yearToT, tToYear } from '@/timeline/scale';
 import {
   CATEGORY_LABELS,
   type Continent,
@@ -46,6 +46,10 @@ type Props = {
 
 const LANE_ORDER: Category[] = ['erdzeitalter', 'zivilisation', 'natur', 'nation'];
 
+// Total t-span: from yearToT(-13_800_000_000) to yearToT(2100) — use fixed canvas width
+const TOTAL_T_MIN = -Math.log10(1 + 13_800_000_000); // ≈ -10.14
+const TOTAL_T_MAX = Math.log10(1 + 2100); // ≈ 3.32
+
 export function TimelineView({ activeCategories, continent, onSelectEvent }: Props) {
   const { width: screenWidth } = useWindowDimensions();
   const canvasWidth = Math.max(0, screenWidth - LANE_LABEL_WIDTH);
@@ -63,6 +67,9 @@ export function TimelineView({ activeCategories, continent, onSelectEvent }: Pro
   // JS-side mirrors used for culling. Updated from worklets via runOnJS.
   const [jsOffsetX, setJsOffsetX] = useState(INITIAL_OFFSET);
   const [jsPixelsPerUnit, setJsPixelsPerUnit] = useState(INITIAL_PPU);
+
+  // Web: track scroll position to derive offsetX
+  const [webScrollX, setWebScrollX] = useState(0);
 
   useAnimatedReaction(
     () => ({ o: offsetX.value, p: pixelsPerUnit.value }),
@@ -132,8 +139,36 @@ export function TimelineView({ activeCategories, continent, onSelectEvent }: Pro
 
   const handleTap = (event: TimelineEvent) => onSelectEvent(event);
 
-  // Web fallback: simple HTML-based rendering
+  // Web fallback: ScrollView-based rendering.
+  // All events are placed at absolute pixel positions on a wide canvas.
+  // onScroll feeds the scroll offset back so the label column stays in sync
+  // and visibleByLane culls correctly.
   if (Platform.OS === 'web') {
+    const WEB_PPU = jsPixelsPerUnit;
+    // Canvas covers the full t-range so every event has a defined pixel position.
+    const webCanvasWidth = Math.ceil((TOTAL_T_MAX - TOTAL_T_MIN) * WEB_PPU);
+    // offsetX at scroll=0 is TOTAL_T_MIN (leftmost t maps to pixel 0).
+    const webOffsetAtZero = TOTAL_T_MIN;
+    // Current offsetX derived from scroll position.
+    const webOffsetX = webOffsetAtZero + webScrollX / WEB_PPU;
+
+    // Compute which events are in the visible viewport for each lane.
+    const webVisibleByLane = new Map<Category, TimelineEvent[]>();
+    const visibleStartYear = tToYear(webOffsetX);
+    const visibleEndYear = tToYear(webOffsetX + canvasWidth / WEB_PPU);
+    for (const cat of lanes) {
+      webVisibleByLane.set(
+        cat,
+        filterVisible(ALL_EVENTS, {
+          startYear: visibleStartYear,
+          endYear: visibleEndYear,
+          zoomLevel,
+          categories: new Set<Category>([cat]),
+          continent,
+        }),
+      );
+    }
+
     return (
       <View style={styles.container}>
         <View style={styles.labels}>
@@ -157,20 +192,22 @@ export function TimelineView({ activeCategories, continent, onSelectEvent }: Pro
           horizontal
           scrollEnabled
           style={{ flex: 1, backgroundColor: colors.bg }}
-          contentOffset={{ x: 0, y: 0 }}
+          scrollEventThrottle={16}
+          onScroll={(e) => setWebScrollX(e.nativeEvent.contentOffset.x)}
+          contentOffset={{ x: (INITIAL_OFFSET - TOTAL_T_MIN) * INITIAL_PPU, y: 0 }}
         >
-          <View style={{ width: Math.max(canvasWidth, 4000), height: canvasHeight }}>
+          <View style={{ width: webCanvasWidth, height: canvasHeight }}>
             {lanes.map((cat, idx) => {
               const top = idx * (LANE_HEIGHT + LANE_GAP);
-              const events = visibleByLane.get(cat) ?? [];
+              const events = webVisibleByLane.get(cat) ?? [];
               return (
                 <View key={cat}>
                   <View
                     style={{
                       position: 'absolute',
                       left: 0,
-                      top: top,
-                      width: '100%',
+                      top,
+                      width: webCanvasWidth,
                       height: LANE_HEIGHT,
                       backgroundColor: colors.laneBg[cat],
                     }}
@@ -178,8 +215,8 @@ export function TimelineView({ activeCategories, continent, onSelectEvent }: Pro
                   {events.map((ev) => {
                     const startT = yearToT(ev.startYear);
                     const endT = yearToT(ev.endYear ?? ev.startYear);
-                    const x = (startT - jsOffsetX) * jsPixelsPerUnit;
-                    const w = Math.max(2, (endT - startT) * jsPixelsPerUnit);
+                    const x = (startT - webOffsetAtZero) * WEB_PPU;
+                    const w = Math.max(2, (endT - startT) * WEB_PPU);
                     return (
                       <View
                         key={ev.id}
