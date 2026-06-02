@@ -38,6 +38,12 @@ jobs:
           find dist -name "*.html" -exec sed -i 's|src="/_expo/|src="/Epic_Calendar/_expo/|g' {} +
           find dist -name "*.html" -exec sed -i 's|href="/_expo/|href="/Epic_Calendar/_expo/|g' {} +
 
+      - name: Copy Skia WASM for web
+        run: |
+          # canvaskit.wasm muss unter dem Pfad liegen, den LoadSkiaWeb per locateFile erwartet.
+          mkdir -p dist/static/js
+          cp node_modules/canvaskit-wasm/bin/full/canvaskit.wasm dist/static/js/canvaskit.wasm
+
       - name: Add .nojekyll
         run: touch dist/.nojekyll
 
