@@ -2,6 +2,7 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 're
 import { StyleSheet, View, Text, useWindowDimensions, Platform, ScrollView } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSharedValue, useAnimatedReaction, runOnJS, withTiming } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 
 // Only import Skia for native platforms
 let Canvas: any = null;
@@ -24,7 +25,6 @@ import { filterVisible } from '@/timeline/culling';
 import { clampPixelsPerUnit, humanHistoryViewState, pixelsPerUnitToZoomLevel } from '@/timeline/lod';
 import { viewportYearRange, yearToT, tToYear } from '@/timeline/scale';
 import {
-  CATEGORY_LABELS,
   type Continent,
   type TimelineEvent,
   type ZoomLevel,
@@ -50,7 +50,6 @@ type Props = {
 
 const LANE_ORDER: Category[] = ['erdzeitalter', 'zivilisation', 'natur', 'nation'];
 
-// Full t-range constants used for the web canvas layout
 const TOTAL_T_MIN = yearToT(-13_800_000_000);
 const TOTAL_T_MAX = yearToT(2100);
 const T_HEUTE = yearToT(2026);
@@ -87,6 +86,7 @@ function computeLabelVisibleIds(
 }
 
 export function TimelineView({ activeCategories, continent, onSelectEvent, resetKey = 0 }: Props) {
+  const { t } = useTranslation();
   const { width: screenWidth } = useWindowDimensions();
   const canvasWidth = Math.max(0, screenWidth - LANE_LABEL_WIDTH);
 
@@ -117,7 +117,6 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     const cw = canvasWidthRef.current;
     if (!cw) return;
     if (Platform.OS === 'web') {
-      // Web view is driven by ScrollView — scroll programmatically so Heute lands at right edge
       const ppu = humanHistoryViewState(cw).pixelsPerUnit;
       const heuteWebX = (T_HEUTE - TOTAL_T_MIN) * ppu;
       webScrollRef.current?.scrollTo({ x: Math.max(0, heuteWebX - cw), animated: true });
@@ -172,7 +171,6 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     [visibleByLane, jsOffsetX, jsPixelsPerUnit, zoomLevel],
   );
 
-  // Pixel position of "Heute" in the canvas coordinate space
   const heutePx = useMemo(
     () => (T_HEUTE - jsOffsetX) * jsPixelsPerUnit,
     [jsOffsetX, jsPixelsPerUnit],
@@ -217,7 +215,6 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     const webOffsetAtZero = TOTAL_T_MIN;
     const webOffsetX = webOffsetAtZero + webScrollX / WEB_PPU;
 
-    // Initial scroll: "Heute" at the right edge of the viewport
     const heuteWebX = (T_HEUTE - TOTAL_T_MIN) * WEB_PPU;
     const initWebScrollX = Math.max(0, heuteWebX - canvasWidth);
 
@@ -258,7 +255,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                   { top: idx * (LANE_HEIGHT + LANE_GAP), height: LANE_HEIGHT, borderLeftColor: colors.category[cat] },
                 ]}
               >
-                <Text style={styles.labelText}>{CATEGORY_LABELS[cat]}</Text>
+                <Text style={styles.labelText}>{t(`category.${cat}`)}</Text>
               </View>
             ))}
           </View>
@@ -310,7 +307,6 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                   </View>
                 );
               })}
-              {/* Heute line */}
               <View
                 style={{
                   position: 'absolute',
@@ -332,7 +328,6 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   // ─── Native (Skia) ────────────────────────────────────────────────────────
   return (
     <View>
-      {/* Axis row: spacer aligns with lane-label column */}
       <View style={styles.axisRow}>
         <View style={{ width: LANE_LABEL_WIDTH }} />
         <TimeAxis
@@ -353,7 +348,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                 { top: idx * (LANE_HEIGHT + LANE_GAP), height: LANE_HEIGHT, borderLeftColor: colors.category[cat] },
               ]}
             >
-              <Text style={styles.labelText}>{CATEGORY_LABELS[cat]}</Text>
+              <Text style={styles.labelText}>{t(`category.${cat}`)}</Text>
             </View>
           ))}
         </View>
@@ -386,19 +381,16 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                   </Group>
                 );
               })}
-              {/* Heute line — rendered last so it draws on top */}
               {heuteVisible && (
                 <Rect x={heutePx - 0.75} y={0} width={1.5} height={canvasHeight} color="rgba(255, 80, 80, 0.9)" />
               )}
             </Canvas>
 
-            {/* Transparent layer: tap hit areas + event labels */}
             <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
               {lanes.map((cat, idx) => {
                 const top = idx * (LANE_HEIGHT + LANE_GAP);
                 const events = visibleByLane.get(cat) ?? [];
                 return [
-                  // Hit areas (always rendered)
                   ...events.map((ev) => {
                     const startT = yearToT(ev.startYear);
                     const endT = yearToT(ev.endYear ?? ev.startYear);
@@ -413,7 +405,6 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                       />
                     );
                   }),
-                  // Labels (LOD 2+, collision-filtered)
                   ...events.map((ev) => {
                     if (!labelVisibleIds.has(ev.id)) return null;
                     const startT = yearToT(ev.startYear);
@@ -425,12 +416,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                       <View
                         key={`lbl-${ev.id}`}
                         pointerEvents="none"
-                        style={{
-                          position: 'absolute',
-                          left: x + 3,
-                          top: top + 3,
-                          maxWidth: Math.max(0, w - 6),
-                        }}
+                        style={{ position: 'absolute', left: x + 3, top: top + 3, maxWidth: Math.max(0, w - 6) }}
                       >
                         <Text
                           style={{ ...typography.caption, fontSize: 9, color: colors.textPrimary }}

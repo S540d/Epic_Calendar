@@ -1,0 +1,39 @@
+{
+  "app": {
+    "title": "Epic Calendar",
+    "subtitle": "Zoom & swipe through history"
+  },
+  "category": {
+    "erdzeitalter": "Geological Ages",
+    "natur": "Nature",
+    "zivilisation": "Civilizations",
+    "nation": "Empires",
+    "herrscher": "Rulers"
+  },
+  "continent": {
+    "europa": "Europe",
+    "asien": "Asia",
+    "afrika": "Africa",
+    "amerika": "Americas",
+    "ozeanien": "Oceania",
+    "global": "Global"
+  },
+  "event": {
+    "culture": "Culture",
+    "bce": "BCE",
+    "ce": "CE",
+    "million": "M",
+    "thousand": "K"
+  },
+  "chip": {
+    "soon": "soon"
+  },
+  "axis": {
+    "billion": "Bn",
+    "million": "M",
+    "thousand": "k",
+    "bce": "BCE",
+    "ce": "CE",
+    "today": "Today"
+  }
+}

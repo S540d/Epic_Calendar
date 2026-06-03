@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
-import { CATEGORY_LABELS } from '@/data/schema';
 import { colors, radii, spacing, typography, type Category } from '@/theme/tokens';
 
 type Props = {
@@ -13,6 +13,8 @@ const CHIPS: Category[] = ['erdzeitalter', 'zivilisation', 'nation', 'herrscher'
 const DISABLED: Category[] = ['natur'];
 
 export function FilterChipBar({ active, onToggle }: Props) {
+  const { t } = useTranslation();
+
   return (
     <ScrollView
       horizontal
@@ -43,8 +45,8 @@ export function FilterChipBar({ active, onToggle }: Props) {
                 isDisabled && { color: colors.textMuted },
               ]}
             >
-              {CATEGORY_LABELS[cat]}
-              {isDisabled ? '  ·  bald' : ''}
+              {t(`category.${cat}`)}
+              {isDisabled ? `  ·  ${t('chip.soon')}` : ''}
             </Text>
           </TouchableOpacity>
         );

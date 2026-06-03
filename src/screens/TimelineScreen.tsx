@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import { ContinentTabBar } from '@/components/ContinentTabBar';
 import { FilterChipBar } from '@/components/FilterChipBar';
@@ -10,12 +11,12 @@ import type { Continent, TimelineEvent } from '@/data/schema';
 import { colors, spacing, typography, type Category } from '@/theme/tokens';
 
 export function TimelineScreen() {
+  const { t, i18n } = useTranslation();
   const [activeCategories, setActiveCategories] = useState<Set<Category>>(
     new Set<Category>(['erdzeitalter', 'zivilisation']),
   );
   const [continent, setContinent] = useState<Continent>('europa');
   const [selected, setSelected] = useState<TimelineEvent | null>(null);
-  // Incrementing this value triggers the animated home-view reset in TimelineView
   const [resetKey, setResetKey] = useState(0);
 
   const toggleCategory = (cat: Category) => {
@@ -27,13 +28,27 @@ export function TimelineScreen() {
     });
   };
 
+  const toggleLanguage = () => {
+    i18n.changeLanguage(i18n.language === 'de' ? 'en' : 'de');
+  };
+
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>Epic Calendar</Text>
-          <Text style={styles.subtitle}>Zoome & wische durch die Geschichte</Text>
+        <View style={styles.headerText}>
+          <Text style={styles.title}>{t('app.title')}</Text>
+          <Text style={styles.subtitle}>{t('app.subtitle')}</Text>
         </View>
+        <Pressable
+          style={styles.langToggle}
+          onPress={toggleLanguage}
+          accessibilityLabel="Sprache wechseln"
+          accessibilityRole="button"
+        >
+          <Text style={styles.langToggleText}>
+            {i18n.language === 'de' ? 'EN' : 'DE'}
+          </Text>
+        </Pressable>
         <Pressable
           style={({ pressed }) => [styles.homeButton, pressed && styles.homeButtonPressed]}
           onPress={() => setResetKey((k) => k + 1)}
@@ -44,7 +59,6 @@ export function TimelineScreen() {
         </Pressable>
       </View>
       <FilterChipBar active={activeCategories} onToggle={toggleCategory} />
-      {/* Vertical ScrollView so all lanes are reachable on small screens */}
       <ScrollView style={styles.canvasWrap} contentContainerStyle={styles.canvasContent}>
         <TimelineView
           activeCategories={activeCategories}
@@ -72,6 +86,9 @@ const styles = StyleSheet.create({
     paddingTop: spacing.sm,
     paddingBottom: spacing.xs,
   },
+  headerText: {
+    flex: 1,
+  },
   title: {
     ...typography.title,
     color: colors.textPrimary,
@@ -80,6 +97,19 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.textSecondary,
     marginTop: 2,
+  },
+  langToggle: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginRight: spacing.xs,
+  },
+  langToggleText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontWeight: '700',
   },
   homeButton: {
     width: 40,

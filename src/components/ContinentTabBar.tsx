@@ -1,7 +1,8 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
-import { CONTINENT_LABELS, type Continent } from '@/data/schema';
+import { type Continent } from '@/data/schema';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
 type Props = {
@@ -13,6 +14,8 @@ const TABS: Continent[] = ['europa', 'asien', 'afrika', 'amerika', 'ozeanien'];
 const ENABLED: Continent[] = ['europa'];
 
 export function ContinentTabBar({ active, onChange }: Props) {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.bar}>
       {TABS.map((c) => {
@@ -33,7 +36,7 @@ export function ContinentTabBar({ active, onChange }: Props) {
               ]}
               numberOfLines={1}
             >
-              {CONTINENT_LABELS[c]}
+              {t(`continent.${c}`)}
             </Text>
           </TouchableOpacity>
         );

@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { tToYear, yearToT } from '@/timeline/scale';
 import { colors, typography } from '@/theme/tokens';
 import type { ZoomLevel } from '@/data/schema';
@@ -10,24 +11,20 @@ const HEUTE_LABEL_WIDTH = 38;
 const CURRENT_YEAR = 2026;
 const T_NOW = yearToT(CURRENT_YEAR);
 
-function formatYear(year: number, lod: ZoomLevel): string {
+function formatYear(year: number, lod: ZoomLevel, t: (key: string) => string): string {
   const abs = Math.abs(year);
   const neg = year < 0;
   const p = neg ? '–' : '';
 
-  if (abs >= 1_000_000_000) return `${p}${(abs / 1e9).toFixed(1)} Mrd`;
-  if (abs >= 1_000_000) return `${p}${Math.round(abs / 1e6)} Mio`;
-  if (abs >= 100_000) return `${p}${Math.round(abs / 1000)}k`;
-  if (abs >= 10_000) return `${p}${(abs / 1000).toFixed(0)}k`;
+  if (abs >= 1_000_000_000) return `${p}${(abs / 1e9).toFixed(1)} ${t('axis.billion')}`;
+  if (abs >= 1_000_000) return `${p}${Math.round(abs / 1e6)} ${t('axis.million')}`;
+  if (abs >= 100_000) return `${p}${Math.round(abs / 1000)}${t('axis.thousand')}`;
+  if (abs >= 10_000) return `${p}${(abs / 1000).toFixed(0)}${t('axis.thousand')}`;
   if (year === 0) return '0';
-  if (lod >= 3) {
-    const suffix = neg ? ' v.Chr.' : ' n.Chr.';
-    return `${Math.round(abs)}${suffix}`;
-  }
+  if (lod >= 3) return `${Math.round(abs)} ${neg ? t('axis.bce') : t('axis.ce')}`;
   return `${p}${Math.round(abs)}`;
 }
 
-// More ticks at higher detail levels
 const TICKS_BY_LOD: Record<ZoomLevel, number> = { 0: 5, 1: 6, 2: 7, 3: 8, 4: 9 };
 
 type Props = {
@@ -38,17 +35,18 @@ type Props = {
 };
 
 export function TimeAxis({ offsetX, pixelsPerUnit, canvasWidth, zoomLevel }: Props) {
+  const { t } = useTranslation();
   const numTicks = TICKS_BY_LOD[zoomLevel];
 
   const ticks = useMemo(() => {
     const result: Array<{ label: string; px: number }> = [];
     for (let i = 0; i <= numTicks; i++) {
       const px = (i / numTicks) * canvasWidth;
-      const t = px / pixelsPerUnit + offsetX;
-      result.push({ label: formatYear(tToYear(t), zoomLevel), px });
+      const tickT = px / pixelsPerUnit + offsetX;
+      result.push({ label: formatYear(tToYear(tickT), zoomLevel, t), px });
     }
     return result;
-  }, [offsetX, pixelsPerUnit, canvasWidth, zoomLevel, numTicks]);
+  }, [offsetX, pixelsPerUnit, canvasWidth, zoomLevel, numTicks, t]);
 
   const heutePx = useMemo(
     () => (T_NOW - offsetX) * pixelsPerUnit,
@@ -80,7 +78,7 @@ export function TimeAxis({ offsetX, pixelsPerUnit, canvasWidth, zoomLevel }: Pro
             ]}
             numberOfLines={1}
           >
-            Heute
+            {t('axis.today')}
           </Text>
         </>
       )}

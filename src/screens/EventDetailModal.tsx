@@ -1,7 +1,8 @@
 import React from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
-import { CATEGORY_LABELS, type TimelineEvent } from '@/data/schema';
+import { type TimelineEvent } from '@/data/schema';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
 type Props = {
@@ -9,15 +10,17 @@ type Props = {
   onClose: () => void;
 };
 
-function formatYear(y: number): string {
-  const suffix = y < 0 ? ' v.Chr.' : ' n.Chr.';
+function formatYear(y: number, t: (key: string) => string): string {
+  const suffix = y < 0 ? ` ${t('event.bce')}` : ` ${t('event.ce')}`;
   const a = Math.abs(y);
-  if (a >= 1_000_000) return `${(a / 1_000_000).toFixed(1)} Mio.${suffix}`;
-  if (a >= 10_000) return `${(a / 1_000).toFixed(1)} Tsd.${suffix}`;
+  if (a >= 1_000_000) return `${(a / 1_000_000).toFixed(1)} ${t('event.million')}${suffix}`;
+  if (a >= 10_000) return `${(a / 1_000).toFixed(1)} ${t('event.thousand')}${suffix}`;
   return `${a}${suffix}`;
 }
 
 export function EventDetailModal({ event, onClose }: Props) {
+  const { t } = useTranslation();
+
   return (
     <Modal
       visible={!!event}
@@ -35,13 +38,15 @@ export function EventDetailModal({ event, onClose }: Props) {
                   { backgroundColor: colors.category[event.category] },
                 ]}
               />
-              <Text style={styles.category}>{CATEGORY_LABELS[event.category]}</Text>
+              <Text style={styles.category}>{t(`category.${event.category}`)}</Text>
               <Text style={styles.title}>{event.title}</Text>
               <Text style={styles.range}>
-                {formatYear(event.startYear)}
-                {event.endYear !== undefined ? ` – ${formatYear(event.endYear)}` : ''}
+                {formatYear(event.startYear, t)}
+                {event.endYear !== undefined ? ` – ${formatYear(event.endYear, t)}` : ''}
               </Text>
-              {event.culture && <Text style={styles.meta}>Kultur: {event.culture}</Text>}
+              {event.culture && (
+                <Text style={styles.meta}>{t('event.culture')}: {event.culture}</Text>
+              )}
               {event.description && <Text style={styles.body}>{event.description}</Text>}
             </ScrollView>
           )}
