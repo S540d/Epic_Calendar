@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import '@/i18n';
 import { TimelineScreen } from '@/screens/TimelineScreen';
 
 export default function App() {

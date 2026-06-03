@@ -1,0 +1,39 @@
+{
+  "app": {
+    "title": "Epic Calendar",
+    "subtitle": "Zoome & wische durch die Geschichte"
+  },
+  "category": {
+    "erdzeitalter": "Erdzeitalter",
+    "natur": "Natur",
+    "zivilisation": "Zivilisationen",
+    "nation": "Reiche",
+    "herrscher": "Herrscher"
+  },
+  "continent": {
+    "europa": "Europa",
+    "asien": "Asien",
+    "afrika": "Afrika",
+    "amerika": "Amerika",
+    "ozeanien": "Ozeanien",
+    "global": "Global"
+  },
+  "event": {
+    "culture": "Kultur",
+    "bce": "v.Chr.",
+    "ce": "n.Chr.",
+    "million": "Mio.",
+    "thousand": "Tsd."
+  },
+  "chip": {
+    "soon": "bald"
+  },
+  "axis": {
+    "billion": "Mrd",
+    "million": "Mio",
+    "thousand": "k",
+    "bce": "v.Chr.",
+    "ce": "n.Chr.",
+    "today": "Heute"
+  }
+}
