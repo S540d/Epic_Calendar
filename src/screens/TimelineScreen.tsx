@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ContinentTabBar } from '@/components/ContinentTabBar';
@@ -15,6 +15,8 @@ export function TimelineScreen() {
   );
   const [continent, setContinent] = useState<Continent>('europa');
   const [selected, setSelected] = useState<TimelineEvent | null>(null);
+  // Incrementing this value triggers the animated home-view reset in TimelineView
+  const [resetKey, setResetKey] = useState(0);
 
   const toggleCategory = (cat: Category) => {
     setActiveCategories((prev) => {
@@ -28,17 +30,29 @@ export function TimelineScreen() {
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <Text style={styles.title}>Epic Calendar</Text>
-        <Text style={styles.subtitle}>Zoome & wische durch die Geschichte</Text>
+        <View>
+          <Text style={styles.title}>Epic Calendar</Text>
+          <Text style={styles.subtitle}>Zoome & wische durch die Geschichte</Text>
+        </View>
+        <Pressable
+          style={({ pressed }) => [styles.homeButton, pressed && styles.homeButtonPressed]}
+          onPress={() => setResetKey((k) => k + 1)}
+          accessibilityLabel="Zur Übersicht zurücksetzen"
+          accessibilityRole="button"
+        >
+          <Text style={styles.homeButtonText}>⌂</Text>
+        </Pressable>
       </View>
       <FilterChipBar active={activeCategories} onToggle={toggleCategory} />
-      <View style={styles.canvasWrap}>
+      {/* Vertical ScrollView so all lanes are reachable on small screens */}
+      <ScrollView style={styles.canvasWrap} contentContainerStyle={styles.canvasContent}>
         <TimelineView
           activeCategories={activeCategories}
           continent={continent}
           onSelectEvent={setSelected}
+          resetKey={resetKey}
         />
-      </View>
+      </ScrollView>
       <ContinentTabBar active={continent} onChange={setContinent} />
       <EventDetailModal event={selected} onClose={() => setSelected(null)} />
     </SafeAreaView>
@@ -51,6 +65,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
     paddingBottom: spacing.xs,
@@ -64,8 +81,28 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginTop: 2,
   },
+  homeButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  homeButtonPressed: {
+    backgroundColor: colors.bgElevated,
+  },
+  homeButtonText: {
+    fontSize: 20,
+    color: colors.textSecondary,
+  },
   canvasWrap: {
     flex: 1,
     backgroundColor: colors.bg,
+  },
+  canvasContent: {
+    flexGrow: 1,
   },
 });
