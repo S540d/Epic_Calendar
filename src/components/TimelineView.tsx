@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View, Text, useWindowDimensions, Platform, ScrollView } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { useSharedValue, useAnimatedReaction, runOnJS } from 'react-native-reanimated';
+import { useSharedValue, useAnimatedReaction, runOnJS, withTiming } from 'react-native-reanimated';
 
 // Only import Skia for native platforms
 let Canvas: any = null;
@@ -18,9 +18,10 @@ if (Platform.OS !== 'web') {
   }
 }
 
+import { TimeAxis, TIME_AXIS_HEIGHT } from './TimeAxis';
 import { ALL_EVENTS } from '@/data/events';
 import { filterVisible } from '@/timeline/culling';
-import { clampPixelsPerUnit, pixelsPerUnitToZoomLevel } from '@/timeline/lod';
+import { clampPixelsPerUnit, humanHistoryViewState, pixelsPerUnitToZoomLevel } from '@/timeline/lod';
 import { viewportYearRange, yearToT, tToYear } from '@/timeline/scale';
 import {
   CATEGORY_LABELS,
@@ -43,39 +44,86 @@ type Props = {
   activeCategories: Set<Category>;
   continent: Continent;
   onSelectEvent: (event: TimelineEvent) => void;
+  /** Increment to animate back to the default human-history view. */
+  resetKey?: number;
 };
 
 const LANE_ORDER: Category[] = ['erdzeitalter', 'zivilisation', 'natur', 'nation'];
 
-// Total t-span: from yearToT(-13_800_000_000) to yearToT(2100) — use fixed canvas width
-const TOTAL_T_MIN = -Math.log10(1 + 13_800_000_000); // ≈ -10.14
-const TOTAL_T_MAX = Math.log10(1 + 2100); // ≈ 3.32
+// Full t-range constants used for the web canvas layout
+const TOTAL_T_MIN = yearToT(-13_800_000_000);
+const TOTAL_T_MAX = yearToT(2100);
+const T_HEUTE = yearToT(2026);
 
-export function TimelineView({ activeCategories, continent, onSelectEvent }: Props) {
+const LABEL_MIN_BAR_PX = 32;
+const LABEL_MAX_WIDTH = 80;
+
+/** Collision-aware label visibility: hide labels that would overlap. Largest bars win. */
+function computeLabelVisibleIds(
+  visibleByLane: Map<Category, TimelineEvent[]>,
+  jsOffsetX: number,
+  jsPixelsPerUnit: number,
+): Set<string> {
+  const result = new Set<string>();
+  for (const events of visibleByLane.values()) {
+    const placed: Array<{ l: number; r: number }> = [];
+    const sorted = [...events].sort((a, b) => {
+      const wa = (yearToT(a.endYear ?? a.startYear) - yearToT(a.startYear)) * jsPixelsPerUnit;
+      const wb = (yearToT(b.endYear ?? b.startYear) - yearToT(b.startYear)) * jsPixelsPerUnit;
+      return wb - wa;
+    });
+    for (const ev of sorted) {
+      const x = (yearToT(ev.startYear) - jsOffsetX) * jsPixelsPerUnit;
+      const w = Math.max(0, (yearToT(ev.endYear ?? ev.startYear) - yearToT(ev.startYear)) * jsPixelsPerUnit);
+      if (w < LABEL_MIN_BAR_PX) continue;
+      const lx = x + 3;
+      const rx = lx + Math.min(LABEL_MAX_WIDTH, w - 6);
+      if (placed.some((p) => lx < p.r && rx > p.l)) continue;
+      placed.push({ l: lx, r: rx });
+      result.add(ev.id);
+    }
+  }
+  return result;
+}
+
+export function TimelineView({ activeCategories, continent, onSelectEvent, resetKey = 0 }: Props) {
   const { width: screenWidth } = useWindowDimensions();
   const canvasWidth = Math.max(0, screenWidth - LANE_LABEL_WIDTH);
 
-  // Start near year -500 CE (t≈-2.7) centered, showing classical antiquity
-  const INITIAL_PPU = 300;
-  const INITIAL_OFFSET = yearToT(-500) - screenWidth / 2 / INITIAL_PPU;
+  // Default view: −400 000 years → Heute at right edge
+  const initState = humanHistoryViewState(canvasWidth);
 
-  const offsetX = useSharedValue(INITIAL_OFFSET);
-  const pixelsPerUnit = useSharedValue(INITIAL_PPU);
-  const startOffsetX = useSharedValue(INITIAL_OFFSET);
-  const startPixelsPerUnit = useSharedValue(INITIAL_PPU);
+  const offsetX = useSharedValue(initState.offsetX);
+  const pixelsPerUnit = useSharedValue(initState.pixelsPerUnit);
+  const startOffsetX = useSharedValue(0);
+  const startPixelsPerUnit = useSharedValue(0);
   const startFocalT = useSharedValue(0);
 
-  // JS-side mirrors used for culling. Updated from worklets via runOnJS.
-  const [jsOffsetX, setJsOffsetX] = useState(INITIAL_OFFSET);
-  const [jsPixelsPerUnit, setJsPixelsPerUnit] = useState(INITIAL_PPU);
+  // JS-side mirrors updated from worklets via runOnJS
+  const [jsOffsetX, setJsOffsetX] = useState(initState.offsetX);
+  const [jsPixelsPerUnit, setJsPixelsPerUnit] = useState(initState.pixelsPerUnit);
 
-  // Web: track scroll position to derive offsetX
+  // Web: horizontal scroll position
   const [webScrollX, setWebScrollX] = useState(0);
+
+  // Ref so the reset effect always reads the current canvasWidth without re-subscribing
+  const canvasWidthRef = useRef(canvasWidth);
+  useLayoutEffect(() => { canvasWidthRef.current = canvasWidth; });
+
+  // Animate to default view whenever resetKey increments (0 = initial mount, skip)
+  useEffect(() => {
+    if (resetKey === 0) return;
+    const cw = canvasWidthRef.current;
+    if (!cw) return;
+    const state = humanHistoryViewState(cw);
+    offsetX.value = withTiming(state.offsetX, { duration: 600 });
+    pixelsPerUnit.value = withTiming(state.pixelsPerUnit, { duration: 600 });
+  }, [resetKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useAnimatedReaction(
     () => ({ o: offsetX.value, p: pixelsPerUnit.value }),
     (curr, prev) => {
-      if (!prev || Math.abs(curr.o - prev.o) > 0.5 || Math.abs(curr.p - prev.p) > 0.5) {
+      if (!prev || Math.abs(curr.o - prev.o) > 0.001 || Math.abs(curr.p - prev.p) > 0.001) {
         runOnJS(setJsOffsetX)(curr.o);
         runOnJS(setJsPixelsPerUnit)(curr.p);
       }
@@ -111,7 +159,22 @@ export function TimelineView({ activeCategories, continent, onSelectEvent }: Pro
     return out;
   }, [canvasWidth, jsOffsetX, jsPixelsPerUnit, lanes, zoomLevel, continent]);
 
+  const labelVisibleIds = useMemo(
+    () => (zoomLevel >= 2 ? computeLabelVisibleIds(visibleByLane, jsOffsetX, jsPixelsPerUnit) : new Set<string>()),
+    [visibleByLane, jsOffsetX, jsPixelsPerUnit, zoomLevel],
+  );
+
+  // Pixel position of "Heute" in the canvas coordinate space
+  const heutePx = useMemo(
+    () => (T_HEUTE - jsOffsetX) * jsPixelsPerUnit,
+    [jsOffsetX, jsPixelsPerUnit],
+  );
+  const heuteVisible = heutePx >= -1 && heutePx <= canvasWidth + 1;
+
+  // Pan: activeOffsetX / failOffsetY lets vertical swipes pass to the parent ScrollView
   const panGesture = Gesture.Pan()
+    .activeOffsetX([-8, 8])
+    .failOffsetY([-8, 8])
     .onStart(() => {
       startOffsetX.value = offsetX.value;
     })
@@ -127,7 +190,6 @@ export function TimelineView({ activeCategories, continent, onSelectEvent }: Pro
     .onUpdate((e) => {
       const next = clampPixelsPerUnit(startPixelsPerUnit.value * e.scale);
       pixelsPerUnit.value = next;
-      // Keep the pinch focal point fixed in t-space.
       offsetX.value = startFocalT.value - e.focalX / next;
     });
 
@@ -135,25 +197,22 @@ export function TimelineView({ activeCategories, continent, onSelectEvent }: Pro
 
   const canvasHeight = Math.max(
     lanes.length * LANE_HEIGHT + Math.max(0, lanes.length - 1) * LANE_GAP,
-    200,
+    80,
   );
 
   const handleTap = (event: TimelineEvent) => onSelectEvent(event);
 
-  // Web fallback: ScrollView-based rendering.
-  // All events are placed at absolute pixel positions on a wide canvas.
-  // onScroll feeds the scroll offset back so the label column stays in sync
-  // and visibleByLane culls correctly.
+  // ─── Web fallback ─────────────────────────────────────────────────────────
   if (Platform.OS === 'web') {
     const WEB_PPU = jsPixelsPerUnit;
-    // Canvas covers the full t-range so every event has a defined pixel position.
     const webCanvasWidth = Math.ceil((TOTAL_T_MAX - TOTAL_T_MIN) * WEB_PPU);
-    // offsetX at scroll=0 is TOTAL_T_MIN (leftmost t maps to pixel 0).
     const webOffsetAtZero = TOTAL_T_MIN;
-    // Current offsetX derived from scroll position.
     const webOffsetX = webOffsetAtZero + webScrollX / WEB_PPU;
 
-    // Compute which events are in the visible viewport for each lane.
+    // Initial scroll: "Heute" at the right edge of the viewport
+    const heuteWebX = (T_HEUTE - TOTAL_T_MIN) * WEB_PPU;
+    const initWebScrollX = Math.max(0, heuteWebX - canvasWidth);
+
     const webVisibleByLane = new Map<Category, TimelineEvent[]>();
     const visibleStartYear = tToYear(webOffsetX);
     const visibleEndYear = tToYear(webOffsetX + canvasWidth / WEB_PPU);
@@ -171,6 +230,110 @@ export function TimelineView({ activeCategories, continent, onSelectEvent }: Pro
     }
 
     return (
+      <View>
+        <View style={styles.axisRow}>
+          <View style={{ width: LANE_LABEL_WIDTH }} />
+          <TimeAxis
+            offsetX={webOffsetX}
+            pixelsPerUnit={WEB_PPU}
+            canvasWidth={canvasWidth}
+            zoomLevel={zoomLevel}
+          />
+        </View>
+        <View style={styles.container}>
+          <View style={styles.labels}>
+            {lanes.map((cat, idx) => (
+              <View
+                key={cat}
+                style={[
+                  styles.label,
+                  { top: idx * (LANE_HEIGHT + LANE_GAP), height: LANE_HEIGHT, borderLeftColor: colors.category[cat] },
+                ]}
+              >
+                <Text style={styles.labelText}>{CATEGORY_LABELS[cat]}</Text>
+              </View>
+            ))}
+          </View>
+          <ScrollView
+            horizontal
+            style={{ flex: 1, backgroundColor: colors.bg }}
+            scrollEventThrottle={16}
+            onScroll={(e) => setWebScrollX(e.nativeEvent.contentOffset.x)}
+            contentOffset={{ x: initWebScrollX, y: 0 }}
+          >
+            <View style={{ width: webCanvasWidth, height: canvasHeight }}>
+              {lanes.map((cat, idx) => {
+                const top = idx * (LANE_HEIGHT + LANE_GAP);
+                const events = webVisibleByLane.get(cat) ?? [];
+                return (
+                  <View key={cat}>
+                    <View
+                      style={{
+                        position: 'absolute',
+                        left: 0,
+                        top,
+                        width: webCanvasWidth,
+                        height: LANE_HEIGHT,
+                        backgroundColor: colors.laneBg[cat],
+                      }}
+                    />
+                    {events.map((ev) => {
+                      const startT = yearToT(ev.startYear);
+                      const endT = yearToT(ev.endYear ?? ev.startYear);
+                      const x = (startT - webOffsetAtZero) * WEB_PPU;
+                      const w = Math.max(2, (endT - startT) * WEB_PPU);
+                      return (
+                        <View
+                          key={ev.id}
+                          onStartShouldSetResponder={() => { handleTap(ev); return false; }}
+                          style={{
+                            position: 'absolute',
+                            left: x,
+                            top: top + 18,
+                            width: w,
+                            height: LANE_HEIGHT - 36,
+                            backgroundColor: eventColor(ev),
+                            borderRadius: 2,
+                          }}
+                        />
+                      );
+                    })}
+                  </View>
+                );
+              })}
+              {/* Heute line */}
+              <View
+                style={{
+                  position: 'absolute',
+                  left: heuteWebX - 0.75,
+                  top: 0,
+                  width: 1.5,
+                  height: canvasHeight,
+                  backgroundColor: '#FF5050',
+                  pointerEvents: 'none',
+                }}
+              />
+            </View>
+          </ScrollView>
+        </View>
+      </View>
+    );
+  }
+
+  // ─── Native (Skia) ────────────────────────────────────────────────────────
+  return (
+    <View>
+      {/* Axis row: spacer aligns with lane-label column */}
+      <View style={styles.axisRow}>
+        <View style={{ width: LANE_LABEL_WIDTH }} />
+        <TimeAxis
+          offsetX={jsOffsetX}
+          pixelsPerUnit={jsPixelsPerUnit}
+          canvasWidth={canvasWidth}
+          zoomLevel={zoomLevel}
+        />
+      </View>
+
       <View style={styles.container}>
         <View style={styles.labels}>
           {lanes.map((cat, idx) => (
@@ -178,169 +341,111 @@ export function TimelineView({ activeCategories, continent, onSelectEvent }: Pro
               key={cat}
               style={[
                 styles.label,
-                {
-                  top: idx * (LANE_HEIGHT + LANE_GAP),
-                  height: LANE_HEIGHT,
-                  borderLeftColor: colors.category[cat],
-                },
+                { top: idx * (LANE_HEIGHT + LANE_GAP), height: LANE_HEIGHT, borderLeftColor: colors.category[cat] },
               ]}
             >
               <Text style={styles.labelText}>{CATEGORY_LABELS[cat]}</Text>
             </View>
           ))}
         </View>
-        <ScrollView
-          horizontal
-          scrollEnabled
-          style={{ flex: 1, backgroundColor: colors.bg }}
-          scrollEventThrottle={16}
-          onScroll={(e) => setWebScrollX(e.nativeEvent.contentOffset.x)}
-          contentOffset={{ x: (INITIAL_OFFSET - TOTAL_T_MIN) * INITIAL_PPU, y: 0 }}
-        >
-          <View style={{ width: webCanvasWidth, height: canvasHeight }}>
-            {lanes.map((cat, idx) => {
-              const top = idx * (LANE_HEIGHT + LANE_GAP);
-              const events = webVisibleByLane.get(cat) ?? [];
-              return (
-                <View key={cat}>
-                  <View
-                    style={{
-                      position: 'absolute',
-                      left: 0,
-                      top,
-                      width: webCanvasWidth,
-                      height: LANE_HEIGHT,
-                      backgroundColor: colors.laneBg[cat],
-                    }}
-                  />
-                  {events.map((ev) => {
+
+        <GestureDetector gesture={gesture}>
+          <View style={{ width: canvasWidth, height: canvasHeight }}>
+            <Canvas style={{ width: canvasWidth, height: canvasHeight }}>
+              {lanes.map((cat, idx) => {
+                const top = idx * (LANE_HEIGHT + LANE_GAP);
+                const events = visibleByLane.get(cat) ?? [];
+                return (
+                  <Group key={cat}>
+                    <Rect x={0} y={top} width={canvasWidth} height={LANE_HEIGHT} color={colors.laneBg[cat]} />
+                    {events.map((ev) => {
+                      const startT = yearToT(ev.startYear);
+                      const endT = yearToT(ev.endYear ?? ev.startYear);
+                      const x = (startT - jsOffsetX) * jsPixelsPerUnit;
+                      const w = Math.max(2, (endT - startT) * jsPixelsPerUnit);
+                      return (
+                        <Rect
+                          key={ev.id}
+                          x={x}
+                          y={top + 18}
+                          width={w}
+                          height={LANE_HEIGHT - 36}
+                          color={eventColor(ev)}
+                        />
+                      );
+                    })}
+                  </Group>
+                );
+              })}
+              {/* Heute line — rendered last so it draws on top */}
+              {heuteVisible && (
+                <Rect x={heutePx - 0.75} y={0} width={1.5} height={canvasHeight} color="rgba(255, 80, 80, 0.9)" />
+              )}
+            </Canvas>
+
+            {/* Transparent layer: tap hit areas + event labels */}
+            <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+              {lanes.map((cat, idx) => {
+                const top = idx * (LANE_HEIGHT + LANE_GAP);
+                const events = visibleByLane.get(cat) ?? [];
+                return [
+                  // Hit areas (always rendered)
+                  ...events.map((ev) => {
                     const startT = yearToT(ev.startYear);
                     const endT = yearToT(ev.endYear ?? ev.startYear);
-                    const x = (startT - webOffsetAtZero) * WEB_PPU;
-                    const w = Math.max(2, (endT - startT) * WEB_PPU);
+                    const x = (startT - jsOffsetX) * jsPixelsPerUnit;
+                    const w = Math.max(24, (endT - startT) * jsPixelsPerUnit);
+                    if (x + w < 0 || x > canvasWidth) return null;
                     return (
                       <View
-                        key={ev.id}
-                        onStartShouldSetResponder={() => {
-                          handleTap(ev);
-                          return false;
-                        }}
-                        style={{
-                          position: 'absolute',
-                          left: x,
-                          top: top + 18,
-                          width: w,
-                          height: LANE_HEIGHT - 36,
-                          backgroundColor: eventColor(ev),
-                          borderRadius: 2,
-                        }}
+                        key={`hit-${ev.id}`}
+                        onStartShouldSetResponder={() => { handleTap(ev); return false; }}
+                        style={{ position: 'absolute', left: x, top: top + 18, width: w, height: LANE_HEIGHT - 36 }}
                       />
                     );
-                  })}
-                </View>
-              );
-            })}
-          </View>
-        </ScrollView>
-      </View>
-    );
-  }
-
-  // Native rendering with Skia
-  return (
-    <View style={styles.container}>
-      <View style={styles.labels}>
-        {lanes.map((cat, idx) => (
-          <View
-            key={cat}
-            style={[
-              styles.label,
-              {
-                top: idx * (LANE_HEIGHT + LANE_GAP),
-                height: LANE_HEIGHT,
-                borderLeftColor: colors.category[cat],
-              },
-            ]}
-          >
-            <Text style={styles.labelText}>{CATEGORY_LABELS[cat]}</Text>
-          </View>
-        ))}
-      </View>
-      <GestureDetector gesture={gesture}>
-        <View style={{ width: canvasWidth, height: canvasHeight }}>
-          <Canvas style={{ width: canvasWidth, height: canvasHeight }}>
-            {lanes.map((cat, idx) => {
-              const top = idx * (LANE_HEIGHT + LANE_GAP);
-              const events = visibleByLane.get(cat) ?? [];
-              return (
-                <Group key={cat}>
-                  <Rect
-                    x={0}
-                    y={top}
-                    width={canvasWidth}
-                    height={LANE_HEIGHT}
-                    color={colors.laneBg[cat]}
-                  />
-                  {events.map((ev) => {
+                  }),
+                  // Labels (LOD 2+, collision-filtered)
+                  ...events.map((ev) => {
+                    if (!labelVisibleIds.has(ev.id)) return null;
                     const startT = yearToT(ev.startYear);
                     const endT = yearToT(ev.endYear ?? ev.startYear);
                     const x = (startT - jsOffsetX) * jsPixelsPerUnit;
                     const w = Math.max(2, (endT - startT) * jsPixelsPerUnit);
+                    if (x + w < 0 || x > canvasWidth) return null;
                     return (
-                      <Rect
-                        key={ev.id}
-                        x={x}
-                        y={top + 18}
-                        width={w}
-                        height={LANE_HEIGHT - 36}
-                        color={eventColor(ev)}
-                      />
+                      <Text
+                        key={`lbl-${ev.id}`}
+                        style={{
+                          position: 'absolute',
+                          left: x + 3,
+                          top: top + 3,
+                          maxWidth: Math.max(0, w - 6),
+                          ...typography.caption,
+                          fontSize: 9,
+                          color: colors.textPrimary,
+                        }}
+                        numberOfLines={1}
+                      >
+                        {ev.title}
+                      </Text>
                     );
-                  })}
-                </Group>
-              );
-            })}
-          </Canvas>
-          {/* Transparent tap overlays for hit testing — kept out of Skia to use RN touch. */}
-          <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-            {lanes.map((cat, idx) => {
-              const top = idx * (LANE_HEIGHT + LANE_GAP);
-              const events = visibleByLane.get(cat) ?? [];
-              return events.map((ev) => {
-                const startT = yearToT(ev.startYear);
-                const endT = yearToT(ev.endYear ?? ev.startYear);
-                const x = (startT - jsOffsetX) * jsPixelsPerUnit;
-                const w = Math.max(24, (endT - startT) * jsPixelsPerUnit);
-                if (x + w < 0 || x > canvasWidth) return null;
-                return (
-                  <View
-                    key={`hit-${ev.id}`}
-                    onStartShouldSetResponder={() => {
-                      handleTap(ev);
-                      return false;
-                    }}
-                    style={{
-                      position: 'absolute',
-                      left: x,
-                      top: top + 18,
-                      width: w,
-                      height: LANE_HEIGHT - 36,
-                    }}
-                  />
-                );
-              });
-            })}
+                  }),
+                ];
+              })}
+            </View>
           </View>
-        </View>
-      </GestureDetector>
+        </GestureDetector>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  axisRow: {
+    flexDirection: 'row',
+  },
   container: {
     flexDirection: 'row',
-    flex: 1,
   },
   labels: {
     width: LANE_LABEL_WIDTH,

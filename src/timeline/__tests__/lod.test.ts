@@ -7,17 +7,17 @@ import {
 
 describe('timeline/lod', () => {
   describe('pixelsPerUnitToZoomLevel band boundaries', () => {
-    // Bands: <80 → 0, <200 → 1, <600 → 2, <2000 → 3, else → 4
+    // Bands: < 12 → 0, < 30 → 1, < 100 → 2, < 500 → 3, else → 4
     const cases: Array<[number, 0 | 1 | 2 | 3 | 4]> = [
       [0, 0],
-      [79.999, 0],
-      [80, 1],
-      [199.999, 1],
-      [200, 2],
-      [599.999, 2],
-      [600, 3],
-      [1999.999, 3],
-      [2000, 4],
+      [11.999, 0],
+      [12, 1],
+      [29.999, 1],
+      [30, 2],
+      [99.999, 2],
+      [100, 3],
+      [499.999, 3],
+      [500, 4],
       [10_000, 4],
     ];
     it.each(cases)('ppu=%s → zoomLevel=%s', (ppu, expected) => {
