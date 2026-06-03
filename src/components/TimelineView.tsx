@@ -18,7 +18,7 @@ if (Platform.OS !== 'web') {
   }
 }
 
-import { TimeAxis, TIME_AXIS_HEIGHT } from './TimeAxis';
+import { TimeAxis } from './TimeAxis';
 import { ALL_EVENTS } from '@/data/events';
 import { filterVisible } from '@/timeline/culling';
 import { clampPixelsPerUnit, humanHistoryViewState, pixelsPerUnitToZoomLevel } from '@/timeline/lod';
@@ -103,8 +103,9 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   const [jsOffsetX, setJsOffsetX] = useState(initState.offsetX);
   const [jsPixelsPerUnit, setJsPixelsPerUnit] = useState(initState.pixelsPerUnit);
 
-  // Web: horizontal scroll position
+  // Web: horizontal scroll position + ref for programmatic reset
   const [webScrollX, setWebScrollX] = useState(0);
+  const webScrollRef = useRef<ScrollView>(null);
 
   // Ref so the reset effect always reads the current canvasWidth without re-subscribing
   const canvasWidthRef = useRef(canvasWidth);
@@ -115,6 +116,13 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     if (resetKey === 0) return;
     const cw = canvasWidthRef.current;
     if (!cw) return;
+    if (Platform.OS === 'web') {
+      // Web view is driven by ScrollView — scroll programmatically so Heute lands at right edge
+      const ppu = humanHistoryViewState(cw).pixelsPerUnit;
+      const heuteWebX = (T_HEUTE - TOTAL_T_MIN) * ppu;
+      webScrollRef.current?.scrollTo({ x: Math.max(0, heuteWebX - cw), animated: true });
+      return;
+    }
     const state = humanHistoryViewState(cw);
     offsetX.value = withTiming(state.offsetX, { duration: 600 });
     pixelsPerUnit.value = withTiming(state.pixelsPerUnit, { duration: 600 });
@@ -123,7 +131,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   useAnimatedReaction(
     () => ({ o: offsetX.value, p: pixelsPerUnit.value }),
     (curr, prev) => {
-      if (!prev || Math.abs(curr.o - prev.o) > 0.001 || Math.abs(curr.p - prev.p) > 0.001) {
+      if (!prev || Math.abs(curr.o - prev.o) > 0.5 || Math.abs(curr.p - prev.p) > 0.5) {
         runOnJS(setJsOffsetX)(curr.o);
         runOnJS(setJsPixelsPerUnit)(curr.p);
       }
@@ -255,6 +263,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
             ))}
           </View>
           <ScrollView
+            ref={webScrollRef}
             horizontal
             style={{ flex: 1, backgroundColor: colors.bg }}
             scrollEventThrottle={16}
@@ -413,21 +422,23 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                     const w = Math.max(2, (endT - startT) * jsPixelsPerUnit);
                     if (x + w < 0 || x > canvasWidth) return null;
                     return (
-                      <Text
+                      <View
                         key={`lbl-${ev.id}`}
+                        pointerEvents="none"
                         style={{
                           position: 'absolute',
                           left: x + 3,
                           top: top + 3,
                           maxWidth: Math.max(0, w - 6),
-                          ...typography.caption,
-                          fontSize: 9,
-                          color: colors.textPrimary,
                         }}
-                        numberOfLines={1}
                       >
-                        {ev.title}
-                      </Text>
+                        <Text
+                          style={{ ...typography.caption, fontSize: 9, color: colors.textPrimary }}
+                          numberOfLines={1}
+                        >
+                          {ev.title}
+                        </Text>
+                      </View>
                     );
                   }),
                 ];

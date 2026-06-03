@@ -47,7 +47,7 @@ export function humanHistoryViewState(canvasWidth: number): { offsetX: number; p
 
 /** Full overview: Big Bang to present. */
 export function defaultViewState(canvasWidth: number): { offsetX: number; pixelsPerUnit: number } {
-  if (canvasWidth <= 0) return { offsetX: T_MIN, pixelsPerUnit: 10 };
+  if (canvasWidth <= 0) return { offsetX: T_MIN, pixelsPerUnit: MIN_PIXELS_PER_UNIT };
   return {
     offsetX: T_MIN,
     pixelsPerUnit: canvasWidth / FULL_T_SPAN,
