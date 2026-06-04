@@ -10,14 +10,14 @@ export const colors = {
   textMuted: '#6B7280',
   accent: '#7C9CFF',
   category: {
-    erdzeitalter: '#8B6F47',
+    erdzeitalter: '#4A8FA8',
     natur: '#4FA86A',
     zivilisation: '#C28B4A',
     nation: '#7C9CFF',
     herrscher: '#CF8A30',
   } as Record<Category, string>,
   laneBg: {
-    erdzeitalter: 'rgba(139, 111, 71, 0.10)',
+    erdzeitalter: 'rgba(74, 143, 168, 0.10)',
     natur: 'rgba(79, 168, 106, 0.10)',
     zivilisation: 'rgba(194, 139, 74, 0.10)',
     nation: 'rgba(124, 156, 255, 0.10)',
@@ -54,7 +54,7 @@ export const LANE_LABEL_WIDTH = 96;
 // Per-category palettes: visually distinct hues that stay within each
 // category's tonal range so the lane color still reads as one group.
 const CATEGORY_PALETTES: Record<Category, string[]> = {
-  erdzeitalter: ['#7A5C35', '#9C7A4A', '#B8955E', '#6B4F2E', '#D4A96A', '#5A3F22', '#C2845A'],
+  erdzeitalter: ['#3D7A90', '#4E8FA8', '#2E6A7A', '#5FA5C2', '#1E5568', '#6BBAD4', '#357088'],
   natur:        ['#3D9957', '#5ABF72', '#2E7A45', '#7AD68A', '#4FB06A', '#236634', '#8FD4A0'],
   zivilisation: ['#B87C3A', '#D49A52', '#C86030', '#E8B468', '#A05C28', '#F0C878', '#7A4420'],
   nation:       ['#5A7AE8', '#8AACFF', '#3A5CC4', '#7090D8', '#A0C0FF', '#4468B0', '#C0D4FF'],
