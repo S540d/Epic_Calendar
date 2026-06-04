@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View, Text, useWindowDimensions, Platform, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, useWindowDimensions, Platform, ScrollView } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSharedValue, useAnimatedReaction, runOnJS, withTiming } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
@@ -62,6 +62,7 @@ function computeLabelVisibleIds(
   visibleByLane: Map<Category, TimelineEvent[]>,
   jsOffsetX: number,
   jsPixelsPerUnit: number,
+  canvasWidth: number,
 ): Set<string> {
   const result = new Set<string>();
   for (const events of visibleByLane.values()) {
@@ -75,8 +76,12 @@ function computeLabelVisibleIds(
       const x = (yearToT(ev.startYear) - jsOffsetX) * jsPixelsPerUnit;
       const w = Math.max(0, (yearToT(ev.endYear ?? ev.startYear) - yearToT(ev.startYear)) * jsPixelsPerUnit);
       if (w < LABEL_MIN_BAR_PX) continue;
-      const lx = x + 3;
-      const rx = lx + Math.min(LABEL_MAX_WIDTH, w - 6);
+      // Sticky: collision detection uses the viewport-clamped position
+      const visibleLeft = Math.max(x, 0);
+      const visibleRight = Math.min(x + w, canvasWidth);
+      if (visibleRight - visibleLeft < 6) continue;
+      const lx = visibleLeft + 3;
+      const rx = lx + Math.min(LABEL_MAX_WIDTH, visibleRight - visibleLeft - 6);
       if (placed.some((p) => lx < p.r && rx > p.l)) continue;
       placed.push({ l: lx, r: rx });
       result.add(ev.id);
@@ -167,8 +172,8 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   }, [canvasWidth, jsOffsetX, jsPixelsPerUnit, lanes, zoomLevel, continent]);
 
   const labelVisibleIds = useMemo(
-    () => (zoomLevel >= 2 ? computeLabelVisibleIds(visibleByLane, jsOffsetX, jsPixelsPerUnit) : new Set<string>()),
-    [visibleByLane, jsOffsetX, jsPixelsPerUnit, zoomLevel],
+    () => computeLabelVisibleIds(visibleByLane, jsOffsetX, jsPixelsPerUnit, canvasWidth),
+    [visibleByLane, jsOffsetX, jsPixelsPerUnit, canvasWidth],
   );
 
   const heutePx = useMemo(
@@ -207,6 +212,38 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   );
 
   const handleTap = (event: TimelineEvent) => onSelectEvent(event);
+
+  const zoomIn = () => {
+    if (Platform.OS === 'web') {
+      const centerT = TOTAL_T_MIN + (webScrollX + canvasWidth / 2) / jsPixelsPerUnit;
+      const newPPU = clampPixelsPerUnit(jsPixelsPerUnit * 1.5);
+      pixelsPerUnit.value = newPPU;
+      setJsPixelsPerUnit(newPPU);
+      const newScrollX = Math.max(0, (centerT - TOTAL_T_MIN) * newPPU - canvasWidth / 2);
+      requestAnimationFrame(() => { webScrollRef.current?.scrollTo({ x: newScrollX, animated: false }); });
+    } else {
+      const center = offsetX.value + canvasWidth / (2 * pixelsPerUnit.value);
+      const next = clampPixelsPerUnit(pixelsPerUnit.value * 1.5);
+      pixelsPerUnit.value = withTiming(next, { duration: 300 });
+      offsetX.value = withTiming(center - canvasWidth / (2 * next), { duration: 300 });
+    }
+  };
+
+  const zoomOut = () => {
+    if (Platform.OS === 'web') {
+      const centerT = TOTAL_T_MIN + (webScrollX + canvasWidth / 2) / jsPixelsPerUnit;
+      const newPPU = clampPixelsPerUnit(jsPixelsPerUnit / 1.5);
+      pixelsPerUnit.value = newPPU;
+      setJsPixelsPerUnit(newPPU);
+      const newScrollX = Math.max(0, (centerT - TOTAL_T_MIN) * newPPU - canvasWidth / 2);
+      requestAnimationFrame(() => { webScrollRef.current?.scrollTo({ x: newScrollX, animated: false }); });
+    } else {
+      const center = offsetX.value + canvasWidth / (2 * pixelsPerUnit.value);
+      const next = clampPixelsPerUnit(pixelsPerUnit.value / 1.5);
+      pixelsPerUnit.value = withTiming(next, { duration: 300 });
+      offsetX.value = withTiming(center - canvasWidth / (2 * next), { duration: 300 });
+    }
+  };
 
   // ─── Web fallback ─────────────────────────────────────────────────────────
   if (Platform.OS === 'web') {
@@ -288,20 +325,38 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                       const endT = yearToT(ev.endYear ?? ev.startYear);
                       const x = (startT - webOffsetAtZero) * WEB_PPU;
                       const w = Math.max(2, (endT - startT) * WEB_PPU);
+                      const stickyLabelLeft = w >= LABEL_MIN_BAR_PX
+                        ? Math.max(x + 3, webScrollX + 3)
+                        : null;
+                      const stickyLabelMaxW = stickyLabelLeft !== null
+                        ? Math.max(0, x + w - stickyLabelLeft - 3)
+                        : 0;
                       return (
-                        <View
-                          key={ev.id}
-                          onStartShouldSetResponder={() => { handleTap(ev); return false; }}
-                          style={{
-                            position: 'absolute',
-                            left: x,
-                            top: top + 18,
-                            width: w,
-                            height: LANE_HEIGHT - 36,
-                            backgroundColor: eventColor(ev),
-                            borderRadius: 2,
-                          }}
-                        />
+                        <React.Fragment key={ev.id}>
+                          <View
+                            onStartShouldSetResponder={() => { handleTap(ev); return false; }}
+                            style={{
+                              position: 'absolute',
+                              left: x,
+                              top: top + 18,
+                              width: w,
+                              height: LANE_HEIGHT - 36,
+                              backgroundColor: eventColor(ev),
+                              borderRadius: 3,
+                              cursor: 'pointer',
+                            } as any}
+                          />
+                          {stickyLabelLeft !== null && stickyLabelMaxW > 10 && (
+                            <View
+                              pointerEvents="none"
+                              style={{ position: 'absolute', left: stickyLabelLeft, top: top + 3, maxWidth: stickyLabelMaxW }}
+                            >
+                              <Text numberOfLines={1} style={{ ...typography.caption, fontSize: 9, color: colors.textPrimary }}>
+                                {ev.title}
+                              </Text>
+                            </View>
+                          )}
+                        </React.Fragment>
                       );
                     })}
                   </View>
@@ -320,6 +375,14 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
               />
             </View>
           </ScrollView>
+        </View>
+        <View style={styles.zoomButtons} pointerEvents="box-none">
+          <TouchableOpacity style={styles.zoomBtn} onPress={zoomIn} accessibilityLabel="Zoom in">
+            <Text style={styles.zoomBtnText}>+</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.zoomBtn} onPress={zoomOut} accessibilityLabel="Zoom out">
+            <Text style={styles.zoomBtnText}>−</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -416,7 +479,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                       <View
                         key={`lbl-${ev.id}`}
                         pointerEvents="none"
-                        style={{ position: 'absolute', left: x + 3, top: top + 3, maxWidth: Math.max(0, w - 6) }}
+                        style={{ position: 'absolute', left: Math.max(x, 0) + 3, top: top + 3, maxWidth: Math.max(0, Math.min(x + w, canvasWidth) - Math.max(x, 0) - 6) }}
                       >
                         <Text
                           style={{ ...typography.caption, fontSize: 9, color: colors.textPrimary }}
@@ -432,6 +495,14 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
             </View>
           </View>
         </GestureDetector>
+      </View>
+      <View style={styles.zoomButtons} pointerEvents="box-none">
+        <TouchableOpacity style={styles.zoomBtn} onPress={zoomIn} accessibilityLabel="Zoom in">
+          <Text style={styles.zoomBtnText}>+</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.zoomBtn} onPress={zoomOut} accessibilityLabel="Zoom out">
+          <Text style={styles.zoomBtnText}>−</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -459,5 +530,27 @@ const styles = StyleSheet.create({
   labelText: {
     ...typography.caption,
     color: colors.textSecondary,
+  },
+  zoomButtons: {
+    position: 'absolute',
+    right: 12,
+    bottom: 12,
+    flexDirection: 'column',
+    gap: 6,
+  },
+  zoomBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(31, 36, 45, 0.90)',
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  zoomBtnText: {
+    fontSize: 20,
+    color: colors.textSecondary,
+    lineHeight: 24,
   },
 });
