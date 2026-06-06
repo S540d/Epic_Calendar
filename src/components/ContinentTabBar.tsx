@@ -17,15 +17,19 @@ export function ContinentTabBar({ active, onChange }: Props) {
   const { t } = useTranslation();
 
   return (
-    <View style={styles.bar}>
+    <View style={styles.bar} accessibilityRole="tablist" accessibilityLabel="Kontinente">
       {TABS.map((c) => {
         const enabled = ENABLED.includes(c);
         const isActive = c === active;
+        const label = t(`continent.${c}`);
         return (
           <TouchableOpacity
             key={c}
             disabled={!enabled}
             onPress={() => onChange(c)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: isActive, disabled: !enabled }}
+            accessibilityLabel={enabled ? label : `${label} – bald verfügbar`}
             style={[styles.tab, isActive && styles.tabActive]}
           >
             <Text
@@ -35,8 +39,9 @@ export function ContinentTabBar({ active, onChange }: Props) {
                 !enabled && styles.tabTextDisabled,
               ]}
               numberOfLines={1}
+              importantForAccessibility="no"
             >
-              {t(`continent.${c}`)}
+              {label}
             </Text>
           </TouchableOpacity>
         );

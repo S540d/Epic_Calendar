@@ -21,33 +21,58 @@ function formatYear(y: number, t: (key: string) => string): string {
 export function EventDetailModal({ event, onClose }: Props) {
   const { t } = useTranslation();
 
+  const timeRange = event
+    ? `${formatYear(event.startYear, t)}${event.endYear !== undefined ? ` – ${formatYear(event.endYear, t)}` : ''}`
+    : '';
+
   return (
     <Modal
       visible={!!event}
       transparent
       animationType="slide"
       onRequestClose={onClose}
+      accessibilityViewIsModal
     >
-      <Pressable style={styles.backdrop} onPress={onClose}>
-        <Pressable style={styles.sheet} onPress={() => {}}>
+      <Pressable
+        style={styles.backdrop}
+        onPress={onClose}
+        accessibilityLabel="Detail schließen"
+        accessibilityRole="button"
+      >
+        <Pressable
+          style={styles.sheet}
+          onPress={() => {}}
+          accessibilityLabel={event ? `${event.title}, ${timeRange}` : undefined}
+        >
           {event && (
             <ScrollView>
               <View
-                style={[
-                  styles.colorBar,
-                  { backgroundColor: colors.category[event.category] },
-                ]}
+                style={[styles.colorBar, { backgroundColor: colors.category[event.category] }]}
+                accessibilityElementsHidden
+                importantForAccessibility="no"
               />
-              <Text style={styles.category}>{t(`category.${event.category}`)}</Text>
-              <Text style={styles.title}>{event.title}</Text>
-              <Text style={styles.range}>
-                {formatYear(event.startYear, t)}
-                {event.endYear !== undefined ? ` – ${formatYear(event.endYear, t)}` : ''}
+              <Text
+                style={styles.category}
+                accessibilityRole="text"
+              >
+                {t(`category.${event.category}`)}
+              </Text>
+              <Text style={styles.title} accessibilityRole="header">
+                {event.title}
+              </Text>
+              <Text style={styles.range} accessibilityRole="text">
+                {timeRange}
               </Text>
               {event.culture && (
-                <Text style={styles.meta}>{t('event.culture')}: {event.culture}</Text>
+                <Text style={styles.meta} accessibilityRole="text">
+                  {t('event.culture')}: {event.culture}
+                </Text>
               )}
-              {event.description && <Text style={styles.body}>{event.description}</Text>}
+              {event.description && (
+                <Text style={styles.body} accessibilityRole="text">
+                  {event.description}
+                </Text>
+              )}
             </ScrollView>
           )}
         </Pressable>
