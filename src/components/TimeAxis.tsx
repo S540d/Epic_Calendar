@@ -62,7 +62,7 @@ export function TimeAxis({ offsetX, pixelsPerUnit, canvasWidth, zoomLevel }: Pro
         return (
           <React.Fragment key={i}>
             <View style={[styles.tickLine, { left: px }]} />
-            <Text style={[styles.tickLabel, { left: labelLeft }]} numberOfLines={1}>
+            <Text style={[styles.tickLabel, { left: labelLeft, fontSize: zoomLevel >= 3 ? 10 : 9 }]} numberOfLines={1}>
               {label}
             </Text>
           </React.Fragment>
@@ -74,7 +74,7 @@ export function TimeAxis({ offsetX, pixelsPerUnit, canvasWidth, zoomLevel }: Pro
           <Text
             style={[
               styles.heuteLabel,
-              { left: Math.max(0, Math.min(canvasWidth - HEUTE_LABEL_WIDTH, heutePx - HEUTE_LABEL_WIDTH / 2)) },
+              { left: Math.max(0, Math.min(canvasWidth - HEUTE_LABEL_WIDTH, heutePx - HEUTE_LABEL_WIDTH / 2)), fontSize: zoomLevel >= 3 ? 10 : 9 },
             ]}
             numberOfLines={1}
           >
@@ -115,7 +115,6 @@ const styles = StyleSheet.create({
     top: 12,
     width: TICK_LABEL_WIDTH,
     ...typography.caption,
-    fontSize: 9,
     color: colors.textMuted,
     textAlign: 'center',
   },
@@ -131,7 +130,6 @@ const styles = StyleSheet.create({
     top: 27,
     width: HEUTE_LABEL_WIDTH,
     ...typography.caption,
-    fontSize: 9,
     fontWeight: '700',
     color: '#FF5050',
     textAlign: 'center',

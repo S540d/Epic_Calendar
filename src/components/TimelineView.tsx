@@ -20,9 +20,10 @@ if (Platform.OS !== 'web') {
 }
 
 import { TimeAxis } from './TimeAxis';
+import { TimelineBreadcrumb } from './TimelineBreadcrumb';
 import { ALL_EVENTS } from '@/data/events';
-import { filterVisible } from '@/timeline/culling';
-import { clampPixelsPerUnit, humanHistoryViewState, pixelsPerUnitToZoomLevel } from '@/timeline/lod';
+import { assignTracks, filterVisible, type TrackMap } from '@/timeline/culling';
+import { clampPixelsPerUnit, eventLabelFontSize, humanHistoryViewState, pixelsPerUnitToZoomLevel } from '@/timeline/lod';
 import { viewportYearRange, yearToT, tToYear } from '@/timeline/scale';
 import {
   type Continent,
@@ -33,6 +34,8 @@ import {
   LANE_GAP,
   LANE_HEIGHT,
   LANE_LABEL_WIDTH,
+  LANE_PADDING_V,
+  TRACK_HEIGHT,
   colors,
   eventColor,
   spacing,
@@ -54,37 +57,55 @@ const TOTAL_T_MIN = yearToT(-13_800_000_000);
 const TOTAL_T_MAX = yearToT(2100);
 const T_HEUTE = yearToT(2026);
 
-const LABEL_MIN_BAR_PX = 32;
-const LABEL_MAX_WIDTH = 80;
+const LABEL_MIN_BAR_PX = 48;
+const LABEL_MAX_WIDTH = 96;
 
-/** Collision-aware label visibility: hide labels that would overlap. Largest bars win. */
+/** Returns the pixel height of a lane with the given number of tracks. */
+function laneHeightForTracks(n: number): number {
+  return n * TRACK_HEIGHT + LANE_PADDING_V * 2;
+}
+
+/**
+ * Collision-aware label visibility: checks collisions per track so events
+ * in different tracks never suppress each other. Largest bars win.
+ */
 function computeLabelVisibleIds(
   visibleByLane: Map<Category, TimelineEvent[]>,
+  tracksByLane: Map<Category, TrackMap>,
   jsOffsetX: number,
   jsPixelsPerUnit: number,
   canvasWidth: number,
 ): Set<string> {
   const result = new Set<string>();
-  for (const events of visibleByLane.values()) {
-    const placed: Array<{ l: number; r: number }> = [];
-    const sorted = [...events].sort((a, b) => {
-      const wa = (yearToT(a.endYear ?? a.startYear) - yearToT(a.startYear)) * jsPixelsPerUnit;
-      const wb = (yearToT(b.endYear ?? b.startYear) - yearToT(b.startYear)) * jsPixelsPerUnit;
-      return wb - wa;
-    });
-    for (const ev of sorted) {
-      const x = (yearToT(ev.startYear) - jsOffsetX) * jsPixelsPerUnit;
-      const w = Math.max(0, (yearToT(ev.endYear ?? ev.startYear) - yearToT(ev.startYear)) * jsPixelsPerUnit);
-      if (w < LABEL_MIN_BAR_PX) continue;
-      // Sticky: collision detection uses the viewport-clamped position
-      const visibleLeft = Math.max(x, 0);
-      const visibleRight = Math.min(x + w, canvasWidth);
-      if (visibleRight - visibleLeft < 6) continue;
-      const lx = visibleLeft + 3;
-      const rx = lx + Math.min(LABEL_MAX_WIDTH, visibleRight - visibleLeft - 6);
-      if (placed.some((p) => lx < p.r && rx > p.l)) continue;
-      placed.push({ l: lx, r: rx });
-      result.add(ev.id);
+  for (const [cat, events] of visibleByLane.entries()) {
+    const trackMap = tracksByLane.get(cat);
+    // Group events by track
+    const byTrack = new Map<number, TimelineEvent[]>();
+    for (const ev of events) {
+      const t = trackMap?.get(ev.id) ?? 0;
+      if (!byTrack.has(t)) byTrack.set(t, []);
+      byTrack.get(t)!.push(ev);
+    }
+    for (const trackEvents of byTrack.values()) {
+      const placed: Array<{ l: number; r: number }> = [];
+      const sorted = [...trackEvents].sort((a, b) => {
+        const wa = (yearToT(a.endYear ?? a.startYear) - yearToT(a.startYear)) * jsPixelsPerUnit;
+        const wb = (yearToT(b.endYear ?? b.startYear) - yearToT(b.startYear)) * jsPixelsPerUnit;
+        return wb - wa;
+      });
+      for (const ev of sorted) {
+        const x = (yearToT(ev.startYear) - jsOffsetX) * jsPixelsPerUnit;
+        const w = Math.max(0, (yearToT(ev.endYear ?? ev.startYear) - yearToT(ev.startYear)) * jsPixelsPerUnit);
+        if (w < LABEL_MIN_BAR_PX) continue;
+        const visibleLeft = Math.max(x, 0);
+        const visibleRight = Math.min(x + w, canvasWidth);
+        if (visibleRight - visibleLeft < 6) continue;
+        const lx = visibleLeft + 3;
+        const rx = lx + Math.min(LABEL_MAX_WIDTH, visibleRight - visibleLeft - 6);
+        if (placed.some((p) => lx < p.r && rx > p.l)) continue;
+        placed.push({ l: lx, r: rx });
+        result.add(ev.id);
+      }
     }
   }
   return result;
@@ -171,9 +192,39 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     return out;
   }, [canvasWidth, jsOffsetX, jsPixelsPerUnit, lanes, zoomLevel, continent]);
 
+  const tracksByLane = useMemo(() => {
+    const out = new Map<Category, TrackMap>();
+    for (const [cat, events] of visibleByLane) out.set(cat, assignTracks(events));
+    return out;
+  }, [visibleByLane]);
+
+  const laneTrackCounts = useMemo(() => {
+    const out = new Map<Category, number>();
+    for (const [cat, tm] of tracksByLane) {
+      const max = tm.size === 0 ? 0 : Math.max(...tm.values());
+      out.set(cat, max + 1);
+    }
+    return out;
+  }, [tracksByLane]);
+
+  const laneTops = useMemo(() => {
+    const tops: number[] = [];
+    let cursor = 0;
+    for (const cat of lanes) {
+      tops.push(cursor);
+      cursor += laneHeightForTracks(laneTrackCounts.get(cat) ?? 1) + LANE_GAP;
+    }
+    return tops;
+  }, [lanes, laneTrackCounts]);
+
   const labelVisibleIds = useMemo(
-    () => computeLabelVisibleIds(visibleByLane, jsOffsetX, jsPixelsPerUnit, canvasWidth),
-    [visibleByLane, jsOffsetX, jsPixelsPerUnit, canvasWidth],
+    () => computeLabelVisibleIds(visibleByLane, tracksByLane, jsOffsetX, jsPixelsPerUnit, canvasWidth),
+    [visibleByLane, tracksByLane, jsOffsetX, jsPixelsPerUnit, canvasWidth],
+  );
+
+  const viewportRange = useMemo(
+    () => viewportYearRange(canvasWidth, jsOffsetX, jsPixelsPerUnit),
+    [canvasWidth, jsOffsetX, jsPixelsPerUnit],
   );
 
   const heutePx = useMemo(
@@ -207,7 +258,8 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   const gesture = Gesture.Simultaneous(panGesture, pinchGesture);
 
   const canvasHeight = Math.max(
-    lanes.length * LANE_HEIGHT + Math.max(0, lanes.length - 1) * LANE_GAP,
+    lanes.reduce((sum, cat, i) =>
+      sum + laneHeightForTracks(laneTrackCounts.get(cat) ?? 1) + (i < lanes.length - 1 ? LANE_GAP : 0), 0),
     80,
   );
 
@@ -281,6 +333,9 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
             canvasWidth={canvasWidth}
             zoomLevel={zoomLevel}
           />
+          <View style={StyleSheet.absoluteFill} pointerEvents="none">
+            <TimelineBreadcrumb startYear={viewportRange.startYear} endYear={viewportRange.endYear} />
+          </View>
         </View>
         <View style={styles.container}>
           <View style={styles.labels}>
@@ -289,7 +344,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                 key={cat}
                 style={[
                   styles.label,
-                  { top: idx * (LANE_HEIGHT + LANE_GAP), height: LANE_HEIGHT, borderLeftColor: colors.category[cat] },
+                  { top: laneTops[idx], height: laneHeightForTracks(laneTrackCounts.get(cat) ?? 1), borderLeftColor: colors.category[cat] },
                 ]}
               >
                 <Text style={styles.labelText}>{t(`category.${cat}`)}</Text>
@@ -306,17 +361,20 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
           >
             <View style={{ width: webCanvasWidth, height: canvasHeight }}>
               {lanes.map((cat, idx) => {
-                const top = idx * (LANE_HEIGHT + LANE_GAP);
+                const laneTop = laneTops[idx] ?? 0;
+                const laneH = laneHeightForTracks(laneTrackCounts.get(cat) ?? 1);
                 const events = webVisibleByLane.get(cat) ?? [];
+                const webTrackMap = assignTracks(events);
+                const lblSize = eventLabelFontSize(zoomLevel);
                 return (
                   <View key={cat}>
                     <View
                       style={{
                         position: 'absolute',
                         left: 0,
-                        top,
+                        top: laneTop,
                         width: webCanvasWidth,
-                        height: LANE_HEIGHT,
+                        height: laneH,
                         backgroundColor: colors.laneBg[cat],
                       }}
                     />
@@ -325,6 +383,9 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                       const endT = yearToT(ev.endYear ?? ev.startYear);
                       const x = (startT - webOffsetAtZero) * WEB_PPU;
                       const w = Math.max(2, (endT - startT) * WEB_PPU);
+                      const trackIdx = webTrackMap.get(ev.id) ?? 0;
+                      const barTop = laneTop + LANE_PADDING_V + trackIdx * TRACK_HEIGHT + 4;
+                      const barHeight = TRACK_HEIGHT - 8;
                       const stickyLabelLeft = w >= LABEL_MIN_BAR_PX
                         ? Math.max(x + 3, webScrollX + 3)
                         : null;
@@ -338,20 +399,20 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                             style={{
                               position: 'absolute',
                               left: x,
-                              top: top + 18,
+                              top: barTop,
                               width: w,
-                              height: LANE_HEIGHT - 36,
+                              height: barHeight,
                               backgroundColor: eventColor(ev),
                               borderRadius: 3,
                               cursor: 'pointer',
                             } as any}
                           />
-                          {stickyLabelLeft !== null && stickyLabelMaxW > 10 && (
+                          {stickyLabelLeft !== null && stickyLabelMaxW > 10 && lblSize > 0 && (
                             <View
                               pointerEvents="none"
-                              style={{ position: 'absolute', left: stickyLabelLeft, top: top + 3, maxWidth: stickyLabelMaxW }}
+                              style={{ position: 'absolute', left: stickyLabelLeft, top: barTop + barHeight / 2 - lblSize / 2, maxWidth: stickyLabelMaxW }}
                             >
-                              <Text numberOfLines={1} style={{ ...typography.caption, fontSize: 9, color: colors.textPrimary }}>
+                              <Text numberOfLines={1} style={{ ...typography.caption, fontSize: lblSize, color: colors.textPrimary }}>
                                 {ev.title}
                               </Text>
                             </View>
@@ -399,6 +460,9 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
           canvasWidth={canvasWidth}
           zoomLevel={zoomLevel}
         />
+        <View style={StyleSheet.absoluteFill} pointerEvents="none">
+          <TimelineBreadcrumb startYear={viewportRange.startYear} endYear={viewportRange.endYear} />
+        </View>
       </View>
 
       <View style={styles.container}>
@@ -408,7 +472,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
               key={cat}
               style={[
                 styles.label,
-                { top: idx * (LANE_HEIGHT + LANE_GAP), height: LANE_HEIGHT, borderLeftColor: colors.category[cat] },
+                { top: laneTops[idx], height: laneHeightForTracks(laneTrackCounts.get(cat) ?? 1), borderLeftColor: colors.category[cat] },
               ]}
             >
               <Text style={styles.labelText}>{t(`category.${cat}`)}</Text>
@@ -420,23 +484,28 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
           <View style={{ width: canvasWidth, height: canvasHeight }}>
             <Canvas style={{ width: canvasWidth, height: canvasHeight }}>
               {lanes.map((cat, idx) => {
-                const top = idx * (LANE_HEIGHT + LANE_GAP);
+                const laneTop = laneTops[idx] ?? 0;
+                const laneH = laneHeightForTracks(laneTrackCounts.get(cat) ?? 1);
                 const events = visibleByLane.get(cat) ?? [];
+                const trackMap = tracksByLane.get(cat);
                 return (
                   <Group key={cat}>
-                    <Rect x={0} y={top} width={canvasWidth} height={LANE_HEIGHT} color={colors.laneBg[cat]} />
+                    <Rect x={0} y={laneTop} width={canvasWidth} height={laneH} color={colors.laneBg[cat]} />
                     {events.map((ev) => {
                       const startT = yearToT(ev.startYear);
                       const endT = yearToT(ev.endYear ?? ev.startYear);
                       const x = (startT - jsOffsetX) * jsPixelsPerUnit;
                       const w = Math.max(2, (endT - startT) * jsPixelsPerUnit);
+                      const trackIdx = trackMap?.get(ev.id) ?? 0;
+                      const barY = laneTop + LANE_PADDING_V + trackIdx * TRACK_HEIGHT + 4;
+                      const barH = TRACK_HEIGHT - 8;
                       return (
                         <Rect
                           key={ev.id}
                           x={x}
-                          y={top + 18}
+                          y={barY}
                           width={w}
-                          height={LANE_HEIGHT - 36}
+                          height={barH}
                           color={eventColor(ev)}
                         />
                       );
@@ -451,8 +520,10 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
 
             <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
               {lanes.map((cat, idx) => {
-                const top = idx * (LANE_HEIGHT + LANE_GAP);
+                const laneTop = laneTops[idx] ?? 0;
                 const events = visibleByLane.get(cat) ?? [];
+                const trackMap = tracksByLane.get(cat);
+                const lblSize = eventLabelFontSize(zoomLevel);
                 return [
                   ...events.map((ev) => {
                     const startT = yearToT(ev.startYear);
@@ -460,29 +531,37 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                     const x = (startT - jsOffsetX) * jsPixelsPerUnit;
                     const w = Math.max(24, (endT - startT) * jsPixelsPerUnit);
                     if (x + w < 0 || x > canvasWidth) return null;
+                    const trackIdx = trackMap?.get(ev.id) ?? 0;
+                    const barY = laneTop + LANE_PADDING_V + trackIdx * TRACK_HEIGHT + 4;
+                    const barH = TRACK_HEIGHT - 8;
                     return (
                       <View
                         key={`hit-${ev.id}`}
                         onStartShouldSetResponder={() => { handleTap(ev); return false; }}
-                        style={{ position: 'absolute', left: x, top: top + 18, width: w, height: LANE_HEIGHT - 36 }}
+                        style={{ position: 'absolute', left: x, top: barY, width: w, height: barH }}
                       />
                     );
                   }),
                   ...events.map((ev) => {
                     if (!labelVisibleIds.has(ev.id)) return null;
+                    if (lblSize === 0) return null;
                     const startT = yearToT(ev.startYear);
                     const endT = yearToT(ev.endYear ?? ev.startYear);
                     const x = (startT - jsOffsetX) * jsPixelsPerUnit;
                     const w = Math.max(2, (endT - startT) * jsPixelsPerUnit);
                     if (x + w < 0 || x > canvasWidth) return null;
+                    const trackIdx = trackMap?.get(ev.id) ?? 0;
+                    const barY = laneTop + LANE_PADDING_V + trackIdx * TRACK_HEIGHT + 4;
+                    const barH = TRACK_HEIGHT - 8;
+                    const labelTop = barY + barH / 2 - lblSize / 2;
                     return (
                       <View
                         key={`lbl-${ev.id}`}
                         pointerEvents="none"
-                        style={{ position: 'absolute', left: Math.max(x, 0) + 3, top: top + 3, maxWidth: Math.max(0, Math.min(x + w, canvasWidth) - Math.max(x, 0) - 6) }}
+                        style={{ position: 'absolute', left: Math.max(x, 0) + 3, top: labelTop, maxWidth: Math.max(0, Math.min(x + w, canvasWidth) - Math.max(x, 0) - 6) }}
                       >
                         <Text
-                          style={{ ...typography.caption, fontSize: 9, color: colors.textPrimary }}
+                          style={{ ...typography.caption, fontSize: lblSize, color: colors.textPrimary }}
                           numberOfLines={1}
                         >
                           {ev.title}
