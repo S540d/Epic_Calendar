@@ -4,22 +4,19 @@ import { useTranslation } from 'react-i18next';
 
 import { type TimelineEvent } from '@/data/schema';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
+import { formatEventYear } from '@/timeline/formatYear';
 
 type Props = {
   event: TimelineEvent | null;
   onClose: () => void;
 };
 
-function formatYear(y: number, t: (key: string) => string): string {
-  const suffix = y < 0 ? ` ${t('event.bce')}` : ` ${t('event.ce')}`;
-  const a = Math.abs(y);
-  if (a >= 1_000_000) return `${(a / 1_000_000).toFixed(1)} ${t('event.million')}${suffix}`;
-  if (a >= 10_000) return `${(a / 1_000).toFixed(1)} ${t('event.thousand')}${suffix}`;
-  return `${a}${suffix}`;
-}
-
 export function EventDetailModal({ event, onClose }: Props) {
   const { t } = useTranslation();
+
+  const timeRange = event
+    ? `${formatEventYear(event.startYear, t)}${event.endYear !== undefined ? ` – ${formatEventYear(event.endYear, t)}` : ''}`
+    : '';
 
   return (
     <Modal
@@ -27,27 +24,48 @@ export function EventDetailModal({ event, onClose }: Props) {
       transparent
       animationType="slide"
       onRequestClose={onClose}
+      accessibilityViewIsModal
     >
-      <Pressable style={styles.backdrop} onPress={onClose}>
-        <Pressable style={styles.sheet} onPress={() => {}}>
+      <Pressable
+        style={styles.backdrop}
+        onPress={onClose}
+        accessibilityLabel="Detail schließen"
+        accessibilityRole="button"
+      >
+        <Pressable
+          style={styles.sheet}
+          onPress={() => {}}
+          accessibilityLabel={event ? `${event.title}, ${timeRange}` : undefined}
+        >
           {event && (
             <ScrollView>
               <View
-                style={[
-                  styles.colorBar,
-                  { backgroundColor: colors.category[event.category] },
-                ]}
+                style={[styles.colorBar, { backgroundColor: colors.category[event.category] }]}
+                accessibilityElementsHidden
+                importantForAccessibility="no"
               />
-              <Text style={styles.category}>{t(`category.${event.category}`)}</Text>
-              <Text style={styles.title}>{event.title}</Text>
-              <Text style={styles.range}>
-                {formatYear(event.startYear, t)}
-                {event.endYear !== undefined ? ` – ${formatYear(event.endYear, t)}` : ''}
+              <Text
+                style={styles.category}
+                accessibilityRole="text"
+              >
+                {t(`category.${event.category}`)}
+              </Text>
+              <Text style={styles.title} accessibilityRole="header">
+                {event.title}
+              </Text>
+              <Text style={styles.range} accessibilityRole="text">
+                {timeRange}
               </Text>
               {event.culture && (
-                <Text style={styles.meta}>{t('event.culture')}: {event.culture}</Text>
+                <Text style={styles.meta} accessibilityRole="text">
+                  {t('event.culture')}: {event.culture}
+                </Text>
               )}
-              {event.description && <Text style={styles.body}>{event.description}</Text>}
+              {event.description && (
+                <Text style={styles.body} accessibilityRole="text">
+                  {event.description}
+                </Text>
+              )}
             </ScrollView>
           )}
         </Pressable>

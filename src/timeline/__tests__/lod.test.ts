@@ -3,6 +3,10 @@ import {
   MAX_PIXELS_PER_UNIT,
   MIN_PIXELS_PER_UNIT,
   pixelsPerUnitToZoomLevel,
+  humanHistoryViewState,
+  defaultViewState,
+  HUMAN_T_SPAN,
+  FULL_T_SPAN,
 } from '../lod';
 
 describe('timeline/lod', () => {
@@ -39,5 +43,37 @@ describe('timeline/lod', () => {
       expect(clampPixelsPerUnit(MAX_PIXELS_PER_UNIT)).toBe(MAX_PIXELS_PER_UNIT);
       expect(clampPixelsPerUnit(1234)).toBe(1234);
     });
+  });
+});
+
+describe('humanHistoryViewState', () => {
+  it('falls back to ppu=30 for zero-width canvas', () => {
+    const { pixelsPerUnit } = humanHistoryViewState(0);
+    expect(pixelsPerUnit).toBe(30);
+  });
+
+  it('fills a 1000px canvas exactly with the human-history t-span', () => {
+    const width = 1000;
+    const { pixelsPerUnit } = humanHistoryViewState(width);
+    expect(pixelsPerUnit * HUMAN_T_SPAN).toBeCloseTo(width, 5);
+  });
+
+  it('ppu scales linearly with canvas width', () => {
+    const { pixelsPerUnit: p1 } = humanHistoryViewState(400);
+    const { pixelsPerUnit: p2 } = humanHistoryViewState(800);
+    expect(p2).toBeCloseTo(p1 * 2, 5);
+  });
+});
+
+describe('defaultViewState', () => {
+  it('falls back to MIN_PIXELS_PER_UNIT for zero-width canvas', () => {
+    const { pixelsPerUnit } = defaultViewState(0);
+    expect(pixelsPerUnit).toBe(MIN_PIXELS_PER_UNIT);
+  });
+
+  it('fills canvas with the full t-span', () => {
+    const width = 800;
+    const { pixelsPerUnit } = defaultViewState(width);
+    expect(pixelsPerUnit * FULL_T_SPAN).toBeCloseTo(width, 5);
   });
 });

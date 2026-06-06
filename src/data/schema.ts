@@ -29,5 +29,7 @@ export type TimelineEvent = {
   minZoomLevel: ZoomLevel;
   color?: string;
   iconKey?: string;
+  /** Manual track override within a lane (0-indexed). If absent, computed by assignTracks(). */
+  track?: number;
 };
 

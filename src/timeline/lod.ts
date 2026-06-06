@@ -54,6 +54,14 @@ export function defaultViewState(canvasWidth: number): { offsetX: number; pixels
   };
 }
 
+/** Returns label fontSize for event bars, scaled to current LOD. */
+export function eventLabelFontSize(zoomLevel: ZoomLevel): number {
+  if (zoomLevel <= 1) return 0;
+  if (zoomLevel === 2) return 11;
+  if (zoomLevel === 3) return 12;
+  return 13; // level 4
+}
+
 export const MIN_PIXELS_PER_UNIT = 12;
 export const MAX_PIXELS_PER_UNIT = 8000;
 

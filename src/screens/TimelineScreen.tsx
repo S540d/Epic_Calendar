@@ -7,24 +7,31 @@ import { ContinentTabBar } from '@/components/ContinentTabBar';
 import { FilterChipBar } from '@/components/FilterChipBar';
 import { TimelineView } from '@/components/TimelineView';
 import { EventDetailModal } from '@/screens/EventDetailModal';
+import { usePersistedState } from '@/hooks/usePersistedState';
 import type { Continent, TimelineEvent } from '@/data/schema';
 import { colors, spacing, typography, type Category } from '@/theme/tokens';
 
+const DEFAULT_CATEGORIES: Category[] = ['erdzeitalter', 'zivilisation'];
+
 export function TimelineScreen() {
   const { t, i18n } = useTranslation();
-  const [activeCategories, setActiveCategories] = useState<Set<Category>>(
-    new Set<Category>(['erdzeitalter', 'zivilisation']),
+
+  const [persistedCategories, setPersistedCategories] = usePersistedState<Category[]>(
+    'activeCategories',
+    DEFAULT_CATEGORIES,
   );
-  const [continent, setContinent] = useState<Continent>('europa');
+  const activeCategories = new Set<Category>(persistedCategories);
+
+  const [continent, setContinent] = usePersistedState<Continent>('selectedContinent', 'europa');
   const [selected, setSelected] = useState<TimelineEvent | null>(null);
   const [resetKey, setResetKey] = useState(0);
 
   const toggleCategory = (cat: Category) => {
-    setActiveCategories((prev) => {
-      const next = new Set(prev);
-      if (next.has(cat)) next.delete(cat);
-      else next.add(cat);
-      return next;
+    setPersistedCategories((prev) => {
+      const set = new Set(prev);
+      if (set.has(cat)) set.delete(cat);
+      else set.add(cat);
+      return Array.from(set);
     });
   };
 

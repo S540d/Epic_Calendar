@@ -25,11 +25,15 @@ export function FilterChipBar({ active, onToggle }: Props) {
       {CHIPS.map((cat) => {
         const isActive = active.has(cat);
         const isDisabled = DISABLED.includes(cat);
+        const label = t(`category.${cat}`);
         return (
           <TouchableOpacity
             key={cat}
             onPress={() => !isDisabled && onToggle(cat)}
             disabled={isDisabled}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: isActive, disabled: isDisabled }}
+            accessibilityLabel={isDisabled ? `${label} – ${t('chip.soon')}` : label}
             style={[
               styles.chip,
               { borderColor: colors.category[cat] },
@@ -37,15 +41,20 @@ export function FilterChipBar({ active, onToggle }: Props) {
               isDisabled && styles.chipDisabled,
             ]}
           >
-            <View style={[styles.dot, { backgroundColor: colors.category[cat] }]} />
+            <View
+              style={[styles.dot, { backgroundColor: colors.category[cat] }]}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            />
             <Text
               style={[
                 styles.chipText,
                 isActive && { color: colors.bg },
                 isDisabled && { color: colors.textMuted },
               ]}
+              importantForAccessibility="no"
             >
-              {t(`category.${cat}`)}
+              {label}
               {isDisabled ? `  ·  ${t('chip.soon')}` : ''}
             </Text>
           </TouchableOpacity>
