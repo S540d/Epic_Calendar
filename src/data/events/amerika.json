@@ -1,0 +1,513 @@
+[
+  {
+    "id": "am-caral",
+    "title": "Caral-Kultur",
+    "description": "Älteste bekannte Zivilisation Amerikas an der Küste Perus. Monumentale Plattformpyramiden, Bewässerungslandwirtschaft und komplexe Gesellschaftsstrukturen ohne Schrift.",
+    "startYear": -3000,
+    "endYear": -1800,
+    "category": "zivilisation",
+    "continent": "amerika",
+    "culture": "caral",
+    "minZoomLevel": 1
+  },
+  {
+    "id": "am-maya-praeklassik",
+    "title": "Maya – Prä-Klassik",
+    "description": "Entstehung der Maya-Zivilisation in Mesoamerika. Erste Städte, Entwicklung der Maya-Schrift und des Kalenders, Aufstieg von El Mirador.",
+    "startYear": -2000,
+    "endYear": 250,
+    "category": "zivilisation",
+    "continent": "amerika",
+    "culture": "maya",
+    "minZoomLevel": 1
+  },
+  {
+    "id": "am-olmeken",
+    "title": "Olmekische Kultur",
+    "description": "Erste Hochkultur Mesoamerikas. Riesige Basaltköpfe, Zentren wie La Venta und San Lorenzo, Einfluss auf spätere Kulturen wie Maya und Azteken.",
+    "startYear": -1500,
+    "endYear": -400,
+    "category": "zivilisation",
+    "continent": "amerika",
+    "culture": "olmekisch",
+    "minZoomLevel": 0
+  },
+  {
+    "id": "am-chavin",
+    "title": "Chavín-Kultur",
+    "description": "Erste bedeutende Hochkultur der Andenregion in Peru. Das Heiligtum von Chavín de Huántar diente als religiöses Zentrum für weite Teile der Andenregion.",
+    "startYear": -1200,
+    "endYear": -200,
+    "category": "zivilisation",
+    "continent": "amerika",
+    "culture": "chavín",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "am-adena",
+    "title": "Adena-Kultur",
+    "description": "Prähistorische Moundbuilder-Kultur im Ohio-Tal Nordamerikas. Errichtung von Erdmonden (Mounds) als Grab- und Zeremonialstätten.",
+    "startYear": -1000,
+    "endYear": -100,
+    "category": "zivilisation",
+    "continent": "amerika",
+    "culture": "adena",
+    "minZoomLevel": 3
+  },
+  {
+    "id": "am-zapoteken",
+    "title": "Zapotekische Kultur",
+    "description": "Hochkultur im Tal von Oaxaca. Monte Albán als Hauptstadt und religiöses Zentrum; Vorläufer der mesoamerikanischen Schrift und des 365-Tage-Kalenders.",
+    "startYear": -700,
+    "endYear": 700,
+    "category": "zivilisation",
+    "continent": "amerika",
+    "culture": "zapotekisch",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "am-hopewell",
+    "title": "Hopewell-Kultur",
+    "description": "Weiträumiges Handelsnetzwerk der Moundbuilder im östlichen Nordamerika. Kunstfertige Zeremonialojekte aus Obsidian, Kupfer und Muscheln.",
+    "startYear": -100,
+    "endYear": 500,
+    "category": "zivilisation",
+    "continent": "amerika",
+    "culture": "hopewell",
+    "minZoomLevel": 3
+  },
+  {
+    "id": "am-teotihuacan",
+    "title": "Teotihuacán",
+    "description": "Größte Stadt der vorkolumbischen Welt in Zentralmexiko. Sonnenpyramide, Mondpyramide und die Straße der Toten prägten das mesoamerikanische religiöse Leben für Jahrhunderte.",
+    "startYear": 100,
+    "endYear": 650,
+    "category": "zivilisation",
+    "continent": "amerika",
+    "culture": "teotihuacán",
+    "minZoomLevel": 0
+  },
+  {
+    "id": "am-maya-klassik",
+    "title": "Maya – Klassik",
+    "description": "Blütezeit der Maya-Zivilisation. Städte wie Tikal, Palenque und Copán mit gewaltigen Tempelpyramiden, Stelen, verfeinerte Schrift und Astronomie.",
+    "startYear": 250,
+    "endYear": 900,
+    "category": "zivilisation",
+    "continent": "amerika",
+    "culture": "maya",
+    "minZoomLevel": 0
+  },
+  {
+    "id": "am-tiwanaku",
+    "title": "Tiwanaku-Reich",
+    "description": "Hochkultur am Titicacasee auf 3.800 Meter Höhe. Monumentale Steinarchitektur (Sonnenpforte), weitreichende Handelsnetze in den Anden.",
+    "startYear": 300,
+    "endYear": 1000,
+    "category": "zivilisation",
+    "continent": "amerika",
+    "culture": "tiwanaku",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "am-wari",
+    "title": "Wari-Reich",
+    "description": "Erstes großes Andenimperium in Peru, das Städtebau und staatliche Verwaltung einführte. Vorläufer des Inka-Reiches.",
+    "startYear": 500,
+    "endYear": 1000,
+    "category": "zivilisation",
+    "continent": "amerika",
+    "culture": "wari",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "am-mississippi",
+    "title": "Mississippikultur",
+    "description": "Hochentwickelte Ackerbaukulturen entlang des Mississippi. Cahokia war mit bis zu 20.000 Einwohnern die größte vorkolumbische Stadt nördlich von Mexiko.",
+    "startYear": 800,
+    "endYear": 1600,
+    "category": "zivilisation",
+    "continent": "amerika",
+    "culture": "mississippiisch",
+    "minZoomLevel": 1
+  },
+  {
+    "id": "am-tolteken",
+    "title": "Toltekisches Reich",
+    "description": "Mesoamerikanische Kultur mit Hauptstadt Tula. Kriegerische Expansion, Quetzalcoatl-Kult, Einfluss auf spätere aztekische Mythologie.",
+    "startYear": 900,
+    "endYear": 1150,
+    "category": "zivilisation",
+    "continent": "amerika",
+    "culture": "toltekisch",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "am-maya-postklassik",
+    "title": "Maya – Postklassik",
+    "description": "Spätphase der Maya in Yucatán. Chichén Itzá und Uxmal als wichtige Zentren; Bündnis der Mayapán-Liga, anschließend politische Zersplitterung.",
+    "startYear": 900,
+    "endYear": 1521,
+    "category": "zivilisation",
+    "continent": "amerika",
+    "culture": "maya",
+    "minZoomLevel": 1
+  },
+  {
+    "id": "am-chimu",
+    "title": "Chimú-Reich",
+    "description": "Küstenimperium in Peru mit der Hauptstadt Chan Chan, der größten Lehmziegelstadt der Welt. Meisterhafte Bewässerungssysteme und Goldschmiedekunst.",
+    "startYear": 900,
+    "endYear": 1470,
+    "category": "zivilisation",
+    "continent": "amerika",
+    "culture": "chimú",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "am-irokesen-bund",
+    "title": "Irokesenbund",
+    "description": "Konföderation der Fünf Nationen (Mohawk, Onondaga, Cayuga, Oneida, Seneca) im Nordosten Nordamerikas. Demokratisches Rätesystem, das möglicherweise die US-Verfassung beeinflusste.",
+    "startYear": 1100,
+    "endYear": 1776,
+    "category": "zivilisation",
+    "continent": "amerika",
+    "culture": "irokesisch",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "am-azteken",
+    "title": "Aztekisches Reich",
+    "description": "Das Mexica-Reich mit Hauptstadt Tenochtitlán (heutiges Mexiko-Stadt). Weitreichende Tributherrschaft in Mesoamerika, komplexe Mythologie und Astronomie.",
+    "startYear": 1300,
+    "endYear": 1521,
+    "category": "zivilisation",
+    "continent": "amerika",
+    "culture": "aztekisch",
+    "minZoomLevel": 0
+  },
+  {
+    "id": "am-inka",
+    "title": "Inkareich",
+    "description": "Größtes Reich des vorkolumbischen Amerika, von Ecuador bis Argentinien. Quipus zur Datenverwaltung, Straßennetz, Terrassenlandwirtschaft und Machu Picchu.",
+    "startYear": 1438,
+    "endYear": 1533,
+    "category": "zivilisation",
+    "continent": "amerika",
+    "culture": "inkaisch",
+    "minZoomLevel": 0
+  },
+  {
+    "id": "am-kolumbus",
+    "title": "Kolumbus entdeckt Amerika",
+    "description": "Christoph Kolumbus landet am 12. Oktober 1492 auf der Insel Guanahani in der Karibik und leitet die europäische Kolonisierung der Neuen Welt ein.",
+    "startYear": 1492,
+    "category": "nation",
+    "continent": "amerika",
+    "minZoomLevel": 0
+  },
+  {
+    "id": "am-sklavenhandel-atlantik",
+    "title": "Atlantischer Sklavenhandel",
+    "description": "Europäische Mächte verschleppen Millionen Afrikaner als Sklaven in die Neue Welt. Dreieckhandel zwischen Europa, Afrika und Amerika prägt Jahrhunderte.",
+    "startYear": 1500,
+    "endYear": 1888,
+    "category": "nation",
+    "continent": "amerika",
+    "minZoomLevel": 1
+  },
+  {
+    "id": "am-cortes-azteken",
+    "title": "Eroberung des Aztekenreiches",
+    "description": "Hernán Cortés zerstört das Aztekenreich: Tenochtitlán fällt nach langer Belagerung 1521. Beginn der Neuen Welt als spanische Kolonie.",
+    "startYear": 1519,
+    "endYear": 1521,
+    "category": "nation",
+    "continent": "amerika",
+    "culture": "spanisch-kolonial",
+    "minZoomLevel": 1
+  },
+  {
+    "id": "am-pizarro-inka",
+    "title": "Eroberung des Inkareiches",
+    "description": "Francisco Pizarro gefangennimmt Inka-Herrscher Atahualpa 1532 und zerstört das Inkareich trotz dessen Lösegeldzahlung. Ende der größten vorkolumbischen Zivilisation Südamerikas.",
+    "startYear": 1532,
+    "endYear": 1572,
+    "category": "nation",
+    "continent": "amerika",
+    "culture": "spanisch-kolonial",
+    "minZoomLevel": 1
+  },
+  {
+    "id": "am-atahualpa",
+    "title": "Atahualpa – letzter Inka",
+    "description": "Letzter regierender Inka-Kaiser. Gewann den Bürgerkrieg gegen seinen Bruder Huáscar, wurde jedoch von Pizarro gefangengenommen und 1533 hingerichtet.",
+    "startYear": 1532,
+    "endYear": 1533,
+    "category": "herrscher",
+    "continent": "amerika",
+    "culture": "inkaisch",
+    "minZoomLevel": 3
+  },
+  {
+    "id": "am-vizekoenig-neu-spanien",
+    "title": "Vizekönigreich Neuspanien",
+    "description": "Spanische Kolonialverwaltung in Mexiko, Mittelamerika und Teilen Nordamerikas. Jahrhundertelange Ausbeutung von Ressourcen und Zwangsarbeit indigener Bevölkerung.",
+    "startYear": 1535,
+    "endYear": 1821,
+    "category": "nation",
+    "continent": "amerika",
+    "culture": "spanisch-kolonial",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "am-jamestown",
+    "title": "Gründung von Jamestown",
+    "description": "Erste dauerhafte englische Siedlung in Nordamerika (Virginia, 1607). Beginn der englischen Kolonisierung und späterer Vereinigten Staaten.",
+    "startYear": 1607,
+    "category": "nation",
+    "continent": "amerika",
+    "culture": "englisch-kolonial",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "am-mayflower",
+    "title": "Mayflower und Plymouth Colony",
+    "description": "Pilgerväter landen 1620 in Plymouth, Massachusetts. Gründung einer puritanischen Kolonie und Unterzeichnung des Mayflower Compact als erste demokratische Selbstverwaltung.",
+    "startYear": 1620,
+    "category": "nation",
+    "continent": "amerika",
+    "culture": "englisch-kolonial",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "am-boston-tea-party",
+    "title": "Boston Tea Party",
+    "description": "Amerikanische Kolonisten werfen 1773 britischen Tee in den Bostoner Hafen als Protest gegen Besteuerung ohne Mitsprache. Auslöser der amerikanischen Revolution.",
+    "startYear": 1773,
+    "category": "nation",
+    "continent": "amerika",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "am-usa-unabhaengigkeit",
+    "title": "Amerikanische Unabhängigkeit",
+    "description": "Dreizehn britische Kolonien erklären am 4. Juli 1776 die Unabhängigkeit. Unabhängigkeitskrieg gegen Großbritannien endet 1783 mit dem Frieden von Paris.",
+    "startYear": 1776,
+    "endYear": 1783,
+    "category": "nation",
+    "continent": "amerika",
+    "minZoomLevel": 0
+  },
+  {
+    "id": "am-washington",
+    "title": "George Washington – Erster Präsident",
+    "description": "George Washington wird 1789 erster Präsident der Vereinigten Staaten. Er lehnte eine dritte Amtszeit ab und setzte damit den Präzedenzfall für die friedliche Machtübergabe.",
+    "startYear": 1789,
+    "endYear": 1797,
+    "category": "herrscher",
+    "continent": "amerika",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "am-haitianische-revolution",
+    "title": "Haitianische Revolution",
+    "description": "Einzige erfolgreiche Sklavenrevolution der Geschichte. Haiti wird 1804 als erste schwarze Republik unabhängig und inspiriert antikoloniale Bewegungen weltweit.",
+    "startYear": 1791,
+    "endYear": 1804,
+    "category": "nation",
+    "continent": "amerika",
+    "minZoomLevel": 1
+  },
+  {
+    "id": "am-simon-bolivar",
+    "title": "Simón Bolívar – El Libertador",
+    "description": "Venezolanischer Unabhängigkeitsführer befreit großen Teil Südamerikas von der spanischen Kolonialherrschaft. Gründer von Großkolumbien, Peru und Bolivien.",
+    "startYear": 1810,
+    "endYear": 1830,
+    "category": "herrscher",
+    "continent": "amerika",
+    "culture": "lateinamerikanisch",
+    "minZoomLevel": 1
+  },
+  {
+    "id": "am-lateinamerika-unabhaengigkeit",
+    "title": "Lateinamerikanische Unabhängigkeitsbewegungen",
+    "description": "Welle der Unabhängigkeitserklärungen in Lateinamerika: Mexiko (1810/1821), Kolumbien (1810), Venezuela (1811), Argentina (1816), Chile (1818), Brasilien (1822).",
+    "startYear": 1810,
+    "endYear": 1830,
+    "category": "nation",
+    "continent": "amerika",
+    "culture": "lateinamerikanisch",
+    "minZoomLevel": 1
+  },
+  {
+    "id": "am-monroe-doktrin",
+    "title": "Monroe-Doktrin",
+    "description": "US-Präsident Monroe erklärt 1823, Amerika sei keine Kolonialisierungszone für europäische Mächte. Grundstein für US-amerikanische Hegemonialpolitik in der westlichen Hemisphäre.",
+    "startYear": 1823,
+    "category": "nation",
+    "continent": "amerika",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "am-amerikanischer-buergerkrieg",
+    "title": "Amerikanischer Bürgerkrieg",
+    "description": "Krieg zwischen Union und Konföderation über Sklaverei und Bundesstaatsrechte. Lincolns Emanzipationserklärung 1863, Abschaffung der Sklaverei 1865.",
+    "startYear": 1861,
+    "endYear": 1865,
+    "category": "nation",
+    "continent": "amerika",
+    "minZoomLevel": 1
+  },
+  {
+    "id": "am-lincoln",
+    "title": "Abraham Lincoln – 16. Präsident",
+    "description": "Führte die USA durch den Bürgerkrieg, unterzeichnete die Emanzipationserklärung und bewahrte die Union. Am 14. April 1865 ermordet.",
+    "startYear": 1861,
+    "endYear": 1865,
+    "category": "herrscher",
+    "continent": "amerika",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "am-kanada-konfoderation",
+    "title": "Kanadische Konföderation",
+    "description": "1867 wird Kanada als Dominion innerhalb des Britischen Empire gegründet. Schrittweise Unabhängigkeit bis zur vollständigen Souveränität mit dem Canada Act 1982.",
+    "startYear": 1867,
+    "endYear": 1982,
+    "category": "nation",
+    "continent": "amerika",
+    "culture": "kanadisch",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "am-little-bighorn",
+    "title": "Schlacht am Little Bighorn",
+    "description": "Sioux und Cheyenne besiegen 1876 die US-Kavallerie unter General Custer. Pyrrhussieg: Beschleunigt die endgültige Unterwerfung der Prärieindianer.",
+    "startYear": 1876,
+    "category": "nation",
+    "continent": "amerika",
+    "culture": "indigene Nordamerika",
+    "minZoomLevel": 3
+  },
+  {
+    "id": "am-brasilien-republik",
+    "title": "Brasilien – Republik und Moderne",
+    "description": "Von der Militärrepublik (1889) über die Vargas-Ära bis zur Demokratisierung 1985. Wirtschaftswunder der 1970er-Jahre und Aufstieg zur größten Volkswirtschaft Lateinamerikas.",
+    "startYear": 1889,
+    "endYear": 2000,
+    "category": "nation",
+    "continent": "amerika",
+    "culture": "brasilianisch",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "am-spanisch-amerikanischer-krieg",
+    "title": "Spanisch-Amerikanischer Krieg",
+    "description": "USA besiegen Spanien 1898 und übernehmen Kuba, Puerto Rico, Guam und die Philippinen. Markiert den Aufstieg der USA zur Weltmacht.",
+    "startYear": 1898,
+    "category": "nation",
+    "continent": "amerika",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "am-mexikanische-revolution",
+    "title": "Mexikanische Revolution",
+    "description": "Aufstand gegen Diktator Porfirio Díaz, geführt von Emiliano Zapata und Pancho Villa. Verfassung von 1917 als eine der fortschrittlichsten Sozialverfassungen ihrer Zeit.",
+    "startYear": 1910,
+    "endYear": 1920,
+    "category": "nation",
+    "continent": "amerika",
+    "culture": "mexikanisch",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "am-new-deal",
+    "title": "New Deal – USA",
+    "description": "Wirtschafts- und Sozialprogramm von Präsident Franklin D. Roosevelt zur Bekämpfung der Großen Depression. Grundlage des modernen amerikanischen Wohlfahrtsstaates.",
+    "startYear": 1933,
+    "endYear": 1939,
+    "category": "nation",
+    "continent": "amerika",
+    "minZoomLevel": 3
+  },
+  {
+    "id": "am-usa-wwii",
+    "title": "USA im Zweiten Weltkrieg",
+    "description": "Nach Pearl Harbor (Dez. 1941) treten die USA in den Krieg ein. Entscheidende Rolle bei der Befreiung Europas und dem Sieg über Japan, beendet mit Atombomben auf Hiroshima und Nagasaki.",
+    "startYear": 1941,
+    "endYear": 1945,
+    "category": "nation",
+    "continent": "amerika",
+    "minZoomLevel": 1
+  },
+  {
+    "id": "am-kalter-krieg",
+    "title": "Kalter Krieg – amerikanische Perspektive",
+    "description": "USA und UdSSR in globaler ideologischer Konfrontation. Marshall-Plan, NATO, Korea- und Vietnamkrieg, Kubakrise 1962, Wettrüsten und Raumfahrt.",
+    "startYear": 1947,
+    "endYear": 1991,
+    "category": "nation",
+    "continent": "amerika",
+    "minZoomLevel": 1
+  },
+  {
+    "id": "am-buergerrechtsbewegung",
+    "title": "Amerikanische Bürgerrechtsbewegung",
+    "description": "Kampf gegen Rassentrennung und Diskriminierung schwarzer Amerikaner. Martin Luther King führt gewaltfreien Widerstand; Civil Rights Act 1964 und Voting Rights Act 1965.",
+    "startYear": 1955,
+    "endYear": 1968,
+    "category": "nation",
+    "continent": "amerika",
+    "minZoomLevel": 1
+  },
+  {
+    "id": "am-martin-luther-king",
+    "title": "Martin Luther King Jr.",
+    "description": "Anführer der amerikanischen Bürgerrechtsbewegung. Friedensnobelpreisträger 1964, Prediger der Gewaltlosigkeit, ermordet am 4. April 1968 in Memphis.",
+    "startYear": 1955,
+    "endYear": 1968,
+    "category": "herrscher",
+    "continent": "amerika",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "am-kubanische-revolution",
+    "title": "Kubanische Revolution",
+    "description": "Fidel Castro und Ernesto 'Che' Guevara stürzen 1959 Diktator Batista. Kuba wird kommunistischer Staat und Stein des Anstoßes im Kalten Krieg.",
+    "startYear": 1959,
+    "category": "nation",
+    "continent": "amerika",
+    "culture": "kubanisch",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "am-mondlandung",
+    "title": "Mondlandung – Apollo 11",
+    "description": "Neil Armstrong und Buzz Aldrin landen am 20. Juli 1969 als erste Menschen auf dem Mond. Höhepunkt des Weltraumwettlaufs zwischen USA und UdSSR.",
+    "startYear": 1969,
+    "category": "nation",
+    "continent": "amerika",
+    "minZoomLevel": 1
+  },
+  {
+    "id": "am-nafta-globalisierung",
+    "title": "NAFTA und wirtschaftliche Integration",
+    "description": "Nordamerikanisches Freihandelsabkommen zwischen USA, Kanada und Mexiko (1994). Tiefgreifende wirtschaftliche Verflechtung; 2020 durch USMCA ersetzt.",
+    "startYear": 1994,
+    "endYear": 2020,
+    "category": "nation",
+    "continent": "amerika",
+    "minZoomLevel": 3
+  },
+  {
+    "id": "am-11-september",
+    "title": "Terroranschläge vom 11. September 2001",
+    "description": "Al-Qaida-Terroristen entführen vier Flugzeuge und zerstören die Zwillingstürme in New York sowie attackieren das Pentagon. 2.977 Todesopfer, Beginn des 'Krieges gegen den Terror'.",
+    "startYear": 2001,
+    "category": "nation",
+    "continent": "amerika",
+    "minZoomLevel": 1
+  }
+]
