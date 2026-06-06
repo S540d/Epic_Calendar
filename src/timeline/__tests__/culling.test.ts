@@ -1,4 +1,4 @@
-import { filterVisible, type VisibilityFilter } from '../culling';
+import { assignTracks, filterVisible, type VisibilityFilter } from '../culling';
 import type { TimelineEvent } from '@/data/schema';
 import type { Category } from '@/theme/tokens';
 
@@ -73,5 +73,58 @@ describe('timeline/culling.filterVisible', () => {
     const e = ev({ id: 'a', startYear: 100, endYear: 200, minZoomLevel: 3 });
     const f = { ...base, zoomLevel: 1 as const };
     expect(filterVisible([e], f)).toEqual([]);
+  });
+});
+
+describe('timeline/culling.assignTracks', () => {
+  it('assigns non-overlapping events to the same track', () => {
+    const a = ev({ id: 'a', startYear: 0, endYear: 100 });
+    const b = ev({ id: 'b', startYear: 200, endYear: 300 });
+    const result = assignTracks([a, b]);
+    expect(result.get('a')).toBe(0);
+    expect(result.get('b')).toBe(0);
+  });
+
+  it('assigns overlapping events to different tracks', () => {
+    const a = ev({ id: 'a', startYear: 0, endYear: 300 });
+    const b = ev({ id: 'b', startYear: 100, endYear: 400 });
+    const result = assignTracks([a, b]);
+    expect(result.get('a')).toBe(0);
+    expect(result.get('b')).toBe(1);
+  });
+
+  it('packs three events correctly: two overlap, third fits in track 0', () => {
+    const a = ev({ id: 'a', startYear: 0, endYear: 200 });
+    const b = ev({ id: 'b', startYear: 100, endYear: 400 });
+    const c = ev({ id: 'c', startYear: 300, endYear: 500 });
+    const result = assignTracks([a, b, c]);
+    expect(result.get('a')).toBe(0);
+    expect(result.get('b')).toBe(1);
+    expect(result.get('c')).toBe(0); // c starts after a ends → reuses track 0
+  });
+
+  it('respects manual track override', () => {
+    const a = ev({ id: 'a', startYear: 0, endYear: 200, track: 2 });
+    const b = ev({ id: 'b', startYear: 50, endYear: 150 });
+    const result = assignTracks([a, b]);
+    expect(result.get('a')).toBe(2);
+    expect(result.get('b')).toBe(0); // first available track
+  });
+
+  it('handles point events (no endYear): same year shares track (no overlap)', () => {
+    // Two point events at the same year: endYear=startYear, so trackEndYears[0]=100 <= 100 → reuse track 0
+    const a = ev({ id: 'a', startYear: 100 });
+    const b = ev({ id: 'b', startYear: 100 });
+    const result = assignTracks([a, b]);
+    expect(result.get('a')).toBe(0);
+    expect(result.get('b')).toBe(0);
+  });
+
+  it('handles point events (no endYear): consecutive years reuse track', () => {
+    const a = ev({ id: 'a', startYear: 50 });
+    const b = ev({ id: 'b', startYear: 200 });
+    const result = assignTracks([a, b]);
+    expect(result.get('a')).toBe(0);
+    expect(result.get('b')).toBe(0);
   });
 });
