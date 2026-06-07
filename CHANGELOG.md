@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Web: Zeitachse und Kategorie-Labels bleiben beim vertikalen Scrollen sichtbar (sticky)
+- Web: Zoom-Buttons fixiert (immer rechts unten sichtbar)
+- Web & Native: Pan/Zoom-Clamp – kein Scrollen über „Heute" hinaus in die Zukunft möglich
+- Track-Höhe von 52px auf 60px erhöht, Lane-Padding von 8px auf 10px (mehr Luft zwischen Balken)
+
 ## [0.1.0] - 2026-06-07
 
 ### Added
