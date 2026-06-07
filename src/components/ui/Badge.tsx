@@ -25,10 +25,7 @@ export function Badge({ label, color = colors.accent, variant = 'filled', style 
       accessibilityRole="text"
       accessibilityLabel={label}
     >
-      <Text
-        style={[styles.label, { color: isFilled ? colors.bg : color }]}
-        numberOfLines={1}
-      >
+      <Text style={[styles.label, { color: isFilled ? colors.bg : color }]} numberOfLines={1}>
         {label}
       </Text>
     </View>

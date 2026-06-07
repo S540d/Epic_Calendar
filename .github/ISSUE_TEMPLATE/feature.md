@@ -1,8 +1,8 @@
 ---
 name: Feature Request
 about: Vorschlag für ein neues Feature oder Verbesserung
-title: "[FEATURE] "
-labels: ["type: feature", "status: triage"]
+title: '[FEATURE] '
+labels: ['type: feature', 'status: triage']
 ---
 
 ## Beschreibung

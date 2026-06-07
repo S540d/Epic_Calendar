@@ -1,5 +1,13 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, useWindowDimensions, Platform, ScrollView } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  Platform,
+  ScrollView,
+} from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSharedValue, useAnimatedReaction, runOnJS, withTiming } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
@@ -23,13 +31,14 @@ import { TimeAxis } from './TimeAxis';
 import { TimelineBreadcrumb } from './TimelineBreadcrumb';
 import { ALL_EVENTS } from '@/data/events';
 import { assignTracks, filterVisible, type TrackMap } from '@/timeline/culling';
-import { clampPixelsPerUnit, eventLabelFontSize, humanHistoryViewState, pixelsPerUnitToZoomLevel } from '@/timeline/lod';
-import { viewportYearRange, yearToT, tToYear } from '@/timeline/scale';
 import {
-  type Continent,
-  type TimelineEvent,
-  type ZoomLevel,
-} from '@/data/schema';
+  clampPixelsPerUnit,
+  eventLabelFontSize,
+  humanHistoryViewState,
+  pixelsPerUnitToZoomLevel,
+} from '@/timeline/lod';
+import { viewportYearRange, yearToT, tToYear } from '@/timeline/scale';
+import { type Continent, type TimelineEvent, type ZoomLevel } from '@/data/schema';
 import {
   LANE_GAP,
   LANE_HEIGHT,
@@ -95,7 +104,10 @@ function computeLabelVisibleIds(
       });
       for (const ev of sorted) {
         const x = (yearToT(ev.startYear) - jsOffsetX) * jsPixelsPerUnit;
-        const w = Math.max(0, (yearToT(ev.endYear ?? ev.startYear) - yearToT(ev.startYear)) * jsPixelsPerUnit);
+        const w = Math.max(
+          0,
+          (yearToT(ev.endYear ?? ev.startYear) - yearToT(ev.startYear)) * jsPixelsPerUnit,
+        );
         if (w < LABEL_MIN_BAR_PX) continue;
         const visibleLeft = Math.max(x, 0);
         const visibleRight = Math.min(x + w, canvasWidth);
@@ -135,7 +147,9 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
 
   // Ref so the reset effect always reads the current canvasWidth without re-subscribing
   const canvasWidthRef = useRef(canvasWidth);
-  useLayoutEffect(() => { canvasWidthRef.current = canvasWidth; });
+  useLayoutEffect(() => {
+    canvasWidthRef.current = canvasWidth;
+  });
 
   // Animate to default view whenever resetKey increments (0 = initial mount, skip)
   useEffect(() => {
@@ -218,7 +232,8 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   }, [lanes, laneTrackCounts]);
 
   const labelVisibleIds = useMemo(
-    () => computeLabelVisibleIds(visibleByLane, tracksByLane, jsOffsetX, jsPixelsPerUnit, canvasWidth),
+    () =>
+      computeLabelVisibleIds(visibleByLane, tracksByLane, jsOffsetX, jsPixelsPerUnit, canvasWidth),
     [visibleByLane, tracksByLane, jsOffsetX, jsPixelsPerUnit, canvasWidth],
   );
 
@@ -258,8 +273,13 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   const gesture = Gesture.Simultaneous(panGesture, pinchGesture);
 
   const canvasHeight = Math.max(
-    lanes.reduce((sum, cat, i) =>
-      sum + laneHeightForTracks(laneTrackCounts.get(cat) ?? 1) + (i < lanes.length - 1 ? LANE_GAP : 0), 0),
+    lanes.reduce(
+      (sum, cat, i) =>
+        sum +
+        laneHeightForTracks(laneTrackCounts.get(cat) ?? 1) +
+        (i < lanes.length - 1 ? LANE_GAP : 0),
+      0,
+    ),
     80,
   );
 
@@ -272,7 +292,9 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
       pixelsPerUnit.value = newPPU;
       setJsPixelsPerUnit(newPPU);
       const newScrollX = Math.max(0, (centerT - TOTAL_T_MIN) * newPPU - canvasWidth / 2);
-      requestAnimationFrame(() => { webScrollRef.current?.scrollTo({ x: newScrollX, animated: false }); });
+      requestAnimationFrame(() => {
+        webScrollRef.current?.scrollTo({ x: newScrollX, animated: false });
+      });
     } else {
       const center = offsetX.value + canvasWidth / (2 * pixelsPerUnit.value);
       const next = clampPixelsPerUnit(pixelsPerUnit.value * 1.5);
@@ -288,7 +310,9 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
       pixelsPerUnit.value = newPPU;
       setJsPixelsPerUnit(newPPU);
       const newScrollX = Math.max(0, (centerT - TOTAL_T_MIN) * newPPU - canvasWidth / 2);
-      requestAnimationFrame(() => { webScrollRef.current?.scrollTo({ x: newScrollX, animated: false }); });
+      requestAnimationFrame(() => {
+        webScrollRef.current?.scrollTo({ x: newScrollX, animated: false });
+      });
     } else {
       const center = offsetX.value + canvasWidth / (2 * pixelsPerUnit.value);
       const next = clampPixelsPerUnit(pixelsPerUnit.value / 1.5);
@@ -334,7 +358,10 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
             zoomLevel={zoomLevel}
           />
           <View style={StyleSheet.absoluteFill} pointerEvents="none">
-            <TimelineBreadcrumb startYear={viewportRange.startYear} endYear={viewportRange.endYear} />
+            <TimelineBreadcrumb
+              startYear={viewportRange.startYear}
+              endYear={viewportRange.endYear}
+            />
           </View>
         </View>
         <View style={styles.container}>
@@ -344,7 +371,11 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                 key={cat}
                 style={[
                   styles.label,
-                  { top: laneTops[idx], height: laneHeightForTracks(laneTrackCounts.get(cat) ?? 1), borderLeftColor: colors.category[cat] },
+                  {
+                    top: laneTops[idx],
+                    height: laneHeightForTracks(laneTrackCounts.get(cat) ?? 1),
+                    borderLeftColor: colors.category[cat],
+                  },
                 ]}
               >
                 <Text style={styles.labelText}>{t(`category.${cat}`)}</Text>
@@ -386,33 +417,48 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                       const trackIdx = webTrackMap.get(ev.id) ?? 0;
                       const barTop = laneTop + LANE_PADDING_V + trackIdx * TRACK_HEIGHT + 4;
                       const barHeight = TRACK_HEIGHT - 8;
-                      const stickyLabelLeft = w >= LABEL_MIN_BAR_PX
-                        ? Math.max(x + 3, webScrollX + 3)
-                        : null;
-                      const stickyLabelMaxW = stickyLabelLeft !== null
-                        ? Math.max(0, x + w - stickyLabelLeft - 3)
-                        : 0;
+                      const stickyLabelLeft =
+                        w >= LABEL_MIN_BAR_PX ? Math.max(x + 3, webScrollX + 3) : null;
+                      const stickyLabelMaxW =
+                        stickyLabelLeft !== null ? Math.max(0, x + w - stickyLabelLeft - 3) : 0;
                       return (
                         <React.Fragment key={ev.id}>
                           <View
-                            onStartShouldSetResponder={() => { handleTap(ev); return false; }}
-                            style={{
-                              position: 'absolute',
-                              left: x,
-                              top: barTop,
-                              width: w,
-                              height: barHeight,
-                              backgroundColor: eventColor(ev),
-                              borderRadius: 3,
-                              cursor: 'pointer',
-                            } as any}
+                            onStartShouldSetResponder={() => {
+                              handleTap(ev);
+                              return false;
+                            }}
+                            style={
+                              {
+                                position: 'absolute',
+                                left: x,
+                                top: barTop,
+                                width: w,
+                                height: barHeight,
+                                backgroundColor: eventColor(ev),
+                                borderRadius: 3,
+                                cursor: 'pointer',
+                              } as any
+                            }
                           />
                           {stickyLabelLeft !== null && stickyLabelMaxW > 10 && lblSize > 0 && (
                             <View
                               pointerEvents="none"
-                              style={{ position: 'absolute', left: stickyLabelLeft, top: barTop + barHeight / 2 - lblSize / 2, maxWidth: stickyLabelMaxW }}
+                              style={{
+                                position: 'absolute',
+                                left: stickyLabelLeft,
+                                top: barTop + barHeight / 2 - lblSize / 2,
+                                maxWidth: stickyLabelMaxW,
+                              }}
                             >
-                              <Text numberOfLines={1} style={{ ...typography.caption, fontSize: lblSize, color: colors.textPrimary }}>
+                              <Text
+                                numberOfLines={1}
+                                style={{
+                                  ...typography.caption,
+                                  fontSize: lblSize,
+                                  color: colors.textPrimary,
+                                }}
+                              >
                                 {ev.title}
                               </Text>
                             </View>
@@ -472,7 +518,11 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
               key={cat}
               style={[
                 styles.label,
-                { top: laneTops[idx], height: laneHeightForTracks(laneTrackCounts.get(cat) ?? 1), borderLeftColor: colors.category[cat] },
+                {
+                  top: laneTops[idx],
+                  height: laneHeightForTracks(laneTrackCounts.get(cat) ?? 1),
+                  borderLeftColor: colors.category[cat],
+                },
               ]}
             >
               <Text style={styles.labelText}>{t(`category.${cat}`)}</Text>
@@ -490,7 +540,13 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                 const trackMap = tracksByLane.get(cat);
                 return (
                   <Group key={cat}>
-                    <Rect x={0} y={laneTop} width={canvasWidth} height={laneH} color={colors.laneBg[cat]} />
+                    <Rect
+                      x={0}
+                      y={laneTop}
+                      width={canvasWidth}
+                      height={laneH}
+                      color={colors.laneBg[cat]}
+                    />
                     {events.map((ev) => {
                       const startT = yearToT(ev.startYear);
                       const endT = yearToT(ev.endYear ?? ev.startYear);
@@ -514,7 +570,13 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                 );
               })}
               {heuteVisible && (
-                <Rect x={heutePx - 0.75} y={0} width={1.5} height={canvasHeight} color="rgba(255, 80, 80, 0.9)" />
+                <Rect
+                  x={heutePx - 0.75}
+                  y={0}
+                  width={1.5}
+                  height={canvasHeight}
+                  color="rgba(255, 80, 80, 0.9)"
+                />
               )}
             </Canvas>
 
@@ -537,7 +599,10 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                     return (
                       <View
                         key={`hit-${ev.id}`}
-                        onStartShouldSetResponder={() => { handleTap(ev); return false; }}
+                        onStartShouldSetResponder={() => {
+                          handleTap(ev);
+                          return false;
+                        }}
                         style={{ position: 'absolute', left: x, top: barY, width: w, height: barH }}
                       />
                     );
@@ -558,10 +623,19 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                       <View
                         key={`lbl-${ev.id}`}
                         pointerEvents="none"
-                        style={{ position: 'absolute', left: Math.max(x, 0) + 3, top: labelTop, maxWidth: Math.max(0, Math.min(x + w, canvasWidth) - Math.max(x, 0) - 6) }}
+                        style={{
+                          position: 'absolute',
+                          left: Math.max(x, 0) + 3,
+                          top: labelTop,
+                          maxWidth: Math.max(0, Math.min(x + w, canvasWidth) - Math.max(x, 0) - 6),
+                        }}
                       >
                         <Text
-                          style={{ ...typography.caption, fontSize: lblSize, color: colors.textPrimary }}
+                          style={{
+                            ...typography.caption,
+                            fontSize: lblSize,
+                            color: colors.textPrimary,
+                          }}
                           numberOfLines={1}
                         >
                           {ev.title}
