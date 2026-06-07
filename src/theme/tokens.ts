@@ -95,9 +95,9 @@ export const LANE_HEIGHT = 84;
 export const LANE_GAP = 8;
 export const LANE_LABEL_WIDTH = 96;
 /** Height of a single track row within a multi-track lane. */
-export const TRACK_HEIGHT = 52;
+export const TRACK_HEIGHT = 60;
 /** Vertical padding inside a lane (top + bottom combined). */
-export const LANE_PADDING_V = 8;
+export const LANE_PADDING_V = 10;
 
 // Per-category palettes: visually distinct hues that stay within each
 // category's tonal range so the lane color still reads as one group.

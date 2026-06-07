@@ -32,6 +32,7 @@ import { TimelineBreadcrumb } from './TimelineBreadcrumb';
 import { ALL_EVENTS } from '@/data/events';
 import { assignTracks, filterVisible, type TrackMap } from '@/timeline/culling';
 import {
+  clampOffsetX,
   clampPixelsPerUnit,
   eventLabelFontSize,
   humanHistoryViewState,
@@ -63,7 +64,7 @@ type Props = {
 const LANE_ORDER: Category[] = ['erdzeitalter', 'zivilisation', 'natur', 'nation'];
 
 const TOTAL_T_MIN = yearToT(-13_800_000_000);
-const TOTAL_T_MAX = yearToT(2100);
+const TOTAL_T_MAX = yearToT(2026); // "Heute" ist der rechte Rand
 const T_HEUTE = yearToT(2026);
 
 const LABEL_MIN_BAR_PX = 48;
@@ -256,7 +257,8 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
       startOffsetX.value = offsetX.value;
     })
     .onUpdate((e) => {
-      offsetX.value = startOffsetX.value - e.translationX / pixelsPerUnit.value;
+      const raw = startOffsetX.value - e.translationX / pixelsPerUnit.value;
+      offsetX.value = clampOffsetX(raw, pixelsPerUnit.value, canvasWidth);
     });
 
   const pinchGesture = Gesture.Pinch()
@@ -267,7 +269,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     .onUpdate((e) => {
       const next = clampPixelsPerUnit(startPixelsPerUnit.value * e.scale);
       pixelsPerUnit.value = next;
-      offsetX.value = startFocalT.value - e.focalX / next;
+      offsetX.value = clampOffsetX(startFocalT.value - e.focalX / next, next, canvasWidth);
     });
 
   const gesture = Gesture.Simultaneous(panGesture, pinchGesture);
@@ -298,8 +300,9 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     } else {
       const center = offsetX.value + canvasWidth / (2 * pixelsPerUnit.value);
       const next = clampPixelsPerUnit(pixelsPerUnit.value * 1.5);
+      const nextOffset = clampOffsetX(center - canvasWidth / (2 * next), next, canvasWidth);
       pixelsPerUnit.value = withTiming(next, { duration: 300 });
-      offsetX.value = withTiming(center - canvasWidth / (2 * next), { duration: 300 });
+      offsetX.value = withTiming(nextOffset, { duration: 300 });
     }
   };
 
@@ -316,8 +319,9 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     } else {
       const center = offsetX.value + canvasWidth / (2 * pixelsPerUnit.value);
       const next = clampPixelsPerUnit(pixelsPerUnit.value / 1.5);
+      const nextOffset = clampOffsetX(center - canvasWidth / (2 * next), next, canvasWidth);
       pixelsPerUnit.value = withTiming(next, { duration: 300 });
-      offsetX.value = withTiming(center - canvasWidth / (2 * next), { duration: 300 });
+      offsetX.value = withTiming(nextOffset, { duration: 300 });
     }
   };
 
@@ -348,8 +352,10 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     }
 
     return (
-      <View>
-        <View style={styles.axisRow}>
+      <View style={{ flex: 1 }}>
+        <View
+          style={[styles.axisRow, { position: 'sticky', top: 0, zIndex: 10 } as any]}
+        >
           <View style={{ width: LANE_LABEL_WIDTH }} />
           <TimeAxis
             offsetX={webOffsetX}
@@ -365,7 +371,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
           </View>
         </View>
         <View style={styles.container}>
-          <View style={styles.labels}>
+          <View style={[styles.labels, { position: 'sticky', left: 0, zIndex: 5 } as any]}>
             {lanes.map((cat, idx) => (
               <View
                 key={cat}
@@ -483,7 +489,10 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
             </View>
           </ScrollView>
         </View>
-        <View style={styles.zoomButtons} pointerEvents="box-none">
+        <View
+          style={[styles.zoomButtons, { position: 'fixed', right: 12, bottom: 12 } as any]}
+          pointerEvents="box-none"
+        >
           <TouchableOpacity style={styles.zoomBtn} onPress={zoomIn} accessibilityLabel="Zoom in">
             <Text style={styles.zoomBtnText}>+</Text>
           </TouchableOpacity>
