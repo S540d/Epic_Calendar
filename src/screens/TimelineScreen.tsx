@@ -66,10 +66,7 @@ export function TimelineScreen() {
       <FilterChipBar active={activeCategories} onToggle={toggleCategory} />
       <ScrollView
         style={styles.canvasWrap}
-        contentContainerStyle={[
-          styles.canvasContent,
-          Platform.OS === 'web' && { flex: 1 },
-        ]}
+        contentContainerStyle={[styles.canvasContent, Platform.OS === 'web' && { flex: 1 }]}
       >
         <TimelineView
           activeCategories={activeCategories}

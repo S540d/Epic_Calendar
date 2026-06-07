@@ -353,9 +353,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
 
     return (
       <View style={{ flex: 1 }}>
-        <View
-          style={[styles.axisRow, { position: 'sticky', top: 0, zIndex: 10 } as any]}
-        >
+        <View style={[styles.axisRow, { position: 'sticky', top: 0, zIndex: 10 } as any]}>
           <View style={{ width: LANE_LABEL_WIDTH }} />
           <TimeAxis
             offsetX={webOffsetX}
