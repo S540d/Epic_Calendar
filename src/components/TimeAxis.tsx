@@ -48,21 +48,24 @@ export function TimeAxis({ offsetX, pixelsPerUnit, canvasWidth, zoomLevel }: Pro
     return result;
   }, [offsetX, pixelsPerUnit, canvasWidth, zoomLevel, numTicks, t]);
 
-  const heutePx = useMemo(
-    () => (T_NOW - offsetX) * pixelsPerUnit,
-    [offsetX, pixelsPerUnit],
-  );
+  const heutePx = useMemo(() => (T_NOW - offsetX) * pixelsPerUnit, [offsetX, pixelsPerUnit]);
   const heuteVisible = heutePx >= 0 && heutePx <= canvasWidth;
 
   return (
     <View style={[styles.axis, { width: canvasWidth }]}>
       <View style={styles.baseline} />
       {ticks.map(({ label, px }, i) => {
-        const labelLeft = Math.max(0, Math.min(canvasWidth - TICK_LABEL_WIDTH, px - TICK_LABEL_WIDTH / 2));
+        const labelLeft = Math.max(
+          0,
+          Math.min(canvasWidth - TICK_LABEL_WIDTH, px - TICK_LABEL_WIDTH / 2),
+        );
         return (
           <React.Fragment key={i}>
             <View style={[styles.tickLine, { left: px }]} />
-            <Text style={[styles.tickLabel, { left: labelLeft, fontSize: zoomLevel >= 3 ? 10 : 9 }]} numberOfLines={1}>
+            <Text
+              style={[styles.tickLabel, { left: labelLeft, fontSize: zoomLevel >= 3 ? 10 : 9 }]}
+              numberOfLines={1}
+            >
               {label}
             </Text>
           </React.Fragment>
@@ -74,7 +77,13 @@ export function TimeAxis({ offsetX, pixelsPerUnit, canvasWidth, zoomLevel }: Pro
           <Text
             style={[
               styles.heuteLabel,
-              { left: Math.max(0, Math.min(canvasWidth - HEUTE_LABEL_WIDTH, heutePx - HEUTE_LABEL_WIDTH / 2)), fontSize: zoomLevel >= 3 ? 10 : 9 },
+              {
+                left: Math.max(
+                  0,
+                  Math.min(canvasWidth - HEUTE_LABEL_WIDTH, heutePx - HEUTE_LABEL_WIDTH / 2),
+                ),
+                fontSize: zoomLevel >= 3 ? 10 : 9,
+              },
             ]}
             numberOfLines={1}
           >

@@ -1,8 +1,8 @@
 ---
 name: Question / Discussion
 about: Frage oder Diskussion zum Projekt
-title: "[Q] "
-labels: ["type: question", "status: triage"]
+title: '[Q] '
+labels: ['type: question', 'status: triage']
 ---
 
 ## Frage

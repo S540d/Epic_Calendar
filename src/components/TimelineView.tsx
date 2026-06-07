@@ -1,5 +1,13 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, useWindowDimensions, Platform, ScrollView } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  Platform,
+  ScrollView,
+} from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSharedValue, useAnimatedReaction, runOnJS, withTiming } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
@@ -23,13 +31,15 @@ import { TimeAxis } from './TimeAxis';
 import { TimelineBreadcrumb } from './TimelineBreadcrumb';
 import { ALL_EVENTS } from '@/data/events';
 import { assignTracks, filterVisible, type TrackMap } from '@/timeline/culling';
-import { clampPixelsPerUnit, eventLabelFontSize, humanHistoryViewState, pixelsPerUnitToZoomLevel } from '@/timeline/lod';
-import { viewportYearRange, yearToT, tToYear } from '@/timeline/scale';
 import {
-  type Continent,
-  type TimelineEvent,
-  type ZoomLevel,
-} from '@/data/schema';
+  clampOffsetX,
+  clampPixelsPerUnit,
+  eventLabelFontSize,
+  humanHistoryViewState,
+  pixelsPerUnitToZoomLevel,
+} from '@/timeline/lod';
+import { viewportYearRange, yearToT, tToYear } from '@/timeline/scale';
+import { type Continent, type TimelineEvent, type ZoomLevel } from '@/data/schema';
 import {
   LANE_GAP,
   LANE_HEIGHT,
@@ -54,8 +64,8 @@ type Props = {
 const LANE_ORDER: Category[] = ['erdzeitalter', 'zivilisation', 'natur', 'nation'];
 
 const TOTAL_T_MIN = yearToT(-13_800_000_000);
-const TOTAL_T_MAX = yearToT(2100);
 const T_HEUTE = yearToT(2026);
+const TOTAL_T_MAX = T_HEUTE;
 
 const LABEL_MIN_BAR_PX = 48;
 const LABEL_MAX_WIDTH = 96;
@@ -95,7 +105,10 @@ function computeLabelVisibleIds(
       });
       for (const ev of sorted) {
         const x = (yearToT(ev.startYear) - jsOffsetX) * jsPixelsPerUnit;
-        const w = Math.max(0, (yearToT(ev.endYear ?? ev.startYear) - yearToT(ev.startYear)) * jsPixelsPerUnit);
+        const w = Math.max(
+          0,
+          (yearToT(ev.endYear ?? ev.startYear) - yearToT(ev.startYear)) * jsPixelsPerUnit,
+        );
         if (w < LABEL_MIN_BAR_PX) continue;
         const visibleLeft = Math.max(x, 0);
         const visibleRight = Math.min(x + w, canvasWidth);
@@ -135,7 +148,9 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
 
   // Ref so the reset effect always reads the current canvasWidth without re-subscribing
   const canvasWidthRef = useRef(canvasWidth);
-  useLayoutEffect(() => { canvasWidthRef.current = canvasWidth; });
+  useLayoutEffect(() => {
+    canvasWidthRef.current = canvasWidth;
+  });
 
   // Animate to default view whenever resetKey increments (0 = initial mount, skip)
   useEffect(() => {
@@ -218,7 +233,8 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   }, [lanes, laneTrackCounts]);
 
   const labelVisibleIds = useMemo(
-    () => computeLabelVisibleIds(visibleByLane, tracksByLane, jsOffsetX, jsPixelsPerUnit, canvasWidth),
+    () =>
+      computeLabelVisibleIds(visibleByLane, tracksByLane, jsOffsetX, jsPixelsPerUnit, canvasWidth),
     [visibleByLane, tracksByLane, jsOffsetX, jsPixelsPerUnit, canvasWidth],
   );
 
@@ -241,7 +257,8 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
       startOffsetX.value = offsetX.value;
     })
     .onUpdate((e) => {
-      offsetX.value = startOffsetX.value - e.translationX / pixelsPerUnit.value;
+      const raw = startOffsetX.value - e.translationX / pixelsPerUnit.value;
+      offsetX.value = clampOffsetX(raw, pixelsPerUnit.value, canvasWidth);
     });
 
   const pinchGesture = Gesture.Pinch()
@@ -252,14 +269,19 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     .onUpdate((e) => {
       const next = clampPixelsPerUnit(startPixelsPerUnit.value * e.scale);
       pixelsPerUnit.value = next;
-      offsetX.value = startFocalT.value - e.focalX / next;
+      offsetX.value = clampOffsetX(startFocalT.value - e.focalX / next, next, canvasWidth);
     });
 
   const gesture = Gesture.Simultaneous(panGesture, pinchGesture);
 
   const canvasHeight = Math.max(
-    lanes.reduce((sum, cat, i) =>
-      sum + laneHeightForTracks(laneTrackCounts.get(cat) ?? 1) + (i < lanes.length - 1 ? LANE_GAP : 0), 0),
+    lanes.reduce(
+      (sum, cat, i) =>
+        sum +
+        laneHeightForTracks(laneTrackCounts.get(cat) ?? 1) +
+        (i < lanes.length - 1 ? LANE_GAP : 0),
+      0,
+    ),
     80,
   );
 
@@ -272,12 +294,15 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
       pixelsPerUnit.value = newPPU;
       setJsPixelsPerUnit(newPPU);
       const newScrollX = Math.max(0, (centerT - TOTAL_T_MIN) * newPPU - canvasWidth / 2);
-      requestAnimationFrame(() => { webScrollRef.current?.scrollTo({ x: newScrollX, animated: false }); });
+      requestAnimationFrame(() => {
+        webScrollRef.current?.scrollTo({ x: newScrollX, animated: false });
+      });
     } else {
       const center = offsetX.value + canvasWidth / (2 * pixelsPerUnit.value);
       const next = clampPixelsPerUnit(pixelsPerUnit.value * 1.5);
+      const nextOffset = clampOffsetX(center - canvasWidth / (2 * next), next, canvasWidth);
       pixelsPerUnit.value = withTiming(next, { duration: 300 });
-      offsetX.value = withTiming(center - canvasWidth / (2 * next), { duration: 300 });
+      offsetX.value = withTiming(nextOffset, { duration: 300 });
     }
   };
 
@@ -288,12 +313,15 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
       pixelsPerUnit.value = newPPU;
       setJsPixelsPerUnit(newPPU);
       const newScrollX = Math.max(0, (centerT - TOTAL_T_MIN) * newPPU - canvasWidth / 2);
-      requestAnimationFrame(() => { webScrollRef.current?.scrollTo({ x: newScrollX, animated: false }); });
+      requestAnimationFrame(() => {
+        webScrollRef.current?.scrollTo({ x: newScrollX, animated: false });
+      });
     } else {
       const center = offsetX.value + canvasWidth / (2 * pixelsPerUnit.value);
       const next = clampPixelsPerUnit(pixelsPerUnit.value / 1.5);
+      const nextOffset = clampOffsetX(center - canvasWidth / (2 * next), next, canvasWidth);
       pixelsPerUnit.value = withTiming(next, { duration: 300 });
-      offsetX.value = withTiming(center - canvasWidth / (2 * next), { duration: 300 });
+      offsetX.value = withTiming(nextOffset, { duration: 300 });
     }
   };
 
@@ -324,8 +352,13 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     }
 
     return (
-      <View>
-        <View style={styles.axisRow}>
+      <View style={{ flex: 1 }}>
+        <View
+          style={[
+            styles.axisRow,
+            Platform.select({ web: { position: 'sticky', top: 0, zIndex: 10 } as any }),
+          ]}
+        >
           <View style={{ width: LANE_LABEL_WIDTH }} />
           <TimeAxis
             offsetX={webOffsetX}
@@ -334,17 +367,29 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
             zoomLevel={zoomLevel}
           />
           <View style={StyleSheet.absoluteFill} pointerEvents="none">
-            <TimelineBreadcrumb startYear={viewportRange.startYear} endYear={viewportRange.endYear} />
+            <TimelineBreadcrumb
+              startYear={viewportRange.startYear}
+              endYear={viewportRange.endYear}
+            />
           </View>
         </View>
         <View style={styles.container}>
-          <View style={styles.labels}>
+          <View
+            style={[
+              styles.labels,
+              Platform.select({ web: { position: 'sticky', left: 0, zIndex: 5 } as any }),
+            ]}
+          >
             {lanes.map((cat, idx) => (
               <View
                 key={cat}
                 style={[
                   styles.label,
-                  { top: laneTops[idx], height: laneHeightForTracks(laneTrackCounts.get(cat) ?? 1), borderLeftColor: colors.category[cat] },
+                  {
+                    top: laneTops[idx],
+                    height: laneHeightForTracks(laneTrackCounts.get(cat) ?? 1),
+                    borderLeftColor: colors.category[cat],
+                  },
                 ]}
               >
                 <Text style={styles.labelText}>{t(`category.${cat}`)}</Text>
@@ -386,33 +431,48 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                       const trackIdx = webTrackMap.get(ev.id) ?? 0;
                       const barTop = laneTop + LANE_PADDING_V + trackIdx * TRACK_HEIGHT + 4;
                       const barHeight = TRACK_HEIGHT - 8;
-                      const stickyLabelLeft = w >= LABEL_MIN_BAR_PX
-                        ? Math.max(x + 3, webScrollX + 3)
-                        : null;
-                      const stickyLabelMaxW = stickyLabelLeft !== null
-                        ? Math.max(0, x + w - stickyLabelLeft - 3)
-                        : 0;
+                      const stickyLabelLeft =
+                        w >= LABEL_MIN_BAR_PX ? Math.max(x + 3, webScrollX + 3) : null;
+                      const stickyLabelMaxW =
+                        stickyLabelLeft !== null ? Math.max(0, x + w - stickyLabelLeft - 3) : 0;
                       return (
                         <React.Fragment key={ev.id}>
                           <View
-                            onStartShouldSetResponder={() => { handleTap(ev); return false; }}
-                            style={{
-                              position: 'absolute',
-                              left: x,
-                              top: barTop,
-                              width: w,
-                              height: barHeight,
-                              backgroundColor: eventColor(ev),
-                              borderRadius: 3,
-                              cursor: 'pointer',
-                            } as any}
+                            onStartShouldSetResponder={() => {
+                              handleTap(ev);
+                              return false;
+                            }}
+                            style={
+                              {
+                                position: 'absolute',
+                                left: x,
+                                top: barTop,
+                                width: w,
+                                height: barHeight,
+                                backgroundColor: eventColor(ev),
+                                borderRadius: 3,
+                                cursor: 'pointer',
+                              } as any
+                            }
                           />
                           {stickyLabelLeft !== null && stickyLabelMaxW > 10 && lblSize > 0 && (
                             <View
                               pointerEvents="none"
-                              style={{ position: 'absolute', left: stickyLabelLeft, top: barTop + barHeight / 2 - lblSize / 2, maxWidth: stickyLabelMaxW }}
+                              style={{
+                                position: 'absolute',
+                                left: stickyLabelLeft,
+                                top: barTop + barHeight / 2 - lblSize / 2,
+                                maxWidth: stickyLabelMaxW,
+                              }}
                             >
-                              <Text numberOfLines={1} style={{ ...typography.caption, fontSize: lblSize, color: colors.textPrimary }}>
+                              <Text
+                                numberOfLines={1}
+                                style={{
+                                  ...typography.caption,
+                                  fontSize: lblSize,
+                                  color: colors.textPrimary,
+                                }}
+                              >
                                 {ev.title}
                               </Text>
                             </View>
@@ -437,7 +497,13 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
             </View>
           </ScrollView>
         </View>
-        <View style={styles.zoomButtons} pointerEvents="box-none">
+        <View
+          style={[
+            styles.zoomButtons,
+            Platform.select({ web: { position: 'fixed', right: 12, bottom: 12 } as any }),
+          ]}
+          pointerEvents="box-none"
+        >
           <TouchableOpacity style={styles.zoomBtn} onPress={zoomIn} accessibilityLabel="Zoom in">
             <Text style={styles.zoomBtnText}>+</Text>
           </TouchableOpacity>
@@ -472,7 +538,11 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
               key={cat}
               style={[
                 styles.label,
-                { top: laneTops[idx], height: laneHeightForTracks(laneTrackCounts.get(cat) ?? 1), borderLeftColor: colors.category[cat] },
+                {
+                  top: laneTops[idx],
+                  height: laneHeightForTracks(laneTrackCounts.get(cat) ?? 1),
+                  borderLeftColor: colors.category[cat],
+                },
               ]}
             >
               <Text style={styles.labelText}>{t(`category.${cat}`)}</Text>
@@ -490,7 +560,13 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                 const trackMap = tracksByLane.get(cat);
                 return (
                   <Group key={cat}>
-                    <Rect x={0} y={laneTop} width={canvasWidth} height={laneH} color={colors.laneBg[cat]} />
+                    <Rect
+                      x={0}
+                      y={laneTop}
+                      width={canvasWidth}
+                      height={laneH}
+                      color={colors.laneBg[cat]}
+                    />
                     {events.map((ev) => {
                       const startT = yearToT(ev.startYear);
                       const endT = yearToT(ev.endYear ?? ev.startYear);
@@ -514,7 +590,13 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                 );
               })}
               {heuteVisible && (
-                <Rect x={heutePx - 0.75} y={0} width={1.5} height={canvasHeight} color="rgba(255, 80, 80, 0.9)" />
+                <Rect
+                  x={heutePx - 0.75}
+                  y={0}
+                  width={1.5}
+                  height={canvasHeight}
+                  color="rgba(255, 80, 80, 0.9)"
+                />
               )}
             </Canvas>
 
@@ -537,7 +619,10 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                     return (
                       <View
                         key={`hit-${ev.id}`}
-                        onStartShouldSetResponder={() => { handleTap(ev); return false; }}
+                        onStartShouldSetResponder={() => {
+                          handleTap(ev);
+                          return false;
+                        }}
                         style={{ position: 'absolute', left: x, top: barY, width: w, height: barH }}
                       />
                     );
@@ -558,10 +643,19 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                       <View
                         key={`lbl-${ev.id}`}
                         pointerEvents="none"
-                        style={{ position: 'absolute', left: Math.max(x, 0) + 3, top: labelTop, maxWidth: Math.max(0, Math.min(x + w, canvasWidth) - Math.max(x, 0) - 6) }}
+                        style={{
+                          position: 'absolute',
+                          left: Math.max(x, 0) + 3,
+                          top: labelTop,
+                          maxWidth: Math.max(0, Math.min(x + w, canvasWidth) - Math.max(x, 0) - 6),
+                        }}
                       >
                         <Text
-                          style={{ ...typography.caption, fontSize: lblSize, color: colors.textPrimary }}
+                          style={{
+                            ...typography.caption,
+                            fontSize: lblSize,
+                            color: colors.textPrimary,
+                          }}
                           numberOfLines={1}
                         >
                           {ev.title}

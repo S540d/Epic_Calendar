@@ -1,4 +1,13 @@
-import { shadows, animation, zIndex, iconSize, spacing, radii, typography, colors } from '../tokens';
+import {
+  shadows,
+  animation,
+  zIndex,
+  iconSize,
+  spacing,
+  radii,
+  typography,
+  colors,
+} from '../tokens';
 
 describe('Design-System Tokens', () => {
   describe('shadows', () => {

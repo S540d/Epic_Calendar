@@ -26,20 +26,20 @@ npm run web          # Expo Web
 
 ## Architektur — die wichtigsten Dateien
 
-| Bereich | Datei |
-|---|---|
-| Entry | `App.tsx`, `index.js` |
-| Haupt-Screen | `src/screens/TimelineScreen.tsx` |
-| Core-Komponente (Skia + Gesten) | `src/components/TimelineView.tsx` |
-| Filter-Chips | `src/components/FilterChipBar.tsx` |
-| Kontinent-Switcher | `src/components/ContinentTabBar.tsx` |
-| Detail-Modal | `src/screens/EventDetailModal.tsx` |
-| Datenschema | `src/data/schema.ts` |
-| Daten | `src/data/events/europa.json`, `src/data/events/erdzeitalter.json` |
-| Log-Skala Zeit↔Pixel | `src/timeline/scale.ts` |
-| LOD (Zoom-Bänder) | `src/timeline/lod.ts` |
-| Viewport-Culling | `src/timeline/culling.ts` |
-| Design-Tokens | `src/theme/tokens.ts` |
+| Bereich                         | Datei                                                              |
+| ------------------------------- | ------------------------------------------------------------------ |
+| Entry                           | `App.tsx`, `index.js`                                              |
+| Haupt-Screen                    | `src/screens/TimelineScreen.tsx`                                   |
+| Core-Komponente (Skia + Gesten) | `src/components/TimelineView.tsx`                                  |
+| Filter-Chips                    | `src/components/FilterChipBar.tsx`                                 |
+| Kontinent-Switcher              | `src/components/ContinentTabBar.tsx`                               |
+| Detail-Modal                    | `src/screens/EventDetailModal.tsx`                                 |
+| Datenschema                     | `src/data/schema.ts`                                               |
+| Daten                           | `src/data/events/europa.json`, `src/data/events/erdzeitalter.json` |
+| Log-Skala Zeit↔Pixel            | `src/timeline/scale.ts`                                            |
+| LOD (Zoom-Bänder)               | `src/timeline/lod.ts`                                              |
+| Viewport-Culling                | `src/timeline/culling.ts`                                          |
+| Design-Tokens                   | `src/theme/tokens.ts`                                              |
 
 ### Warum logarithmische Zeit-Skala?
 
@@ -74,8 +74,8 @@ Vor dem ersten Build: `app.json` → `updates.url` mit der EAS Project ID fülle
 
 1. **MVP (jetzt):** Europa, Erdzeitalter + Zivilisationen, Pinch-Zoom, Filter
 2. Weitere Kontinente (Asien, Afrika, Amerika, Ozeanien)
-3. Kategorie *Natur* (Eiszeiten, Aussterbe-Events, große Vulkanausbrüche)
-4. Kategorie *Nationen* (Detail-Ebene unterhalb der Hochkulturen)
+3. Kategorie _Natur_ (Eiszeiten, Aussterbe-Events, große Vulkanausbrüche)
+4. Kategorie _Nationen_ (Detail-Ebene unterhalb der Hochkulturen)
 5. Suche & Sprung zu Ereignis
 6. Persistenz von Zoom-Position & Filter-Preset via AsyncStorage
 7. i18n (de / en)

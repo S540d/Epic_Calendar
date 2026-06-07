@@ -30,12 +30,14 @@ Zentrale Vorlagen für Issue und Pull Request Templates.
 ### 🐛 Bug Report (`bug.md`)
 
 Für Fehler und Probleme. Enthält:
+
 - Schritte zum Reproduzieren
 - Erwartet vs. Beobachtet Verhalten
 - Environment (Browser, OS, Version)
 - Screenshots / Console Errors
 
 **Nutze, wenn:**
+
 - Etwas funktioniert nicht wie erwartet
 - Es Fehler gibt oder Crashes
 - Behaviour ist falsch
@@ -43,12 +45,14 @@ Für Fehler und Probleme. Enthält:
 ### ✨ Feature Request (`feature.md`)
 
 Für neue Features und Verbesserungen. Enthält:
+
 - Beschreibung und Nutzen
 - Anforderungen und Akzeptanzkriterien
 - Implementierungshinweise
 - Priorität und Aufwand-Schätzung
 
 **Nutze, wenn:**
+
 - Du ein neues Feature vorschlägst
 - Du eine Verbesserung vornehmen möchtest
 - Du etwas hinzufügen willst
@@ -56,11 +60,13 @@ Für neue Features und Verbesserungen. Enthält:
 ### 📚 Documentation Request (`documentation.md`)
 
 Für fehlende oder verwirrende Dokumentation. Enthält:
+
 - Beschreibung des Problems
 - Betroffene Bereiche
 - Vorschlag für Verbesserung
 
 **Nutze, wenn:**
+
 - Dokumentation ist unvollständig
 - Etwas ist verwirrend erklärt
 - Hinweise fehlen
@@ -68,11 +74,13 @@ Für fehlende oder verwirrende Dokumentation. Enthält:
 ### ❓ Question / Discussion (`question.md`)
 
 Für Fragen und Diskussionen. Enthält:
+
 - Frage / Diskussions-Thema
 - Kontext
 - Eigene Recherche
 
 **Nutze, wenn:**
+
 - Du eine Frage hast
 - Du Ratschläge möchtest
 - Du etwas diskutieren willst
@@ -86,6 +94,7 @@ Für Fragen und Diskussionen. Enthält:
 Standard PR Template für alle Pull Requests. Enthält:
 
 **Sections:**
+
 - 📋 Beschreibung (Was macht der PR?)
 - 🔄 Änderungen (Liste der Änderungen)
 - 🧪 Testing (Was wurde getestet?)
@@ -97,6 +106,7 @@ Standard PR Template für alle Pull Requests. Enthält:
 - 📌 Type (Bug Fix, Feature, etc.)
 
 **Automatisch genutzt für:**
+
 - Alle neuen Pull Requests
 - Suggiert Structure & Checklisten
 - Verhindert vergessene Checks
@@ -140,11 +150,13 @@ cp -r .templates/.github .
 ### Issue Templates
 
 ✅ **DO:**
+
 - Aussagekräftige Titel nutzen
 - Template-Struktur befolgen
 - Checklisten ausfüllen
 
 ❌ **DON'T:**
+
 - Templates ignorieren
 - Vague Beschreibungen
 - Keine Kontext-Informationen
@@ -152,11 +164,13 @@ cp -r .templates/.github .
 ### PR Templates
 
 ✅ **DO:**
+
 - Alle Checkboxen vor dem Merge abhaken
 - Aussagekräftige Commit Messages
 - Testing dokumentieren
 
 ❌ **DON'T:**
+
 - Ungetestete PRs pushen
 - Checklisten ignorieren
 - Keine Beschreibung
@@ -173,6 +187,7 @@ Templates können projekt-spezifisch angepasst werden:
 Im PR Template kannst du hinzufügen:
 
 ### 📱 PWA Checks
+
 - [ ] Service Worker funktioniert
 - [ ] Offline Mode getestet
 - [ ] Manifest aktualisiert
@@ -185,6 +200,7 @@ Im PR Template kannst du hinzufügen:
 ### Automatische Vorschläge
 
 GitHub schlägt automatisch die Templates vor, wenn:
+
 1. Benutzer neue Issue erstellt
 2. Benutzer neuen PR erstellt
 3. Templates im `.github/ISSUE_TEMPLATE` oder `.github/PULL_REQUEST_TEMPLATE` sind
@@ -192,6 +208,7 @@ GitHub schlägt automatisch die Templates vor, wenn:
 ### Branch Protection
 
 Combine mit Branch Protection Rules:
+
 - Mindestens 1 Approval erforderlich
 - Conversations müssen resolved sein
 - Status Checks müssen grün sein

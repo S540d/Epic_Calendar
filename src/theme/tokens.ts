@@ -95,18 +95,18 @@ export const LANE_HEIGHT = 84;
 export const LANE_GAP = 8;
 export const LANE_LABEL_WIDTH = 96;
 /** Height of a single track row within a multi-track lane. */
-export const TRACK_HEIGHT = 52;
+export const TRACK_HEIGHT = 60;
 /** Vertical padding inside a lane (top + bottom combined). */
-export const LANE_PADDING_V = 8;
+export const LANE_PADDING_V = 10;
 
 // Per-category palettes: visually distinct hues that stay within each
 // category's tonal range so the lane color still reads as one group.
 const CATEGORY_PALETTES: Record<Category, string[]> = {
   erdzeitalter: ['#3D7A90', '#4E8FA8', '#2E6A7A', '#5FA5C2', '#1E5568', '#6BBAD4', '#357088'],
-  natur:        ['#3D9957', '#5ABF72', '#2E7A45', '#7AD68A', '#4FB06A', '#236634', '#8FD4A0'],
+  natur: ['#3D9957', '#5ABF72', '#2E7A45', '#7AD68A', '#4FB06A', '#236634', '#8FD4A0'],
   zivilisation: ['#B87C3A', '#D49A52', '#C86030', '#E8B468', '#A05C28', '#F0C878', '#7A4420'],
-  nation:       ['#5A7AE8', '#8AACFF', '#3A5CC4', '#7090D8', '#A0C0FF', '#4468B0', '#C0D4FF'],
-  herrscher:    ['#BF7020', '#D98C38', '#A05810', '#E8A050', '#8C4808', '#F0B868', '#704000'],
+  nation: ['#5A7AE8', '#8AACFF', '#3A5CC4', '#7090D8', '#A0C0FF', '#4468B0', '#C0D4FF'],
+  herrscher: ['#BF7020', '#D98C38', '#A05810', '#E8A050', '#8C4808', '#F0B868', '#704000'],
 };
 
 /** Deterministic hash of a string → integer 0..N-1 */
@@ -123,7 +123,12 @@ function hashIndex(s: string, n: number): number {
  * deterministic color from the category palette based on ev.culture ?? ev.id.
  * Events sharing the same culture get the same color.
  */
-export function eventColor(ev: { id: string; color?: string; category: Category; culture?: string }): string {
+export function eventColor(ev: {
+  id: string;
+  color?: string;
+  category: Category;
+  culture?: string;
+}): string {
   if (ev.color) return ev.color;
   const palette = CATEGORY_PALETTES[ev.category] ?? CATEGORY_PALETTES.zivilisation;
   const key = ev.culture ?? ev.id;

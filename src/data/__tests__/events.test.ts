@@ -2,7 +2,13 @@ import { ALL_EVENTS } from '../events';
 import type { TimelineEvent } from '../schema';
 import type { Category } from '@/theme/tokens';
 
-const VALID_CATEGORIES: Category[] = ['erdzeitalter', 'natur', 'zivilisation', 'nation', 'herrscher'];
+const VALID_CATEGORIES: Category[] = [
+  'erdzeitalter',
+  'natur',
+  'zivilisation',
+  'nation',
+  'herrscher',
+];
 const VALID_CONTINENTS = ['europa', 'asien', 'afrika', 'amerika', 'ozeanien', 'global'] as const;
 
 describe('ALL_EVENTS data integrity', () => {
@@ -34,16 +40,12 @@ describe('ALL_EVENTS data integrity', () => {
   });
 
   it('endYear is undefined or a number greater than startYear', () => {
-    const invalid = ALL_EVENTS.filter(
-      (e) => e.endYear !== undefined && e.endYear < e.startYear,
-    );
+    const invalid = ALL_EVENTS.filter((e) => e.endYear !== undefined && e.endYear < e.startYear);
     expect(invalid).toHaveLength(0);
   });
 
   it('minZoomLevel is between 0 and 4', () => {
-    const invalid = ALL_EVENTS.filter(
-      (e) => e.minZoomLevel < 0 || e.minZoomLevel > 4,
-    );
+    const invalid = ALL_EVENTS.filter((e) => e.minZoomLevel < 0 || e.minZoomLevel > 4);
     expect(invalid).toHaveLength(0);
   });
 

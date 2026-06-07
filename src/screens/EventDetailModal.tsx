@@ -44,10 +44,7 @@ export function EventDetailModal({ event, onClose }: Props) {
                 accessibilityElementsHidden
                 importantForAccessibility="no"
               />
-              <Text
-                style={styles.category}
-                accessibilityRole="text"
-              >
+              <Text style={styles.category} accessibilityRole="text">
                 {t(`category.${event.category}`)}
               </Text>
               <Text style={styles.title} accessibilityRole="header">

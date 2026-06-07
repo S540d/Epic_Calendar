@@ -1,8 +1,8 @@
 ---
 name: Documentation Request
 about: Dokumentation ist fehlend oder verwirrend
-title: "[DOCS] "
-labels: ["type: documentation", "status: triage"]
+title: '[DOCS] '
+labels: ['type: documentation', 'status: triage']
 ---
 
 ## Problem

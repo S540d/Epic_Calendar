@@ -2,7 +2,9 @@ import { assignTracks, filterVisible, type VisibilityFilter } from '../culling';
 import type { TimelineEvent } from '@/data/schema';
 import type { Category } from '@/theme/tokens';
 
-function ev(partial: Partial<TimelineEvent> & Pick<TimelineEvent, 'id' | 'startYear'>): TimelineEvent {
+function ev(
+  partial: Partial<TimelineEvent> & Pick<TimelineEvent, 'id' | 'startYear'>,
+): TimelineEvent {
   return {
     title: partial.id,
     category: 'zivilisation',

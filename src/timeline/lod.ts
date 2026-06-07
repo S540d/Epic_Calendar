@@ -37,7 +37,10 @@ export const FULL_T_SPAN = T_MAX - T_MIN;
  * Default view: human prehistory (−400 000 years) to today.
  * "Heute" lands exactly at the right edge of the canvas.
  */
-export function humanHistoryViewState(canvasWidth: number): { offsetX: number; pixelsPerUnit: number } {
+export function humanHistoryViewState(canvasWidth: number): {
+  offsetX: number;
+  pixelsPerUnit: number;
+} {
   if (canvasWidth <= 0) return { offsetX: T_HUMAN_START, pixelsPerUnit: 30 };
   return {
     offsetX: T_HUMAN_START,
@@ -67,4 +70,15 @@ export const MAX_PIXELS_PER_UNIT = 8000;
 
 export function clampPixelsPerUnit(v: number): number {
   return Math.max(MIN_PIXELS_PER_UNIT, Math.min(MAX_PIXELS_PER_UNIT, v));
+}
+
+/**
+ * Clamps the pan offset so the viewport cannot scroll past "today" on the right.
+ * maxOffsetX: today sits exactly at the right edge of the canvas.
+ * Guard against negative maxOffsetX (fully zoomed out) with Math.max(0, ...).
+ */
+export function clampOffsetX(offsetX: number, pixelsPerUnit: number, canvasWidth: number): number {
+  'worklet';
+  const maxOffsetX = Math.max(0, T_MAX - canvasWidth / pixelsPerUnit);
+  return Math.min(offsetX, maxOffsetX);
 }
