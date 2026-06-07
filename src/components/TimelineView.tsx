@@ -4,6 +4,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  Pressable,
   useWindowDimensions,
   Platform,
   ScrollView,
@@ -29,6 +30,7 @@ if (Platform.OS !== 'web') {
 
 import { TimeAxis } from './TimeAxis';
 import { TimelineBreadcrumb } from './TimelineBreadcrumb';
+import { ZoomLevelIndicator } from './ZoomLevelIndicator';
 import { ALL_EVENTS } from '@/data/events';
 import { assignTracks, filterVisible, type TrackMap } from '@/timeline/culling';
 import {
@@ -38,7 +40,8 @@ import {
   humanHistoryViewState,
   pixelsPerUnitToZoomLevel,
 } from '@/timeline/lod';
-import { viewportYearRange, yearToT, tToYear } from '@/timeline/scale';
+import { viewportYearRange, yearToT, tToYear, pixelToYear } from '@/timeline/scale';
+import { dominantEpoch } from '@/timeline/epoch';
 import { type Continent, type TimelineEvent, type ZoomLevel } from '@/data/schema';
 import {
   LANE_GAP,
@@ -69,6 +72,11 @@ const TOTAL_T_MAX = T_HEUTE;
 
 const LABEL_MIN_BAR_PX = 48;
 const LABEL_MAX_WIDTH = 96;
+
+/** Minimum touch-target size (iOS HIG 44pt / Material 48dp) for event taps. */
+const MIN_HIT_PX = 44;
+/** Zoom factor applied per double-tap / two-finger-tap. */
+const TAP_ZOOM_FACTOR = 1.8;
 
 /** Returns the pixel height of a lane with the given number of tracks. */
 function laneHeightForTracks(n: number): number {
@@ -243,15 +251,68 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     [canvasWidth, jsOffsetX, jsPixelsPerUnit],
   );
 
+  const epochLabel = useMemo(() => {
+    const centerYear = pixelToYear(canvasWidth / 2, jsOffsetX, jsPixelsPerUnit);
+    return dominantEpoch(centerYear)?.title ?? null;
+  }, [canvasWidth, jsOffsetX, jsPixelsPerUnit]);
+
   const heutePx = useMemo(
     () => (T_HEUTE - jsOffsetX) * jsPixelsPerUnit,
     [jsOffsetX, jsPixelsPerUnit],
   );
   const heuteVisible = heutePx >= -1 && heutePx <= canvasWidth + 1;
 
-  // Pan: activeOffsetX / failOffsetY lets vertical swipes pass to the parent ScrollView
+  // Canvas-space hit-test (native). Enforces a minimum 44px hit-box per event
+  // and, when several overlap, picks the one whose center is nearest the tap.
+  function handleCanvasTap(px: number, py: number) {
+    let found: TimelineEvent | null = null;
+    let bestDist = Infinity;
+    for (let i = 0; i < lanes.length; i++) {
+      const cat = lanes[i];
+      if (!cat) continue;
+      const laneTop = laneTops[i] ?? 0;
+      const laneH = laneHeightForTracks(laneTrackCounts.get(cat) ?? 1);
+      if (py < laneTop || py > laneTop + laneH) continue;
+      const events = visibleByLane.get(cat) ?? [];
+      const trackMap = tracksByLane.get(cat);
+      for (const ev of events) {
+        const startT = yearToT(ev.startYear);
+        const endT = yearToT(ev.endYear ?? ev.startYear);
+        const x = (startT - jsOffsetX) * jsPixelsPerUnit;
+        const w = Math.max(2, (endT - startT) * jsPixelsPerUnit);
+        const trackIdx = trackMap?.get(ev.id) ?? 0;
+        const barY = laneTop + LANE_PADDING_V + trackIdx * TRACK_HEIGHT + 4;
+        const barH = TRACK_HEIGHT - 8;
+        if (py < barY || py > barY + barH) continue;
+        const cx = x + w / 2;
+        const half = Math.max(w, MIN_HIT_PX) / 2;
+        if (px < cx - half || px > cx + half) continue;
+        const d = Math.abs(px - cx);
+        if (d < bestDist) {
+          bestDist = d;
+          found = ev;
+        }
+      }
+    }
+    if (found) onSelectEvent(found);
+  }
+
+  // Zoom keeping the given focal x-coordinate fixed (used by tap-to-zoom).
+  function zoomAtPoint(focalX: number, factor: number) {
+    const current = pixelsPerUnit.value;
+    const next = clampPixelsPerUnit(current * factor);
+    if (next === current) return;
+    const focalT = offsetX.value + focalX / current;
+    const nextOffset = clampOffsetX(focalT - focalX / next, next, canvasWidth);
+    pixelsPerUnit.value = withTiming(next, { duration: 300 });
+    offsetX.value = withTiming(nextOffset, { duration: 300 });
+  }
+
+  // Pan: activeOffsetX / failOffsetY lets vertical swipes pass to the parent ScrollView.
+  // The X threshold is a little wider than the tap maxDistance so a deliberate
+  // drag becomes a pan while a quick tap stays a tap (less accidental scrolling).
   const panGesture = Gesture.Pan()
-    .activeOffsetX([-8, 8])
+    .activeOffsetX([-12, 12])
     .failOffsetY([-8, 8])
     .onStart(() => {
       startOffsetX.value = offsetX.value;
@@ -272,7 +333,31 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
       offsetX.value = clampOffsetX(startFocalT.value - e.focalX / next, next, canvasWidth);
     });
 
-  const gesture = Gesture.Simultaneous(panGesture, pinchGesture);
+  // Single tap → select the nearest event under the finger (with an enforced
+  // minimum hit-box so even hair-thin bars are reachable). maxDistance keeps it
+  // from firing once a pan starts.
+  const singleTap = Gesture.Tap()
+    .maxDuration(250)
+    .maxDistance(10)
+    .onEnd((e) => {
+      runOnJS(handleCanvasTap)(e.x, e.y);
+    });
+
+  // Double tap → zoom in centered on the tap point. (Zoom-out is covered by
+  // pinch and the − button; gesture-handler's Tap has no multi-pointer mode.)
+  const doubleTap = Gesture.Tap()
+    .numberOfTaps(2)
+    .maxDuration(300)
+    .maxDistance(20)
+    .onEnd((e) => {
+      runOnJS(zoomAtPoint)(e.x, TAP_ZOOM_FACTOR);
+    });
+
+  const gesture = Gesture.Simultaneous(
+    panGesture,
+    pinchGesture,
+    Gesture.Exclusive(doubleTap, singleTap),
+  );
 
   const canvasHeight = Math.max(
     lanes.reduce(
@@ -338,6 +423,8 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     const webVisibleByLane = new Map<Category, TimelineEvent[]>();
     const visibleStartYear = tToYear(webOffsetX);
     const visibleEndYear = tToYear(webOffsetX + canvasWidth / WEB_PPU);
+    const webCenterYear = tToYear(webOffsetX + canvasWidth / (2 * WEB_PPU));
+    const webEpochLabel = dominantEpoch(webCenterYear)?.title ?? null;
     for (const cat of lanes) {
       webVisibleByLane.set(
         cat,
@@ -367,9 +454,11 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
             zoomLevel={zoomLevel}
           />
           <View style={StyleSheet.absoluteFill} pointerEvents="none">
+            <ZoomLevelIndicator zoomLevel={zoomLevel} />
             <TimelineBreadcrumb
-              startYear={viewportRange.startYear}
-              endYear={viewportRange.endYear}
+              startYear={visibleStartYear}
+              endYear={visibleEndYear}
+              epoch={webEpochLabel}
             />
           </View>
         </View>
@@ -435,13 +524,16 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                         w >= LABEL_MIN_BAR_PX ? Math.max(x + 3, webScrollX + 3) : null;
                       const stickyLabelMaxW =
                         stickyLabelLeft !== null ? Math.max(0, x + w - stickyLabelLeft - 3) : 0;
+                      // Expand thin bars to a >=44px touch target via hitSlop,
+                      // without changing the visual bar width.
+                      const hSlop = Math.max(0, (MIN_HIT_PX - w) / 2);
                       return (
                         <React.Fragment key={ev.id}>
-                          <View
-                            onStartShouldSetResponder={() => {
-                              handleTap(ev);
-                              return false;
-                            }}
+                          <Pressable
+                            onPress={() => handleTap(ev)}
+                            hitSlop={{ left: hSlop, right: hSlop, top: 4, bottom: 4 }}
+                            accessibilityRole="button"
+                            accessibilityLabel={ev.title}
                             style={
                               {
                                 position: 'absolute',
@@ -527,7 +619,12 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
           zoomLevel={zoomLevel}
         />
         <View style={StyleSheet.absoluteFill} pointerEvents="none">
-          <TimelineBreadcrumb startYear={viewportRange.startYear} endYear={viewportRange.endYear} />
+          <ZoomLevelIndicator zoomLevel={zoomLevel} />
+          <TimelineBreadcrumb
+            startYear={viewportRange.startYear}
+            endYear={viewportRange.endYear}
+            epoch={epochLabel}
+          />
         </View>
       </View>
 
@@ -600,33 +697,14 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
               )}
             </Canvas>
 
-            <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+            {/* Labels only; taps are handled by the GestureDetector hit-test. */}
+            <View style={StyleSheet.absoluteFill} pointerEvents="none">
               {lanes.map((cat, idx) => {
                 const laneTop = laneTops[idx] ?? 0;
                 const events = visibleByLane.get(cat) ?? [];
                 const trackMap = tracksByLane.get(cat);
                 const lblSize = eventLabelFontSize(zoomLevel);
                 return [
-                  ...events.map((ev) => {
-                    const startT = yearToT(ev.startYear);
-                    const endT = yearToT(ev.endYear ?? ev.startYear);
-                    const x = (startT - jsOffsetX) * jsPixelsPerUnit;
-                    const w = Math.max(24, (endT - startT) * jsPixelsPerUnit);
-                    if (x + w < 0 || x > canvasWidth) return null;
-                    const trackIdx = trackMap?.get(ev.id) ?? 0;
-                    const barY = laneTop + LANE_PADDING_V + trackIdx * TRACK_HEIGHT + 4;
-                    const barH = TRACK_HEIGHT - 8;
-                    return (
-                      <View
-                        key={`hit-${ev.id}`}
-                        onStartShouldSetResponder={() => {
-                          handleTap(ev);
-                          return false;
-                        }}
-                        style={{ position: 'absolute', left: x, top: barY, width: w, height: barH }}
-                      />
-                    );
-                  }),
                   ...events.map((ev) => {
                     if (!labelVisibleIds.has(ev.id)) return null;
                     if (lblSize === 0) return null;
@@ -712,9 +790,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   zoomBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: 'rgba(31, 36, 45, 0.90)',
     borderWidth: 1,
     borderColor: colors.border,

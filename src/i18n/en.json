@@ -28,6 +28,16 @@
   "chip": {
     "soon": "soon"
   },
+  "zoom": {
+    "label": "Zoom",
+    "level": {
+      "0": "Eons",
+      "1": "Eras",
+      "2": "Epochs",
+      "3": "Centuries",
+      "4": "Years"
+    }
+  },
   "axis": {
     "billion": "Bn",
     "million": "M",
