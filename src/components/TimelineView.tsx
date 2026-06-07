@@ -64,8 +64,8 @@ type Props = {
 const LANE_ORDER: Category[] = ['erdzeitalter', 'zivilisation', 'natur', 'nation'];
 
 const TOTAL_T_MIN = yearToT(-13_800_000_000);
-const TOTAL_T_MAX = yearToT(2026); // "Heute" ist der rechte Rand
 const T_HEUTE = yearToT(2026);
+const TOTAL_T_MAX = T_HEUTE;
 
 const LABEL_MIN_BAR_PX = 48;
 const LABEL_MAX_WIDTH = 96;
@@ -353,7 +353,12 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
 
     return (
       <View style={{ flex: 1 }}>
-        <View style={[styles.axisRow, { position: 'sticky', top: 0, zIndex: 10 } as any]}>
+        <View
+          style={[
+            styles.axisRow,
+            Platform.select({ web: { position: 'sticky', top: 0, zIndex: 10 } as any }),
+          ]}
+        >
           <View style={{ width: LANE_LABEL_WIDTH }} />
           <TimeAxis
             offsetX={webOffsetX}
@@ -369,7 +374,12 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
           </View>
         </View>
         <View style={styles.container}>
-          <View style={[styles.labels, { position: 'sticky', left: 0, zIndex: 5 } as any]}>
+          <View
+            style={[
+              styles.labels,
+              Platform.select({ web: { position: 'sticky', left: 0, zIndex: 5 } as any }),
+            ]}
+          >
             {lanes.map((cat, idx) => (
               <View
                 key={cat}
@@ -488,7 +498,10 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
           </ScrollView>
         </View>
         <View
-          style={[styles.zoomButtons, { position: 'fixed', right: 12, bottom: 12 } as any]}
+          style={[
+            styles.zoomButtons,
+            Platform.select({ web: { position: 'fixed', right: 12, bottom: 12 } as any }),
+          ]}
           pointerEvents="box-none"
         >
           <TouchableOpacity style={styles.zoomBtn} onPress={zoomIn} accessibilityLabel="Zoom in">

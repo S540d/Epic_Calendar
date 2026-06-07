@@ -73,14 +73,12 @@ export function clampPixelsPerUnit(v: number): number {
 }
 
 /**
- * Clamps the pan offset so the viewport cannot scroll past "today" on the
- * right or past the Big Bang on the left.
- *
+ * Clamps the pan offset so the viewport cannot scroll past "today" on the right.
  * maxOffsetX: today sits exactly at the right edge of the canvas.
- * minOffsetX: Big Bang sits at the left edge (optional hard stop).
+ * Guard against negative maxOffsetX (fully zoomed out) with Math.max(0, ...).
  */
 export function clampOffsetX(offsetX: number, pixelsPerUnit: number, canvasWidth: number): number {
   'worklet';
-  const maxOffsetX = T_MAX - canvasWidth / pixelsPerUnit;
+  const maxOffsetX = Math.max(0, T_MAX - canvasWidth / pixelsPerUnit);
   return Math.min(offsetX, maxOffsetX);
 }
