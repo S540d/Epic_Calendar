@@ -1,0 +1,9 @@
+#!/bin/sh
+
+echo "🔍 Running Prettier format check..."
+npx prettier --check "**/*.{ts,tsx}" --ignore-path .gitignore
+if [ $? -ne 0 ]; then
+  echo "❌ Prettier format check failed. Run: npm run format"
+  exit 1
+fi
+echo "✅ pre-push checks passed"

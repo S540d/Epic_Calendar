@@ -15,7 +15,9 @@ export function TimelineBreadcrumb({ startYear, endYear }: Props) {
 
   return (
     <View style={styles.pill} pointerEvents="none">
-      <Text style={styles.text} numberOfLines={1}>{label}</Text>
+      <Text style={styles.text} numberOfLines={1}>
+        {label}
+      </Text>
     </View>
   );
 }

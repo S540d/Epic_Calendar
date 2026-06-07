@@ -1,8 +1,8 @@
 ---
 name: Documentation Request
 about: Dokumentation ist fehlend oder verwirrend
-title: "[DOCS] "
-labels: ["type: documentation", "status: triage"]
+title: '[DOCS] '
+labels: ['type: documentation', 'status: triage']
 ---
 
 ## Problem
@@ -28,7 +28,7 @@ labels: ["type: documentation", "status: triage"]
 - [ ] Datei-Headern / API Docs
 - [ ] Checklisten / Guidelines
 - [ ] GitHub Discussions / Wiki
-- [ ] Sonstiges: _________
+- [ ] Sonstiges: ****\_****
 
 ---
 

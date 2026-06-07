@@ -70,6 +70,7 @@ Fixes #[Issue Nummer]
 OR
 
 Spezielle Deploy-Schritte:
+
 ```bash
 # z.B. Database Migrations, Environment Setup, etc.
 ```

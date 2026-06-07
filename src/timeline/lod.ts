@@ -37,7 +37,10 @@ export const FULL_T_SPAN = T_MAX - T_MIN;
  * Default view: human prehistory (−400 000 years) to today.
  * "Heute" lands exactly at the right edge of the canvas.
  */
-export function humanHistoryViewState(canvasWidth: number): { offsetX: number; pixelsPerUnit: number } {
+export function humanHistoryViewState(canvasWidth: number): {
+  offsetX: number;
+  pixelsPerUnit: number;
+} {
   if (canvasWidth <= 0) return { offsetX: T_HUMAN_START, pixelsPerUnit: 30 };
   return {
     offsetX: T_HUMAN_START,

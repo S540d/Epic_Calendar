@@ -1,8 +1,8 @@
 ---
 name: Bug Report
 about: Bug melden - etwas funktioniert nicht wie erwartet
-title: "[BUG] "
-labels: ["type: bug", "status: triage"]
+title: '[BUG] '
+labels: ['type: bug', 'status: triage']
 ---
 
 ## Beschreibung
@@ -56,4 +56,3 @@ labels: ["type: bug", "status: triage"]
 - [ ] Issue ist reproduzierbar
 - [ ] Keine weiteren Debug-Logs oder Secrets in der Beschreibung
 - [ ] Ähnliche Issues wurden gesucht
-

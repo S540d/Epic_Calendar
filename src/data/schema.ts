@@ -1,12 +1,6 @@
 import type { Category } from '@/theme/tokens';
 
-export type Continent =
-  | 'europa'
-  | 'asien'
-  | 'afrika'
-  | 'amerika'
-  | 'ozeanien'
-  | 'global';
+export type Continent = 'europa' | 'asien' | 'afrika' | 'amerika' | 'ozeanien' | 'global';
 
 export type ZoomLevel = 0 | 1 | 2 | 3 | 4;
 
@@ -32,4 +26,3 @@ export type TimelineEvent = {
   /** Manual track override within a lane (0-indexed). If absent, computed by assignTracks(). */
   track?: number;
 };
-

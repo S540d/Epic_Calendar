@@ -52,9 +52,7 @@ export function TimelineScreen() {
           accessibilityLabel="Sprache wechseln"
           accessibilityRole="button"
         >
-          <Text style={styles.langToggleText}>
-            {i18n.language === 'de' ? 'EN' : 'DE'}
-          </Text>
+          <Text style={styles.langToggleText}>{i18n.language === 'de' ? 'EN' : 'DE'}</Text>
         </Pressable>
         <Pressable
           style={({ pressed }) => [styles.homeButton, pressed && styles.homeButtonPressed]}
