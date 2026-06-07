@@ -1,12 +1,13 @@
 #!/bin/sh
 
 # Check for console.log/debug in staged TS/TSX files
+# Use -print0/xargs -0 to handle filenames with spaces safely
 STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|tsx)$' | grep -v '^scripts/' || true)
 if [ -n "$STAGED" ]; then
-  if echo "$STAGED" | xargs grep -l "console\.log\|console\.debug" 2>/dev/null; then
+  printf '%s\n' "$STAGED" | tr '\n' '\0' | xargs -0 grep -lE "console\.(log|debug)" 2>/dev/null && {
     echo "❌ console.log/debug found in staged files. Remove before committing."
     exit 1
-  fi
+  }
 fi
 
 # Block .claude/settings.json from being committed
