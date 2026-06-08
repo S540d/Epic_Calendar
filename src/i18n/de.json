@@ -35,5 +35,12 @@
     "bce": "v.Chr.",
     "ce": "n.Chr.",
     "today": "Heute"
+  },
+  "zoomLevel": {
+    "0": "Äonen",
+    "1": "Ären",
+    "2": "Epochen",
+    "3": "Jahrhunderte",
+    "4": "Jahre"
   }
 }

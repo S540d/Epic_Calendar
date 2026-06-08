@@ -249,9 +249,9 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   );
   const heuteVisible = heutePx >= -1 && heutePx <= canvasWidth + 1;
 
-  // Pan: activeOffsetX / failOffsetY lets vertical swipes pass to the parent ScrollView
+  // Pan: activeOffsetX raised to ±12 to give taps more room before pan activates (#34)
   const panGesture = Gesture.Pan()
-    .activeOffsetX([-8, 8])
+    .activeOffsetX([-12, 12])
     .failOffsetY([-8, 8])
     .onStart(() => {
       startOffsetX.value = offsetX.value;
@@ -272,7 +272,26 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
       offsetX.value = clampOffsetX(startFocalT.value - e.focalX / next, next, canvasWidth);
     });
 
-  const gesture = Gesture.Simultaneous(panGesture, pinchGesture);
+  // Double-tap: zoom in 2× centred on the tapped point (#43)
+  const zoomAtPoint = (tapX: number) => {
+    const center = offsetX.value + tapX / pixelsPerUnit.value;
+    const next = clampPixelsPerUnit(pixelsPerUnit.value * 2);
+    const nextOffset = clampOffsetX(center - tapX / next, next, canvasWidth);
+    pixelsPerUnit.value = withTiming(next, { duration: 300 });
+    offsetX.value = withTiming(nextOffset, { duration: 300 });
+  };
+
+  const doubleTap = Gesture.Tap()
+    .numberOfTaps(2)
+    .maxDelay(300)
+    .onEnd((e) => {
+      runOnJS(zoomAtPoint)(e.x);
+    });
+
+  const gesture = Gesture.Simultaneous(
+    Gesture.Exclusive(doubleTap, panGesture),
+    pinchGesture,
+  );
 
   const canvasHeight = Math.max(
     lanes.reduce(
@@ -370,6 +389,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
             <TimelineBreadcrumb
               startYear={viewportRange.startYear}
               endYear={viewportRange.endYear}
+              zoomLevel={zoomLevel}
             />
           </View>
         </View>
@@ -527,7 +547,11 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
           zoomLevel={zoomLevel}
         />
         <View style={StyleSheet.absoluteFill} pointerEvents="none">
-          <TimelineBreadcrumb startYear={viewportRange.startYear} endYear={viewportRange.endYear} />
+          <TimelineBreadcrumb
+            startYear={viewportRange.startYear}
+            endYear={viewportRange.endYear}
+            zoomLevel={zoomLevel}
+          />
         </View>
       </View>
 
@@ -623,7 +647,13 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                           handleTap(ev);
                           return false;
                         }}
-                        style={{ position: 'absolute', left: x, top: barY, width: w, height: barH }}
+                        style={{
+                          position: 'absolute',
+                          left: x - Math.max(0, (44 - w) / 2),
+                          top: barY,
+                          width: Math.max(44, w),
+                          height: barH,
+                        }}
                       />
                     );
                   }),
@@ -712,9 +742,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   zoomBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: 'rgba(31, 36, 45, 0.90)',
     borderWidth: 1,
     borderColor: colors.border,
