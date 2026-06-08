@@ -13,7 +13,7 @@ type Props = {
  * (Äonen → Ären → Epochen → Jahrhunderte → Jahre) so users always know
  * how deep they are zoomed without decoding the axis ticks.
  */
-export function ZoomLevelIndicator({ zoomLevel }: Props) {
+export const ZoomLevelIndicator = React.memo(function ZoomLevelIndicator({ zoomLevel }: Props) {
   const { t } = useTranslation();
 
   return (
@@ -23,7 +23,7 @@ export function ZoomLevelIndicator({ zoomLevel }: Props) {
       </Text>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   pill: {

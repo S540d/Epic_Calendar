@@ -345,9 +345,12 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
 
   // Double tap → zoom in centered on the tap point. (Zoom-out is covered by
   // pinch and the − button; gesture-handler's Tap has no multi-pointer mode.)
+  // maxDelay bounds how long singleTap waits for a possible second tap before
+  // firing, so event selection stays snappy (~250 ms worst case).
   const doubleTap = Gesture.Tap()
     .numberOfTaps(2)
     .maxDuration(300)
+    .maxDelay(250)
     .maxDistance(20)
     .onEnd((e) => {
       runOnJS(zoomAtPoint)(e.x, TAP_ZOOM_FACTOR);
