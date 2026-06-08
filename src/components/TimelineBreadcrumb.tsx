@@ -8,22 +8,22 @@ import type { ZoomLevel } from '@/data/schema';
 type Props = {
   startYear: number;
   endYear: number;
-  zoomLevel?: ZoomLevel;
+  /** Dominant geological era of the current viewport, e.g. "Mesozoikum". */
+  epoch?: string | null;
 };
 
-export function TimelineBreadcrumb({ startYear, endYear, zoomLevel }: Props) {
+export function TimelineBreadcrumb({ startYear, endYear, epoch }: Props) {
   const { t } = useTranslation();
   const range = `${formatEventYear(startYear, t)} – ${formatEventYear(endYear, t)}`;
-  const levelLabel = zoomLevel !== undefined ? t(`zoomLevel.${zoomLevel}`) : null;
 
   return (
     <View style={styles.pill} pointerEvents="none">
-      {levelLabel && (
-        <Text style={styles.levelText} numberOfLines={1}>
-          {levelLabel}
+      {epoch ? (
+        <Text style={styles.epoch} numberOfLines={1}>
+          {epoch}
         </Text>
-      )}
-      {levelLabel && <Text style={styles.separator}>·</Text>}
+      ) : null}
+      {epoch ? <Text style={styles.separator}>·</Text> : null}
       <Text style={styles.text} numberOfLines={1}>
         {range}
       </Text>
@@ -46,11 +46,11 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(42, 49, 60, 0.7)',
     gap: 4,
   },
-  levelText: {
+  epoch: {
     ...typography.caption,
     fontSize: 11,
-    color: colors.accent ?? colors.textSecondary,
-    fontWeight: '600',
+    fontWeight: '700',
+    color: colors.textPrimary,
   },
   separator: {
     ...typography.caption,
