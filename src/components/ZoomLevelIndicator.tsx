@@ -1,52 +1,41 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { formatEventYear } from '@/timeline/formatYear';
+import type { ZoomLevel } from '@/data/schema';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
 type Props = {
-  startYear: number;
-  endYear: number;
-  /** Dominant geological era of the current viewport, e.g. "Mesozoikum". */
-  epoch?: string | null;
+  zoomLevel: ZoomLevel;
 };
 
-export function TimelineBreadcrumb({ startYear, endYear, epoch }: Props) {
+/**
+ * Persistent, non-interactive pill showing the current LOD band
+ * (Äonen → Ären → Epochen → Jahrhunderte → Jahre) so users always know
+ * how deep they are zoomed without decoding the axis ticks.
+ */
+export const ZoomLevelIndicator = React.memo(function ZoomLevelIndicator({ zoomLevel }: Props) {
   const { t } = useTranslation();
-  const label = `${formatEventYear(startYear, t)} – ${formatEventYear(endYear, t)}`;
 
   return (
     <View style={styles.pill} pointerEvents="none">
-      {epoch ? (
-        <Text style={styles.epoch} numberOfLines={1}>
-          {epoch}
-        </Text>
-      ) : null}
       <Text style={styles.text} numberOfLines={1}>
-        {label}
+        {t(`zoom.level.${zoomLevel}`)}
       </Text>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   pill: {
     position: 'absolute',
     top: 6,
-    right: 8,
-    alignItems: 'flex-end',
+    left: 8,
     backgroundColor: 'rgba(31, 36, 45, 0.88)',
     borderRadius: radii.pill,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderWidth: 1,
     borderColor: 'rgba(42, 49, 60, 0.7)',
-  },
-  epoch: {
-    ...typography.caption,
-    fontSize: 11,
-    fontWeight: '700',
-    color: colors.textPrimary,
   },
   text: {
     ...typography.caption,
