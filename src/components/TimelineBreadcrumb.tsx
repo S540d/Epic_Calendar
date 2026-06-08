@@ -3,7 +3,6 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { formatEventYear } from '@/timeline/formatYear';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
-import type { ZoomLevel } from '@/data/schema';
 
 type Props = {
   startYear: number;
