@@ -52,7 +52,7 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Lint
-        run: npm run lint || echo "⚠️ Lint reported issues (non-blocking until rules are stable)"
+        run: npm run lint
 
       - name: Unit Tests
         run: npm test -- --ci
