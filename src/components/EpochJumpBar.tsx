@@ -1,6 +1,8 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Pressable, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { tToYear } from '@/timeline/scale';
+import { T_MAX } from '@/timeline/lod';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
 
 type Epoch = {
@@ -9,6 +11,8 @@ type Epoch = {
   readonly endYear: number;
 };
 
+const PRESENT_YEAR = Math.floor(tToYear(T_MAX));
+
 const EPOCHS: readonly Epoch[] = [
   { key: 'bigBang',     startYear: -13_800_000_000, endYear: -13_000_000_000 },
   { key: 'earth',       startYear: -4_600_000_000,  endYear: -3_500_000_000  },
@@ -16,11 +20,11 @@ const EPOCHS: readonly Epoch[] = [
   { key: 'earlyHumans', startYear: -300_000,        endYear: -10_000         },
   { key: 'antiquity',   startYear: -3_000,           endYear: 500             },
   { key: 'middleAges',  startYear: 500,              endYear: 1_500           },
-  { key: 'modern',      startYear: 1_500,            endYear: 2026            },
+  { key: 'modern',      startYear: 1_500,            endYear: PRESENT_YEAR   },
 ];
 
 type Props = {
-  onJump: (startYear: number, endYear: number) => void;
+  onJump: (startYear: number, endYear: number | null | undefined) => void;
 };
 
 export function EpochJumpBar({ onJump }: Props) {

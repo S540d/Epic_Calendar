@@ -88,6 +88,12 @@ const ZOOM_TO_FIT_FILL = 0.7;
 const MAX_EVENTS_PER_LANE = 15;
 /** Zoom factor applied per double-tap / two-finger-tap. */
 const TAP_ZOOM_FACTOR = 1.8;
+/** Duration of the zoom-to-fit pan/scale animation on native. */
+const ZOOM_TO_FIT_DURATION_MS = 600;
+/** Delay before opening the detail modal after a zoom-to-fit animation.
+ *  On web there is no animated zoom (direct PPU assignment), so a shorter
+ *  delay covers the scroll animation only. */
+const ZOOM_MODAL_DELAY_MS = Platform.OS === 'web' ? 350 : ZOOM_TO_FIT_DURATION_MS + 50;
 
 /** Returns the pixel height of a lane with the given number of tracks. */
 function laneHeightForTracks(n: number): number {
@@ -111,7 +117,8 @@ function computeLabelVisibleIds(
     // Group events by track
     const byTrack = new Map<number, TimelineEvent[]>();
     for (const ev of events) {
-      const t = trackMap?.get(ev.id) ?? 0;
+      const t = trackMap?.get(ev.id);
+      if (t === undefined) continue; // event beyond MAX_EVENTS_PER_LANE cap — no bar rendered
       if (!byTrack.has(t)) byTrack.set(t, []);
       byTrack.get(t)!.push(ev);
     }
@@ -204,7 +211,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   // Open the detail modal after the zoom-to-fit animation; clears on unmount.
   useEffect(() => {
     if (!pendingSelectEvent) return;
-    const delay = Platform.OS === 'web' ? 350 : 650;
+    const delay = ZOOM_MODAL_DELAY_MS;
     const timer = setTimeout(() => {
       onSelectEvent(pendingSelectEvent);
       setPendingSelectEvent(null);
@@ -529,8 +536,8 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     const centerT = (startT + rawEndT) / 2;
     const newPPU = clampPixelsPerUnit(canvasWidth / (spanT / ZOOM_TO_FIT_FILL));
     if (Platform.OS === 'web') {
-      // Direct-assign PPU and queue the scroll via state so that the ref access
-      // (`webScrollRef.current`) happens in a useEffect, not in the gesture callback.
+      // Direct PPU assignment is intentional on web: there is no Skia canvas, so
+      // withTiming would have no visual effect. The ScrollView scroll provides animation.
       const maxScrollX = Math.max(0, (TOTAL_T_MAX - TOTAL_T_MIN) * newPPU - canvasWidth);
       pixelsPerUnit.value = newPPU;
       setJsPixelsPerUnit(newPPU);
@@ -539,27 +546,29 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
       );
     } else {
       const newOffsetX = clampOffsetX(centerT - canvasWidth / (2 * newPPU), newPPU, canvasWidth);
-      pixelsPerUnit.value = withTiming(newPPU, { duration: 600 });
-      offsetX.value = withTiming(newOffsetX, { duration: 600 });
+      pixelsPerUnit.value = withTiming(newPPU, { duration: ZOOM_TO_FIT_DURATION_MS });
+      offsetX.value = withTiming(newOffsetX, { duration: ZOOM_TO_FIT_DURATION_MS });
     }
   }, [canvasWidth, pixelsPerUnit, offsetX, setJsPixelsPerUnit, setWebJumpScrollX]);
 
-  // Update tapDataRef and zoomToFitRef after every render so gesture callbacks
-  // always see current values without capturing a new closure per frame.
+  // tapDataRef: update every render so handleCanvasTap always reads current viewport state.
   useLayoutEffect(() => {
     Object.assign(tapDataRef.current, {
       lanes, laneTops, laneTrackCounts, visibleByLane, tracksByLane,
       jsOffsetX, jsPixelsPerUnit, canvasWidth,
     });
-    zoomToFitRef.current = zoomToFit;
   });
+  // zoomToFitRef: only update when zoomToFit rebuilds (on canvasWidth resize).
+  useLayoutEffect(() => {
+    zoomToFitRef.current = zoomToFit;
+  }, [zoomToFit]);
 
-  const handleTap = (event: TimelineEvent) => {
+  const handleTap = useCallback((event: TimelineEvent) => {
     zoomToFit(event.startYear, event.endYear);
     setPendingSelectEvent(event);
-  };
+  }, [zoomToFit]);
 
-  function handleMinimapJump(newOffsetX: number) {
+  const handleMinimapJump = useCallback((newOffsetX: number) => {
     if (Platform.OS === 'web') {
       const maxScrollX = Math.max(0, (TOTAL_T_MAX - TOTAL_T_MIN) * jsPixelsPerUnit - canvasWidth);
       const newScrollX = Math.max(0, Math.min((newOffsetX - TOTAL_T_MIN) * jsPixelsPerUnit, maxScrollX));
@@ -567,7 +576,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     } else {
       offsetX.value = withTiming(newOffsetX, { duration: 300 });
     }
-  }
+  }, [jsPixelsPerUnit, canvasWidth, offsetX, setWebJumpScrollX]);
 
   const zoomIn = () => {
     if (Platform.OS === 'web') {
@@ -918,7 +927,8 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
             <View style={StyleSheet.absoluteFill} pointerEvents="none">
               {lanes.map((cat, idx) => {
                 const laneTop = laneTops[idx] ?? 0;
-                const events = visibleByLane.get(cat) ?? [];
+                // Cap to match the Skia bar-drawing loop so labels only appear over real bars.
+                const events = (visibleByLane.get(cat) ?? []).slice(0, MAX_EVENTS_PER_LANE);
                 const trackMap = tracksByLane.get(cat);
                 const lblSize = eventLabelFontSize(zoomLevel);
                 const maxLines = eventLabelMaxLines(zoomLevel);
