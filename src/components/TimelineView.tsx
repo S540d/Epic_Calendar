@@ -189,7 +189,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     tracksByLane: new Map<Category, TrackMap>(),
     jsOffsetX: initState.offsetX,
     jsPixelsPerUnit: initState.pixelsPerUnit,
-    canvasWidth: 0,
+    canvasWidth,
   });
 
   // Stable ref to the latest zoomToFit closure so handleCanvasTap doesn't need it as dep.

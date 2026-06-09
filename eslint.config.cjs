@@ -28,12 +28,20 @@ module.exports = [
   {
     files: ['**/*.ts', '**/*.tsx'],
     rules: {
-      // `react-hooks/immutability` and `react-hooks/refs` are part of the
-      // expo-extended eslint-plugin-react-hooks build.
-      // Reanimated worklets write `.value` on shared values, and RNGH `.onEnd`
-      // callbacks run outside render — both trigger false positives from these
-      // rules. Downgrade to warn so CI isn't blocked.
+      // `react-hooks/immutability` is part of the expo-extended build of
+      // eslint-plugin-react-hooks (verified at runtime: the rule is present).
+      // Reanimated worklets intentionally write to `.value` on shared values —
+      // downgrade to warn so CI isn't blocked by false positives.
       'react-hooks/immutability': 'warn',
+    },
+  },
+  {
+    // `react-hooks/refs` flags RNGH `.onEnd` callbacks inside useMemo as
+    // "render-time ref access" — false positive because gesture callbacks
+    // run outside render. Scope the downgrade to this file only so real
+    // ref misuses elsewhere still surface as errors.
+    files: ['**/TimelineView.tsx'],
+    rules: {
       'react-hooks/refs': 'warn',
     },
   },
