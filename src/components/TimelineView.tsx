@@ -74,6 +74,7 @@ const TOTAL_T_MAX = T_HEUTE;
 /** Minimum visible bar width to attempt rendering a (possibly truncated) label. */
 const LABEL_MIN_BAR_PX = 22;
 const LABEL_MAX_WIDTH = 96;
+const POPOVER_MAX_WIDTH = 220;
 
 /** Minimum touch-target size (iOS HIG 44pt / Material 48dp) for event taps. */
 const MIN_HIT_PX = 44;
@@ -191,6 +192,8 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
       if (!prev || Math.abs(curr.o - prev.o) > 0.5 || Math.abs(curr.p - prev.p) > 0.5) {
         runOnJS(setJsOffsetX)(curr.o);
         runOnJS(setJsPixelsPerUnit)(curr.p);
+        // Close disambiguation popover when the viewport moves
+        runOnJS(setPopoverState)(null);
       }
     },
     [],
@@ -302,7 +305,8 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     if (candidates.length === 0) return;
     candidates.sort((a, b) => a.dist - b.dist);
     if (candidates.length === 1) {
-      onSelectEvent(candidates[0]!.ev);
+      const first = candidates[0];
+      if (first) onSelectEvent(first.ev);
     } else {
       setPopoverState({ events: candidates.map((c) => c.ev), x: px, y: py });
     }
@@ -773,40 +777,58 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
       </View>
 
       {popoverState && (
-        <View
-          style={[
-            styles.popover,
-            {
-              left: Math.min(popoverState.x, canvasWidth + LANE_LABEL_WIDTH - 180),
-              top: Math.max(0, popoverState.y - 8),
-            },
-          ]}
-        >
-          {popoverState.events.map((ev) => (
-            <Pressable
-              key={ev.id}
-              style={styles.popoverItem}
-              onPress={() => {
-                setPopoverState(null);
-                onSelectEvent(ev);
-              }}
-              accessibilityRole="button"
-              accessibilityLabel={ev.title}
-            >
-              <View style={[styles.popoverDot, { backgroundColor: eventColor(ev) }]} />
-              <Text style={styles.popoverText} numberOfLines={1}>
-                {ev.title}
-              </Text>
-            </Pressable>
-          ))}
+        <>
+          {/* Transparent backdrop — tap outside closes the popover */}
           <Pressable
-            style={styles.popoverDismiss}
+            style={StyleSheet.absoluteFill}
             onPress={() => setPopoverState(null)}
-            accessibilityLabel={t('popover.dismiss')}
+            accessible={false}
+          />
+          <View
+            style={[
+              styles.popover,
+              {
+                // px is in canvas coords; add LANE_LABEL_WIDTH to convert to
+                // screen coords, then clamp so the popover doesn't overflow right.
+                left: Math.min(
+                  popoverState.x + LANE_LABEL_WIDTH,
+                  canvasWidth + LANE_LABEL_WIDTH - POPOVER_MAX_WIDTH,
+                ),
+                // Clamp vertically so the popover stays inside the canvas area.
+                top: Math.max(
+                  0,
+                  Math.min(popoverState.y - 8, canvasHeight - 200),
+                ),
+              },
+            ]}
           >
-            <Text style={styles.popoverDismissText}>✕</Text>
-          </Pressable>
-        </View>
+            <Text style={styles.popoverTitle}>{t('popover.title')}</Text>
+            {popoverState.events.map((ev) => (
+              <Pressable
+                key={ev.id}
+                style={styles.popoverItem}
+                onPress={() => {
+                  setPopoverState(null);
+                  onSelectEvent(ev);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={ev.title}
+              >
+                <View style={[styles.popoverDot, { backgroundColor: eventColor(ev) }]} />
+                <Text style={styles.popoverText} numberOfLines={1}>
+                  {ev.title}
+                </Text>
+              </Pressable>
+            ))}
+            <Pressable
+              style={styles.popoverDismiss}
+              onPress={() => setPopoverState(null)}
+              accessibilityLabel={t('popover.dismiss')}
+            >
+              <Text style={styles.popoverDismissText}>✕</Text>
+            </Pressable>
+          </View>
+        </>
       )}
     </View>
   );
@@ -860,7 +882,7 @@ const styles = StyleSheet.create({
   popover: {
     position: 'absolute',
     minWidth: 160,
-    maxWidth: 220,
+    maxWidth: POPOVER_MAX_WIDTH,
     backgroundColor: colors.bgElevated,
     borderRadius: 10,
     borderWidth: 1,
@@ -868,6 +890,17 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
     zIndex: 100,
     ...shadows.md,
+  },
+  popoverTitle: {
+    ...typography.caption,
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.textMuted,
+    paddingHorizontal: spacing.sm,
+    paddingTop: spacing.xs,
+    paddingBottom: 2,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   popoverItem: {
     flexDirection: 'row',
