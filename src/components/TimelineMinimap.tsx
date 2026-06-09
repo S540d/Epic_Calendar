@@ -26,7 +26,7 @@ export function TimelineMinimap({ offsetX, pixelsPerUnit, canvasWidth, onJump }:
     [barWidth, pixelsPerUnit, canvasWidth, onJump],
   );
 
-  if (!pixelsPerUnit) return null;
+  if (!pixelsPerUnit || !canvasWidth) return null;
   const tSpan = canvasWidth / pixelsPerUnit;
   const indicatorFraction = (offsetX - T_MIN) / FULL_T_SPAN;
   const indicatorLeft = Math.max(0, Math.min(indicatorFraction * barWidth, barWidth - 4));
@@ -42,7 +42,7 @@ export function TimelineMinimap({ offsetX, pixelsPerUnit, canvasWidth, onJump }:
         onLayout={(e) => setBarWidth(e.nativeEvent.layout.width)}
         onPress={handlePress}
         accessibilityRole="adjustable"
-        accessibilityValue={{ min: 0, max: 1, now: indicatorFraction }}
+        accessibilityValue={{ min: 0, max: 100, now: Math.round(indicatorFraction * 100) }}
       >
         <View style={[styles.indicator, { left: indicatorLeft, width: indicatorWidth }]} />
       </Pressable>
