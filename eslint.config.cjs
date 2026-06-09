@@ -35,14 +35,4 @@ module.exports = [
       'react-hooks/immutability': 'warn',
     },
   },
-  {
-    // `react-hooks/refs` flags RNGH `.onEnd` callbacks inside useMemo as
-    // "render-time ref access" — false positive because gesture callbacks
-    // run outside render. Scope the downgrade to this file only so real
-    // ref misuses elsewhere still surface as errors.
-    files: ['**/TimelineView.tsx'],
-    rules: {
-      'react-hooks/refs': 'warn',
-    },
-  },
 ];

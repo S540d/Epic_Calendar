@@ -425,6 +425,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
         setPendingSelectEvent(first.ev);
       }
     } else {
+      setPendingSelectEvent(null);
       setPopoverState({ events: candidates.map((c) => c.ev), x: px, y: py });
     }
   }, []);
@@ -483,6 +484,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
       Gesture.Tap()
         .maxDuration(250)
         .maxDistance(10)
+        // eslint-disable-next-line react-hooks/refs
         .onEnd((e) => {
           runOnJS(handleCanvasTap)(e.x, e.y);
         }),

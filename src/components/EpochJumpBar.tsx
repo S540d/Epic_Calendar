@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { ScrollView, StyleSheet, Pressable, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { tToYear } from '@/timeline/scale';
@@ -23,12 +23,34 @@ const EPOCHS: readonly Epoch[] = [
   { key: 'modern',      startYear: 1_500,            endYear: PRESENT_YEAR   },
 ];
 
+type ChipProps = {
+  epoch: Epoch;
+  onJump: (startYear: number, endYear: number | null | undefined) => void;
+};
+
+function EpochChip({ epoch, onJump }: ChipProps) {
+  const { t } = useTranslation();
+  const handlePress = useCallback(
+    () => onJump(epoch.startYear, epoch.endYear),
+    [onJump, epoch.startYear, epoch.endYear],
+  );
+  return (
+    <Pressable
+      style={({ pressed }) => [styles.chip, pressed && styles.chipPressed]}
+      onPress={handlePress}
+      accessibilityRole="button"
+      accessibilityLabel={t(`epochChip.${epoch.key}`)}
+    >
+      <Text style={styles.label}>{t(`epochChip.${epoch.key}`)}</Text>
+    </Pressable>
+  );
+}
+
 type Props = {
   onJump: (startYear: number, endYear: number | null | undefined) => void;
 };
 
 export function EpochJumpBar({ onJump }: Props) {
-  const { t } = useTranslation();
   return (
     <ScrollView
       horizontal
@@ -37,15 +59,7 @@ export function EpochJumpBar({ onJump }: Props) {
       style={styles.bar}
     >
       {EPOCHS.map((epoch) => (
-        <Pressable
-          key={epoch.key}
-          style={({ pressed }) => [styles.chip, pressed && styles.chipPressed]}
-          onPress={() => onJump(epoch.startYear, epoch.endYear)}
-          accessibilityRole="button"
-          accessibilityLabel={t(`epochChip.${epoch.key}`)}
-        >
-          <Text style={styles.label}>{t(`epochChip.${epoch.key}`)}</Text>
-        </Pressable>
+        <EpochChip key={epoch.key} epoch={epoch} onJump={onJump} />
       ))}
     </ScrollView>
   );

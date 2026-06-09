@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import { clampOffsetX, T_MIN, T_MAX, FULL_T_SPAN } from '@/timeline/lod';
 import { colors, LANE_LABEL_WIDTH, spacing } from '@/theme/tokens';
@@ -15,6 +15,17 @@ type Props = {
 export function TimelineMinimap({ offsetX, pixelsPerUnit, canvasWidth, onJump }: Props) {
   const [barWidth, setBarWidth] = useState(0);
 
+  const handlePress = useCallback(
+    (e: { nativeEvent: { locationX: number } }) => {
+      if (!barWidth || !pixelsPerUnit) return;
+      const tSpan = canvasWidth / pixelsPerUnit;
+      const fraction = Math.max(0, Math.min(1, e.nativeEvent.locationX / barWidth));
+      const tAtTap = T_MIN + fraction * FULL_T_SPAN;
+      onJump(clampOffsetX(tAtTap - tSpan / 2, pixelsPerUnit, canvasWidth));
+    },
+    [barWidth, pixelsPerUnit, canvasWidth, onJump],
+  );
+
   if (!pixelsPerUnit) return null;
   const tSpan = canvasWidth / pixelsPerUnit;
   const indicatorFraction = (offsetX - T_MIN) / FULL_T_SPAN;
@@ -22,13 +33,6 @@ export function TimelineMinimap({ offsetX, pixelsPerUnit, canvasWidth, onJump }:
   const indicatorRawWidth = (tSpan / FULL_T_SPAN) * barWidth;
   // Minimum 4px so the indicator is always visible even at very high zoom levels.
   const indicatorWidth = Math.max(4, Math.min(indicatorRawWidth, barWidth - indicatorLeft));
-
-  function handlePress(e: { nativeEvent: { locationX: number } }) {
-    if (!barWidth) return;
-    const fraction = Math.max(0, Math.min(1, e.nativeEvent.locationX / barWidth));
-    const tAtTap = T_MIN + fraction * FULL_T_SPAN;
-    onJump(clampOffsetX(tAtTap - tSpan / 2, pixelsPerUnit, canvasWidth));
-  }
 
   return (
     <View style={styles.wrapper}>
