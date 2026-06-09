@@ -42,6 +42,15 @@
       "4": "Jahre"
     }
   },
+  "epochChip": {
+    "bigBang": "Urknall",
+    "earth": "Erde",
+    "dinosaurs": "Dinosaurier",
+    "earlyHumans": "Frühmenschen",
+    "antiquity": "Antike",
+    "middleAges": "Mittelalter",
+    "modern": "Neuzeit"
+  },
   "axis": {
     "billion": "Mrd",
     "million": "Mio",

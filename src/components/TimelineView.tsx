@@ -28,6 +28,7 @@ if (Platform.OS !== 'web') {
   }
 }
 
+import { EpochJumpBar } from './EpochJumpBar';
 import { TimeAxis } from './TimeAxis';
 import { TimelineBreadcrumb } from './TimelineBreadcrumb';
 import { ZoomLevelIndicator } from './ZoomLevelIndicator';
@@ -157,6 +158,8 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   // Web: horizontal scroll position + ref for programmatic reset
   const [webScrollX, setWebScrollX] = useState(0);
   const webScrollRef = useRef<ScrollView>(null);
+  // When set, a useEffect fires to animate the web ScrollView to that X position.
+  const [webJumpScrollX, setWebJumpScrollX] = useState<number | null>(null);
 
   // Popover shown when a tap hits multiple overlapping events (#35)
   const [popoverState, setPopoverState] = useState<{
@@ -186,6 +189,17 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     offsetX.value = withTiming(state.offsetX, { duration: 600 });
     pixelsPerUnit.value = withTiming(state.pixelsPerUnit, { duration: 600 });
   }, [resetKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Scroll the web ScrollView to a jump target set by zoomToFit.
+  // Accessing refs in effects is the approved React pattern (#44/#39).
+  useEffect(() => {
+    if (webJumpScrollX === null) return;
+    const target = webJumpScrollX;
+    requestAnimationFrame(() => {
+      webScrollRef.current?.scrollTo({ x: target, animated: true });
+      setWebJumpScrollX(null);
+    });
+  }, [webJumpScrollX]);
 
   useAnimatedReaction(
     () => ({ o: offsetX.value, p: pixelsPerUnit.value }),
@@ -307,7 +321,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     candidates.sort((a, b) => a.dist - b.dist);
     if (candidates.length === 1) {
       const first = candidates[0];
-      if (first) onSelectEvent(first.ev);
+      if (first) zoomToFit(first.ev.startYear, first.ev.endYear, () => onSelectEvent(first.ev));
     } else {
       setPopoverState({ events: candidates.map((c) => c.ev), x: px, y: py });
     }
@@ -389,7 +403,31 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     80,
   );
 
-  const handleTap = (event: TimelineEvent) => onSelectEvent(event);
+  // Animates the viewport to show [startYear, endYear] with 15% padding each side.
+  // onDone is called after the animation (used by #44 to open the detail modal).
+  function zoomToFit(startYear: number, endYear: number | null | undefined, onDone?: () => void) {
+    const startT = yearToT(startYear);
+    const rawEndT = yearToT(endYear ?? startYear);
+    const spanT = Math.max(Math.abs(rawEndT - startT), 1.0);
+    const centerT = (startT + rawEndT) / 2;
+    const newPPU = clampPixelsPerUnit(canvasWidth / (spanT / 0.7));
+    if (Platform.OS === 'web') {
+      // For web, direct-assign PPU and queue the scroll via state so the
+      // ref access happens in a useEffect (not in the gesture callback).
+      pixelsPerUnit.value = newPPU;
+      setJsPixelsPerUnit(newPPU);
+      setWebJumpScrollX(Math.max(0, (centerT - TOTAL_T_MIN) * newPPU - canvasWidth / 2));
+      if (onDone) setTimeout(onDone, 350);
+    } else {
+      const newOffsetX = clampOffsetX(centerT - canvasWidth / (2 * newPPU), newPPU, canvasWidth);
+      pixelsPerUnit.value = withTiming(newPPU, { duration: 600 });
+      offsetX.value = withTiming(newOffsetX, { duration: 600 });
+      if (onDone) setTimeout(onDone, 650);
+    }
+  }
+
+  const handleTap = (event: TimelineEvent) =>
+    zoomToFit(event.startYear, event.endYear, () => onSelectEvent(event));
 
   const zoomIn = () => {
     if (Platform.OS === 'web') {
@@ -481,6 +519,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
             />
           </View>
         </View>
+        <EpochJumpBar onJump={zoomToFit} />
         <View style={styles.container}>
           <View
             style={[
@@ -648,6 +687,8 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
         </View>
       </View>
 
+      <EpochJumpBar onJump={zoomToFit} />
+
       <View style={styles.container}>
         <View style={styles.labels}>
           {lanes.map((cat, idx) => (
@@ -813,7 +854,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                 style={styles.popoverItem}
                 onPress={() => {
                   setPopoverState(null);
-                  onSelectEvent(ev);
+                  zoomToFit(ev.startYear, ev.endYear, () => onSelectEvent(ev));
                 }}
                 accessibilityRole="button"
                 accessibilityLabel={ev.title}
