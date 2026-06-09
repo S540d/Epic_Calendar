@@ -12,6 +12,8 @@ type Props = {
   onJump: (newOffsetX: number) => void;
 };
 
+const A11Y_STEP = 0.1;
+
 export function TimelineMinimap({ offsetX, pixelsPerUnit, canvasWidth, onJump }: Props) {
   const [barWidth, setBarWidth] = useState(0);
 
@@ -24,6 +26,25 @@ export function TimelineMinimap({ offsetX, pixelsPerUnit, canvasWidth, onJump }:
       onJump(clampOffsetX(tAtTap - tSpan / 2, pixelsPerUnit, canvasWidth));
     },
     [barWidth, pixelsPerUnit, canvasWidth, onJump],
+  );
+
+  const handleAccessibilityAction = useCallback(
+    (event: { nativeEvent: { actionName: string } }) => {
+      if (!pixelsPerUnit || !canvasWidth) return;
+      const tSpan = canvasWidth / pixelsPerUnit;
+      const currentFraction = Math.max(0, Math.min(1, (offsetX - T_MIN) / FULL_T_SPAN));
+      let newFraction: number;
+      if (event.nativeEvent.actionName === 'increment') {
+        newFraction = Math.min(1, currentFraction + A11Y_STEP);
+      } else if (event.nativeEvent.actionName === 'decrement') {
+        newFraction = Math.max(0, currentFraction - A11Y_STEP);
+      } else {
+        return;
+      }
+      const tAtNew = T_MIN + newFraction * FULL_T_SPAN;
+      onJump(clampOffsetX(tAtNew - tSpan / 2, pixelsPerUnit, canvasWidth));
+    },
+    [pixelsPerUnit, canvasWidth, offsetX, onJump],
   );
 
   if (!pixelsPerUnit || !canvasWidth) return null;
@@ -43,6 +64,11 @@ export function TimelineMinimap({ offsetX, pixelsPerUnit, canvasWidth, onJump }:
         onPress={handlePress}
         accessibilityRole="adjustable"
         accessibilityValue={{ min: 0, max: 100, now: Math.round(indicatorFraction * 100) }}
+        accessibilityActions={[
+          { name: 'increment', label: 'scroll forward' },
+          { name: 'decrement', label: 'scroll back' },
+        ]}
+        onAccessibilityAction={handleAccessibilityAction}
       >
         <View style={[styles.indicator, { left: indicatorLeft, width: indicatorWidth }]} />
       </Pressable>

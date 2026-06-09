@@ -196,7 +196,6 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     tracksByLane: new Map<Category, TrackMap>(),
     jsOffsetX: initState.offsetX,
     jsPixelsPerUnit: initState.pixelsPerUnit,
-    canvasWidth,
   });
 
   // Stable ref to the latest zoomToFit closure so handleCanvasTap doesn't need it as dep.
@@ -565,7 +564,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   useLayoutEffect(() => {
     Object.assign(tapDataRef.current, {
       lanes, laneTops, laneTrackCounts, visibleByLane, tracksByLane,
-      jsOffsetX, jsPixelsPerUnit, canvasWidth,
+      jsOffsetX, jsPixelsPerUnit,
     });
   });
   // zoomToFitRef: only update when zoomToFit rebuilds (on canvasWidth resize).
