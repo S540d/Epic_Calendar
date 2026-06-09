@@ -13,17 +13,20 @@ type Props = {
 
 export function TimelineBreadcrumb({ startYear, endYear, epoch }: Props) {
   const { t } = useTranslation();
-  const label = `${formatEventYear(startYear, t)} – ${formatEventYear(endYear, t)}`;
+  const range = `${formatEventYear(startYear, t)} – ${formatEventYear(endYear, t)}`;
 
   return (
     <View style={styles.pill} pointerEvents="none">
       {epoch ? (
-        <Text style={styles.epoch} numberOfLines={1}>
-          {epoch}
-        </Text>
+        <>
+          <Text style={styles.epoch} numberOfLines={1}>
+            {epoch}
+          </Text>
+          <Text style={styles.separator}>·</Text>
+        </>
       ) : null}
       <Text style={styles.text} numberOfLines={1}>
-        {label}
+        {range}
       </Text>
     </View>
   );
@@ -34,19 +37,27 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 6,
     right: 8,
-    alignItems: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: 'rgba(31, 36, 45, 0.88)',
     borderRadius: radii.pill,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderWidth: 1,
     borderColor: 'rgba(42, 49, 60, 0.7)',
+    gap: 4,
   },
   epoch: {
     ...typography.caption,
     fontSize: 11,
     fontWeight: '700',
     color: colors.textPrimary,
+  },
+  separator: {
+    ...typography.caption,
+    fontSize: 11,
+    color: colors.textSecondary,
+    opacity: 0.5,
   },
   text: {
     ...typography.caption,
