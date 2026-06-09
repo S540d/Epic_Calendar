@@ -28,6 +28,10 @@
   "chip": {
     "soon": "soon"
   },
+  "popover": {
+    "dismiss": "Dismiss",
+    "title": "Which event?"
+  },
   "zoom": {
     "label": "Zoom",
     "level": {

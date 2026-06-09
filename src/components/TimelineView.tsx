@@ -51,6 +51,7 @@ import {
   TRACK_HEIGHT,
   colors,
   eventColor,
+  shadows,
   spacing,
   typography,
   type Category,
@@ -70,8 +71,11 @@ const TOTAL_T_MIN = yearToT(-13_800_000_000);
 const T_HEUTE = yearToT(2026);
 const TOTAL_T_MAX = T_HEUTE;
 
-const LABEL_MIN_BAR_PX = 48;
+/** Minimum visible bar width to attempt rendering a (possibly truncated) label. */
+const LABEL_MIN_BAR_PX = 22;
 const LABEL_MAX_WIDTH = 96;
+const POPOVER_MAX_WIDTH = 220;
+const POPOVER_MAX_HEIGHT = 200;
 
 /** Minimum touch-target size (iOS HIG 44pt / Material 48dp) for event taps. */
 const MIN_HIT_PX = 44;
@@ -154,6 +158,13 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   const [webScrollX, setWebScrollX] = useState(0);
   const webScrollRef = useRef<ScrollView>(null);
 
+  // Popover shown when a tap hits multiple overlapping events (#35)
+  const [popoverState, setPopoverState] = useState<{
+    events: TimelineEvent[];
+    x: number;
+    y: number;
+  } | null>(null);
+
   // Ref so the reset effect always reads the current canvasWidth without re-subscribing
   const canvasWidthRef = useRef(canvasWidth);
   useLayoutEffect(() => {
@@ -182,6 +193,8 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
       if (!prev || Math.abs(curr.o - prev.o) > 0.5 || Math.abs(curr.p - prev.p) > 0.5) {
         runOnJS(setJsOffsetX)(curr.o);
         runOnJS(setJsPixelsPerUnit)(curr.p);
+        // Close disambiguation popover when the viewport moves
+        runOnJS(setPopoverState)(null);
       }
     },
     [],
@@ -262,11 +275,11 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   );
   const heuteVisible = heutePx >= -1 && heutePx <= canvasWidth + 1;
 
-  // Canvas-space hit-test (native). Enforces a minimum 44px hit-box per event
-  // and, when several overlap, picks the one whose center is nearest the tap.
+  // Canvas-space hit-test (native). Enforces a minimum 44px hit-box per event.
+  // If exactly one event is hit, selects it immediately.
+  // If multiple events overlap at the tap position, shows a disambiguation popover.
   function handleCanvasTap(px: number, py: number) {
-    let found: TimelineEvent | null = null;
-    let bestDist = Infinity;
+    const candidates: Array<{ ev: TimelineEvent; dist: number }> = [];
     for (let i = 0; i < lanes.length; i++) {
       const cat = lanes[i];
       if (!cat) continue;
@@ -287,14 +300,17 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
         const cx = x + w / 2;
         const half = Math.max(w, MIN_HIT_PX) / 2;
         if (px < cx - half || px > cx + half) continue;
-        const d = Math.abs(px - cx);
-        if (d < bestDist) {
-          bestDist = d;
-          found = ev;
-        }
+        candidates.push({ ev, dist: Math.abs(px - cx) });
       }
     }
-    if (found) onSelectEvent(found);
+    if (candidates.length === 0) return;
+    candidates.sort((a, b) => a.dist - b.dist);
+    if (candidates.length === 1) {
+      const first = candidates[0];
+      if (first) onSelectEvent(first.ev);
+    } else {
+      setPopoverState({ events: candidates.map((c) => c.ev), x: px, y: py });
+    }
   }
 
   // Zoom keeping the given focal x-coordinate fixed (used by tap-to-zoom).
@@ -550,7 +566,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                               } as any
                             }
                           />
-                          {stickyLabelLeft !== null && stickyLabelMaxW > 10 && lblSize > 0 && (
+                          {stickyLabelLeft !== null && stickyLabelMaxW > 4 && lblSize > 0 && (
                             <View
                               pointerEvents="none"
                               style={{
@@ -562,6 +578,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                             >
                               <Text
                                 numberOfLines={1}
+                                ellipsizeMode="tail"
                                 style={{
                                   ...typography.caption,
                                   fontSize: lblSize,
@@ -738,6 +755,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                             color: colors.textPrimary,
                           }}
                           numberOfLines={1}
+                          ellipsizeMode="tail"
                         >
                           {ev.title}
                         </Text>
@@ -758,6 +776,64 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
           <Text style={styles.zoomBtnText}>−</Text>
         </TouchableOpacity>
       </View>
+
+      {popoverState && (
+        <>
+          {/* Transparent backdrop — tap outside closes the popover */}
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setPopoverState(null)}
+            accessible={false}
+          />
+          <View
+            style={[
+              styles.popover,
+              {
+                // px is in canvas coords; add LANE_LABEL_WIDTH to convert to
+                // screen coords, then clamp to [0, right edge - popover width].
+                left: Math.max(
+                  0,
+                  Math.min(
+                    popoverState.x + LANE_LABEL_WIDTH,
+                    canvasWidth + LANE_LABEL_WIDTH - POPOVER_MAX_WIDTH,
+                  ),
+                ),
+                // Clamp vertically so the popover stays inside the canvas area.
+                top: Math.max(
+                  0,
+                  Math.min(popoverState.y - 8, canvasHeight - POPOVER_MAX_HEIGHT),
+                ),
+              },
+            ]}
+          >
+            <Text style={styles.popoverTitle}>{t('popover.title')}</Text>
+            {popoverState.events.map((ev) => (
+              <Pressable
+                key={ev.id}
+                style={styles.popoverItem}
+                onPress={() => {
+                  setPopoverState(null);
+                  onSelectEvent(ev);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={ev.title}
+              >
+                <View style={[styles.popoverDot, { backgroundColor: eventColor(ev) }]} />
+                <Text style={styles.popoverText} numberOfLines={1}>
+                  {ev.title}
+                </Text>
+              </Pressable>
+            ))}
+            <Pressable
+              style={styles.popoverDismiss}
+              onPress={() => setPopoverState(null)}
+              accessibilityLabel={t('popover.dismiss')}
+            >
+              <Text style={styles.popoverDismissText}>✕</Text>
+            </Pressable>
+          </View>
+        </>
+      )}
     </View>
   );
 }
@@ -806,5 +882,57 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: colors.textSecondary,
     lineHeight: 24,
+  },
+  popover: {
+    position: 'absolute',
+    minWidth: 160,
+    maxWidth: POPOVER_MAX_WIDTH,
+    backgroundColor: colors.bgElevated,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingVertical: spacing.xs,
+    zIndex: 100,
+    ...shadows.md,
+  },
+  popoverTitle: {
+    ...typography.caption,
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.textMuted,
+    paddingHorizontal: spacing.sm,
+    paddingTop: spacing.xs,
+    paddingBottom: 2,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  popoverItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs + 2,
+    gap: 8,
+  },
+  popoverDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    flexShrink: 0,
+  },
+  popoverText: {
+    ...typography.caption,
+    color: colors.textPrimary,
+    flex: 1,
+  },
+  popoverDismiss: {
+    alignItems: 'center',
+    paddingVertical: spacing.xs,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    marginTop: spacing.xs,
+  },
+  popoverDismissText: {
+    ...typography.caption,
+    color: colors.textMuted,
   },
 });
