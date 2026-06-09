@@ -204,6 +204,13 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     () => {},
   );
 
+  // Stable ref to onSelectEvent so the pending-modal timer doesn't restart if the
+  // parent recreates the callback while a zoom animation is in progress.
+  const onSelectEventRef = useRef(onSelectEvent);
+  useLayoutEffect(() => {
+    onSelectEventRef.current = onSelectEvent;
+  }, [onSelectEvent]);
+
   useLayoutEffect(() => {
     canvasWidthRef.current = canvasWidth;
   });
@@ -211,13 +218,13 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   // Open the detail modal after the zoom-to-fit animation; clears on unmount.
   useEffect(() => {
     if (!pendingSelectEvent) return;
-    const delay = ZOOM_MODAL_DELAY_MS;
+    const ev = pendingSelectEvent;
     const timer = setTimeout(() => {
-      onSelectEvent(pendingSelectEvent);
+      onSelectEventRef.current(ev);
       setPendingSelectEvent(null);
-    }, delay);
+    }, ZOOM_MODAL_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [pendingSelectEvent, onSelectEvent]);
+  }, [pendingSelectEvent]);
 
   // Animate to default view whenever resetKey increments (0 = initial mount, skip)
   useEffect(() => {

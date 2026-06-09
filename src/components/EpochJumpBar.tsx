@@ -32,7 +32,7 @@ function EpochChip({ epoch, onJump }: ChipProps) {
   const { t } = useTranslation();
   const handlePress = useCallback(
     () => onJump(epoch.startYear, epoch.endYear),
-    [onJump, epoch.startYear, epoch.endYear],
+    [onJump, epoch],
   );
   return (
     <Pressable
