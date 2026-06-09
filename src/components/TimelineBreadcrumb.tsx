@@ -18,11 +18,13 @@ export function TimelineBreadcrumb({ startYear, endYear, epoch }: Props) {
   return (
     <View style={styles.pill} pointerEvents="none">
       {epoch ? (
-        <Text style={styles.epoch} numberOfLines={1}>
-          {epoch}
-        </Text>
+        <>
+          <Text style={styles.epoch} numberOfLines={1}>
+            {epoch}
+          </Text>
+          <Text style={styles.separator}>·</Text>
+        </>
       ) : null}
-      {epoch ? <Text style={styles.separator}>·</Text> : null}
       <Text style={styles.text} numberOfLines={1}>
         {range}
       </Text>
