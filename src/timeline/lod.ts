@@ -29,8 +29,8 @@ const T_NOW = yearToT(2026);
 export const HUMAN_T_SPAN = T_NOW - T_HUMAN_START;
 
 // Full timeline: Big Bang (−13.8 Gyr) to present.
-const T_MIN = yearToT(-13_800_000_000);
-const T_MAX = yearToT(2026);
+export const T_MIN = yearToT(-13_800_000_000);
+export const T_MAX = yearToT(2026);
 export const FULL_T_SPAN = T_MAX - T_MIN;
 
 /**
@@ -63,6 +63,13 @@ export function eventLabelFontSize(zoomLevel: ZoomLevel): number {
   if (zoomLevel === 2) return 11;
   if (zoomLevel === 3) return 12;
   return 13; // level 4
+}
+
+/** Returns max number of label lines per bar at the current LOD. */
+export function eventLabelMaxLines(zoomLevel: ZoomLevel): number {
+  if (zoomLevel <= 2) return 1;
+  if (zoomLevel === 3) return 2;
+  return 3; // level 4
 }
 
 export const MIN_PIXELS_PER_UNIT = 12;
