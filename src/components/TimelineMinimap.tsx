@@ -15,6 +15,7 @@ type Props = {
 export function TimelineMinimap({ offsetX, pixelsPerUnit, canvasWidth, onJump }: Props) {
   const [barWidth, setBarWidth] = useState(0);
 
+  if (!pixelsPerUnit) return null;
   const tSpan = canvasWidth / pixelsPerUnit;
   const indicatorFraction = (offsetX - T_MIN) / FULL_T_SPAN;
   const indicatorLeft = Math.max(0, Math.min(indicatorFraction * barWidth, barWidth - 4));

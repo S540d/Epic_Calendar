@@ -199,11 +199,6 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
 
   useLayoutEffect(() => {
     canvasWidthRef.current = canvasWidth;
-    tapDataRef.current = {
-      lanes, laneTops, laneTrackCounts, visibleByLane, tracksByLane,
-      jsOffsetX, jsPixelsPerUnit, canvasWidth,
-    };
-    zoomToFitRef.current = zoomToFit;
   });
 
   // Open the detail modal after the zoom-to-fit animation; clears on unmount.
@@ -344,6 +339,43 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   );
   const heuteVisible = heutePx >= -1 && heutePx <= canvasWidth + 1;
 
+  // Web-path visibility data, memoized like native counterparts.
+  // Returns empty maps on native (Platform.OS is a compile-time constant).
+  const webVisibleByLane = useMemo(() => {
+    if (Platform.OS !== 'web') return new Map<Category, TimelineEvent[]>();
+    const webOffsetX = TOTAL_T_MIN + webScrollX / jsPixelsPerUnit;
+    const visStartYear = tToYear(webOffsetX);
+    const visEndYear = tToYear(webOffsetX + canvasWidth / jsPixelsPerUnit);
+    const out = new Map<Category, TimelineEvent[]>();
+    for (const cat of lanes) {
+      out.set(cat, filterVisible(ALL_EVENTS, {
+        startYear: visStartYear,
+        endYear: visEndYear,
+        zoomLevel,
+        categories: new Set<Category>([cat]),
+        continent,
+      }));
+    }
+    return out;
+  }, [webScrollX, jsPixelsPerUnit, canvasWidth, lanes, zoomLevel, continent]);
+
+  const webOverflowCounts = useMemo(() => {
+    const out = new Map<Category, number>();
+    for (const [cat, events] of webVisibleByLane) {
+      if (events.length > MAX_EVENTS_PER_LANE) out.set(cat, events.length - MAX_EVENTS_PER_LANE);
+    }
+    return out;
+  }, [webVisibleByLane]);
+
+  const webTracksByLane = useMemo(() => {
+    const out = new Map<Category, TrackMap>();
+    for (const cat of lanes) {
+      const evs = (webVisibleByLane.get(cat) ?? []).slice(0, MAX_EVENTS_PER_LANE);
+      out.set(cat, assignTracks(evs));
+    }
+    return out;
+  }, [webVisibleByLane, lanes]);
+
   // Canvas-space hit-test (native). Enforces a minimum 44px hit-box per event.
   // If exactly one event is hit, selects it immediately.
   // If multiple events overlap at the tap position, shows a disambiguation popover.
@@ -467,9 +499,14 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     [zoomAtPoint],
   );
 
+  const exclusiveGesture = useMemo(
+    () => Gesture.Exclusive(doubleTap, singleTap),
+    [doubleTap, singleTap],
+  );
+
   const gesture = useMemo(
-    () => Gesture.Simultaneous(panGesture, pinchGesture, Gesture.Exclusive(doubleTap, singleTap)),
-    [panGesture, pinchGesture, doubleTap, singleTap],
+    () => Gesture.Simultaneous(panGesture, pinchGesture, exclusiveGesture),
+    [panGesture, pinchGesture, exclusiveGesture],
   );
 
   const canvasHeight = Math.max(
@@ -485,7 +522,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
 
   // Animates the viewport to show [startYear, endYear] with ~30% padding each side.
   // For point events (no endYear), the 1.0 T-unit minimum prevents excessive zoom.
-  function zoomToFit(startYear: number, endYear: number | null | undefined) {
+  const zoomToFit = useCallback((startYear: number, endYear: number | null | undefined) => {
     const startT = yearToT(startYear);
     const rawEndT = yearToT(endYear ?? startYear);
     const spanT = Math.max(Math.abs(rawEndT - startT), 1.0);
@@ -505,7 +542,17 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
       pixelsPerUnit.value = withTiming(newPPU, { duration: 600 });
       offsetX.value = withTiming(newOffsetX, { duration: 600 });
     }
-  }
+  }, [canvasWidth, pixelsPerUnit, offsetX, setJsPixelsPerUnit, setWebJumpScrollX]);
+
+  // Update tapDataRef and zoomToFitRef after every render so gesture callbacks
+  // always see current values without capturing a new closure per frame.
+  useLayoutEffect(() => {
+    Object.assign(tapDataRef.current, {
+      lanes, laneTops, laneTrackCounts, visibleByLane, tracksByLane,
+      jsOffsetX, jsPixelsPerUnit, canvasWidth,
+    });
+    zoomToFitRef.current = zoomToFit;
+  });
 
   const handleTap = (event: TimelineEvent) => {
     zoomToFit(event.startYear, event.endYear);
@@ -570,33 +617,10 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     const heuteWebX = (T_HEUTE - TOTAL_T_MIN) * WEB_PPU;
     const initWebScrollX = Math.max(0, heuteWebX - canvasWidth);
 
-    const webVisibleByLane = new Map<Category, TimelineEvent[]>();
     const visibleStartYear = tToYear(webOffsetX);
     const visibleEndYear = tToYear(webOffsetX + canvasWidth / WEB_PPU);
     const webCenterYear = tToYear(webOffsetX + canvasWidth / (2 * WEB_PPU));
     const webEpochLabel = dominantEpoch(webCenterYear)?.title ?? null;
-    for (const cat of lanes) {
-      webVisibleByLane.set(
-        cat,
-        filterVisible(ALL_EVENTS, {
-          startYear: visibleStartYear,
-          endYear: visibleEndYear,
-          zoomLevel,
-          categories: new Set<Category>([cat]),
-          continent,
-        }),
-      );
-    }
-
-    const webOverflowCounts = new Map<Category, number>();
-    for (const [cat, events] of webVisibleByLane) {
-      if (events.length > MAX_EVENTS_PER_LANE) webOverflowCounts.set(cat, events.length - MAX_EVENTS_PER_LANE);
-    }
-    const webTracksByLane = new Map<Category, TrackMap>();
-    for (const cat of lanes) {
-      const evs = (webVisibleByLane.get(cat) ?? []).slice(0, MAX_EVENTS_PER_LANE);
-      webTracksByLane.set(cat, assignTracks(evs));
-    }
 
     return (
       <View style={{ flex: 1 }}>
