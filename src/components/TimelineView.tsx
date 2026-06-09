@@ -81,6 +81,8 @@ const POPOVER_MAX_HEIGHT = 200;
 
 /** Minimum touch-target size (iOS HIG 44pt / Material 48dp) for event taps. */
 const MIN_HIT_PX = 44;
+/** Fraction of viewport used by the event span when zooming to fit. */
+const ZOOM_TO_FIT_FILL = 0.7;
 /** Maximum events rendered per lane; excess shows a "+N" cluster badge. */
 const MAX_EVENTS_PER_LANE = 15;
 /** Zoom factor applied per double-tap / two-finger-tap. */
@@ -183,7 +185,10 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   useEffect(() => {
     if (!pendingSelectEvent) return;
     const delay = Platform.OS === 'web' ? 350 : 650;
-    const timer = setTimeout(() => { onSelectEvent(pendingSelectEvent); }, delay);
+    const timer = setTimeout(() => {
+      onSelectEvent(pendingSelectEvent);
+      setPendingSelectEvent(null);
+    }, delay);
     return () => clearTimeout(timer);
   }, [pendingSelectEvent, onSelectEvent]);
 
@@ -431,17 +436,14 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     80,
   );
 
-  // Animates the viewport to show [startYear, endYear] with 15% padding each side.
-  // onDone is called after the animation (used by #44 to open the detail modal).
-  // Animates the viewport to show [startYear, endYear] with ~15% padding each side.
+  // Animates the viewport to show [startYear, endYear] with ~30% padding each side.
   // For point events (no endYear), the 1.0 T-unit minimum prevents excessive zoom.
-  // To open a modal after the animation, set pendingSelectEvent instead of using onDone.
   function zoomToFit(startYear: number, endYear: number | null | undefined) {
     const startT = yearToT(startYear);
     const rawEndT = yearToT(endYear ?? startYear);
     const spanT = Math.max(Math.abs(rawEndT - startT), 1.0);
     const centerT = (startT + rawEndT) / 2;
-    const newPPU = clampPixelsPerUnit(canvasWidth / (spanT / 0.7));
+    const newPPU = clampPixelsPerUnit(canvasWidth / (spanT / ZOOM_TO_FIT_FILL));
     if (Platform.OS === 'web') {
       // Direct-assign PPU and queue the scroll via state so that the ref access
       // (`webScrollRef.current`) happens in a useEffect, not in the gesture callback.
@@ -465,7 +467,8 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
 
   function handleMinimapJump(newOffsetX: number) {
     if (Platform.OS === 'web') {
-      const newScrollX = Math.max(0, (newOffsetX - TOTAL_T_MIN) * jsPixelsPerUnit);
+      const maxScrollX = Math.max(0, (TOTAL_T_MAX - TOTAL_T_MIN) * jsPixelsPerUnit - canvasWidth);
+      const newScrollX = Math.max(0, Math.min((newOffsetX - TOTAL_T_MIN) * jsPixelsPerUnit, maxScrollX));
       setWebJumpScrollX(newScrollX);
     } else {
       offsetX.value = withTiming(newOffsetX, { duration: 300 });
@@ -538,6 +541,16 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
       );
     }
 
+    const webOverflowCounts = new Map<Category, number>();
+    for (const [cat, events] of webVisibleByLane) {
+      if (events.length > MAX_EVENTS_PER_LANE) webOverflowCounts.set(cat, events.length - MAX_EVENTS_PER_LANE);
+    }
+    const webTracksByLane = new Map<Category, TrackMap>();
+    for (const cat of lanes) {
+      const evs = (webVisibleByLane.get(cat) ?? []).slice(0, MAX_EVENTS_PER_LANE);
+      webTracksByLane.set(cat, assignTracks(evs));
+    }
+
     return (
       <View style={{ flex: 1 }}>
         <View
@@ -577,7 +590,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
             ]}
           >
             {lanes.map((cat, idx) => {
-              const overflow = overflowCounts.get(cat) ?? 0;
+              const overflow = webOverflowCounts.get(cat) ?? 0;
               return (
                 <View
                   key={cat}
@@ -612,7 +625,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                 const laneH = laneHeightForTracks(laneTrackCounts.get(cat) ?? 1);
                 // Clip to MAX_EVENTS_PER_LANE; excess is shown as badge in lane label.
                 const events = (webVisibleByLane.get(cat) ?? []).slice(0, MAX_EVENTS_PER_LANE);
-                const webTrackMap = assignTracks(events);
+                const webTrackMap = webTracksByLane.get(cat);
                 const lblSize = eventLabelFontSize(zoomLevel);
                 return (
                   <View key={cat}>
@@ -631,7 +644,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                       const endT = yearToT(ev.endYear ?? ev.startYear);
                       const x = (startT - webOffsetAtZero) * WEB_PPU;
                       const w = Math.max(2, (endT - startT) * WEB_PPU);
-                      const trackIdx = webTrackMap.get(ev.id) ?? 0;
+                      const trackIdx = webTrackMap?.get(ev.id) ?? 0;
                       const barTop = laneTop + LANE_PADDING_V + trackIdx * TRACK_HEIGHT + 4;
                       const barHeight = TRACK_HEIGHT - 8;
                       const stickyLabelLeft =

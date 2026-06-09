@@ -38,9 +38,6 @@ export function TimelineMinimap({ offsetX, pixelsPerUnit, canvasWidth, onJump }:
         onPress={handlePress}
         accessibilityRole="adjustable"
       >
-        {/* Full-range tint */}
-        <View style={styles.trackFill} />
-        {/* Current viewport indicator */}
         <View style={[styles.indicator, { left: indicatorLeft, width: indicatorWidth }]} />
       </Pressable>
     </View>
@@ -65,10 +62,6 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.sm,
     overflow: 'hidden',
     position: 'relative',
-  },
-  trackFill: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'transparent',
   },
   indicator: {
     position: 'absolute',
