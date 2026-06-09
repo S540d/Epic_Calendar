@@ -409,11 +409,12 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
       const events = visibleByLane.get(cat) ?? [];
       const trackMap = tracksByLane.get(cat);
       for (const ev of events) {
+        const trackIdx = trackMap?.get(ev.id);
+        if (trackIdx === undefined) continue; // beyond MAX_EVENTS_PER_LANE cap — no bar rendered
         const startT = yearToT(ev.startYear);
         const endT = yearToT(ev.endYear ?? ev.startYear);
         const x = (startT - jsOffsetX) * jsPixelsPerUnit;
         const w = Math.max(2, (endT - startT) * jsPixelsPerUnit);
-        const trackIdx = trackMap?.get(ev.id) ?? 0;
         const barY = laneTop + LANE_PADDING_V + trackIdx * TRACK_HEIGHT + 4;
         const barH = TRACK_HEIGHT - 8;
         if (py < barY || py > barY + barH) continue;

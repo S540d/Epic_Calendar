@@ -42,6 +42,7 @@ export function TimelineMinimap({ offsetX, pixelsPerUnit, canvasWidth, onJump }:
         onLayout={(e) => setBarWidth(e.nativeEvent.layout.width)}
         onPress={handlePress}
         accessibilityRole="adjustable"
+        accessibilityValue={{ min: 0, max: 1, now: indicatorFraction }}
       >
         <View style={[styles.indicator, { left: indicatorLeft, width: indicatorWidth }]} />
       </Pressable>
