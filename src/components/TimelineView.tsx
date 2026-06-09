@@ -75,6 +75,7 @@ const TOTAL_T_MAX = T_HEUTE;
 const LABEL_MIN_BAR_PX = 22;
 const LABEL_MAX_WIDTH = 96;
 const POPOVER_MAX_WIDTH = 220;
+const POPOVER_MAX_HEIGHT = 200;
 
 /** Minimum touch-target size (iOS HIG 44pt / Material 48dp) for event taps. */
 const MIN_HIT_PX = 44;
@@ -789,15 +790,18 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
               styles.popover,
               {
                 // px is in canvas coords; add LANE_LABEL_WIDTH to convert to
-                // screen coords, then clamp so the popover doesn't overflow right.
-                left: Math.min(
-                  popoverState.x + LANE_LABEL_WIDTH,
-                  canvasWidth + LANE_LABEL_WIDTH - POPOVER_MAX_WIDTH,
+                // screen coords, then clamp to [0, right edge - popover width].
+                left: Math.max(
+                  0,
+                  Math.min(
+                    popoverState.x + LANE_LABEL_WIDTH,
+                    canvasWidth + LANE_LABEL_WIDTH - POPOVER_MAX_WIDTH,
+                  ),
                 ),
                 // Clamp vertically so the popover stays inside the canvas area.
                 top: Math.max(
                   0,
-                  Math.min(popoverState.y - 8, canvasHeight - 200),
+                  Math.min(popoverState.y - 8, canvasHeight - POPOVER_MAX_HEIGHT),
                 ),
               },
             ]}
