@@ -16,7 +16,7 @@ const EPOCHS: readonly Epoch[] = [
   { key: 'earlyHumans', startYear: -300_000,        endYear: -10_000         },
   { key: 'antiquity',   startYear: -3_000,           endYear: 500             },
   { key: 'middleAges',  startYear: 500,              endYear: 1_500           },
-  { key: 'modern',      startYear: 1_400,            endYear: 2026            },
+  { key: 'modern',      startYear: 1_500,            endYear: 2026            },
 ];
 
 type Props = {
