@@ -65,6 +65,13 @@ export function eventLabelFontSize(zoomLevel: ZoomLevel): number {
   return 13; // level 4
 }
 
+/** Returns max number of label lines per bar at the current LOD. */
+export function eventLabelMaxLines(zoomLevel: ZoomLevel): number {
+  if (zoomLevel <= 2) return 1;
+  if (zoomLevel === 3) return 2;
+  return 3; // level 4
+}
+
 export const MIN_PIXELS_PER_UNIT = 12;
 export const MAX_PIXELS_PER_UNIT = 8000;
 

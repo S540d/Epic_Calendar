@@ -1,5 +1,6 @@
 import {
   clampPixelsPerUnit,
+  eventLabelMaxLines,
   MAX_PIXELS_PER_UNIT,
   MIN_PIXELS_PER_UNIT,
   pixelsPerUnitToZoomLevel,
@@ -62,6 +63,20 @@ describe('humanHistoryViewState', () => {
     const { pixelsPerUnit: p1 } = humanHistoryViewState(400);
     const { pixelsPerUnit: p2 } = humanHistoryViewState(800);
     expect(p2).toBeCloseTo(p1 * 2, 5);
+  });
+});
+
+describe('eventLabelMaxLines', () => {
+  it('returns 1 for zoom levels 0–2', () => {
+    expect(eventLabelMaxLines(0)).toBe(1);
+    expect(eventLabelMaxLines(1)).toBe(1);
+    expect(eventLabelMaxLines(2)).toBe(1);
+  });
+  it('returns 2 for zoom level 3', () => {
+    expect(eventLabelMaxLines(3)).toBe(2);
+  });
+  it('returns 3 for zoom level 4', () => {
+    expect(eventLabelMaxLines(4)).toBe(3);
   });
 });
 

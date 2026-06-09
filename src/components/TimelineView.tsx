@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -39,6 +39,7 @@ import {
   clampOffsetX,
   clampPixelsPerUnit,
   eventLabelFontSize,
+  eventLabelMaxLines,
   humanHistoryViewState,
   pixelsPerUnitToZoomLevel,
 } from '@/timeline/lod';
@@ -177,8 +178,32 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
 
   // Ref so the reset effect always reads the current canvasWidth without re-subscribing
   const canvasWidthRef = useRef(canvasWidth);
+
+  // Stable snapshot of all hit-test inputs, updated after every render so that
+  // handleCanvasTap (memoized with []) always reads up-to-date data.
+  const tapDataRef = useRef({
+    lanes: [] as Category[],
+    laneTops: [] as number[],
+    laneTrackCounts: new Map<Category, number>(),
+    visibleByLane: new Map<Category, TimelineEvent[]>(),
+    tracksByLane: new Map<Category, TrackMap>(),
+    jsOffsetX: initState.offsetX,
+    jsPixelsPerUnit: initState.pixelsPerUnit,
+    canvasWidth: 0,
+  });
+
+  // Stable ref to the latest zoomToFit closure so handleCanvasTap doesn't need it as dep.
+  const zoomToFitRef = useRef<(startYear: number, endYear: number | null | undefined) => void>(
+    () => {},
+  );
+
   useLayoutEffect(() => {
     canvasWidthRef.current = canvasWidth;
+    tapDataRef.current = {
+      lanes, laneTops, laneTrackCounts, visibleByLane, tracksByLane,
+      jsOffsetX, jsPixelsPerUnit, canvasWidth,
+    };
+    zoomToFitRef.current = zoomToFit;
   });
 
   // Open the detail modal after the zoom-to-fit animation; clears on unmount.
@@ -322,7 +347,12 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   // Canvas-space hit-test (native). Enforces a minimum 44px hit-box per event.
   // If exactly one event is hit, selects it immediately.
   // If multiple events overlap at the tap position, shows a disambiguation popover.
-  function handleCanvasTap(px: number, py: number) {
+  // Stable (empty deps): reads current render data via tapDataRef, calls zoomToFit via zoomToFitRef.
+  const handleCanvasTap = useCallback((px: number, py: number) => {
+    const {
+      lanes, laneTops, laneTrackCounts, visibleByLane, tracksByLane,
+      jsOffsetX, jsPixelsPerUnit,
+    } = tapDataRef.current;
     const candidates: Array<{ ev: TimelineEvent; dist: number }> = [];
     for (let i = 0; i < lanes.length; i++) {
       const cat = lanes[i];
@@ -352,16 +382,17 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     if (candidates.length === 1) {
       const first = candidates[0];
       if (first) {
-        zoomToFit(first.ev.startYear, first.ev.endYear);
+        zoomToFitRef.current(first.ev.startYear, first.ev.endYear);
         setPendingSelectEvent(first.ev);
       }
     } else {
       setPopoverState({ events: candidates.map((c) => c.ev), x: px, y: py });
     }
-  }
+  }, []);
 
   // Zoom keeping the given focal x-coordinate fixed (used by tap-to-zoom).
-  function zoomAtPoint(focalX: number, factor: number) {
+  // Stable except on screen resize (canvasWidth changes); shared values are stable refs.
+  const zoomAtPoint = useCallback((focalX: number, factor: number) => {
     const current = pixelsPerUnit.value;
     const next = clampPixelsPerUnit(current * factor);
     if (next === current) return;
@@ -369,60 +400,76 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     const nextOffset = clampOffsetX(focalT - focalX / next, next, canvasWidth);
     pixelsPerUnit.value = withTiming(next, { duration: 300 });
     offsetX.value = withTiming(nextOffset, { duration: 300 });
-  }
+  }, [canvasWidth, pixelsPerUnit, offsetX]);
 
   // Pan: activeOffsetX / failOffsetY lets vertical swipes pass to the parent ScrollView.
   // The X threshold is a little wider than the tap maxDistance so a deliberate
   // drag becomes a pan while a quick tap stays a tap (less accidental scrolling).
-  const panGesture = Gesture.Pan()
-    .activeOffsetX([-12, 12])
-    .failOffsetY([-8, 8])
-    .onStart(() => {
-      startOffsetX.value = offsetX.value;
-    })
-    .onUpdate((e) => {
-      const raw = startOffsetX.value - e.translationX / pixelsPerUnit.value;
-      offsetX.value = clampOffsetX(raw, pixelsPerUnit.value, canvasWidth);
-    });
+  // Memoized so RNGH doesn't rebuild the handler tree on every pan frame.
+  const panGesture = useMemo(
+    () =>
+      Gesture.Pan()
+        .activeOffsetX([-12, 12])
+        .failOffsetY([-8, 8])
+        .onStart(() => {
+          startOffsetX.value = offsetX.value;
+        })
+        .onUpdate((e) => {
+          const raw = startOffsetX.value - e.translationX / pixelsPerUnit.value;
+          offsetX.value = clampOffsetX(raw, pixelsPerUnit.value, canvasWidth);
+        }),
+    [canvasWidth, startOffsetX, offsetX, pixelsPerUnit],
+  );
 
-  const pinchGesture = Gesture.Pinch()
-    .onStart((e) => {
-      startPixelsPerUnit.value = pixelsPerUnit.value;
-      startFocalT.value = offsetX.value + e.focalX / pixelsPerUnit.value;
-    })
-    .onUpdate((e) => {
-      const next = clampPixelsPerUnit(startPixelsPerUnit.value * e.scale);
-      pixelsPerUnit.value = next;
-      offsetX.value = clampOffsetX(startFocalT.value - e.focalX / next, next, canvasWidth);
-    });
+  const pinchGesture = useMemo(
+    () =>
+      Gesture.Pinch()
+        .onStart((e) => {
+          startPixelsPerUnit.value = pixelsPerUnit.value;
+          startFocalT.value = offsetX.value + e.focalX / pixelsPerUnit.value;
+        })
+        .onUpdate((e) => {
+          const next = clampPixelsPerUnit(startPixelsPerUnit.value * e.scale);
+          pixelsPerUnit.value = next;
+          offsetX.value = clampOffsetX(startFocalT.value - e.focalX / next, next, canvasWidth);
+        }),
+    [canvasWidth, startPixelsPerUnit, pixelsPerUnit, offsetX, startFocalT],
+  );
 
   // Single tap → select the nearest event under the finger (with an enforced
   // minimum hit-box so even hair-thin bars are reachable). maxDistance keeps it
   // from firing once a pan starts.
-  const singleTap = Gesture.Tap()
-    .maxDuration(250)
-    .maxDistance(10)
-    .onEnd((e) => {
-      runOnJS(handleCanvasTap)(e.x, e.y);
-    });
+  const singleTap = useMemo(
+    () =>
+      Gesture.Tap()
+        .maxDuration(250)
+        .maxDistance(10)
+        .onEnd((e) => {
+          runOnJS(handleCanvasTap)(e.x, e.y);
+        }),
+    [handleCanvasTap],
+  );
 
   // Double tap → zoom in centered on the tap point. (Zoom-out is covered by
   // pinch and the − button; gesture-handler's Tap has no multi-pointer mode.)
   // maxDelay bounds how long singleTap waits for a possible second tap before
   // firing, so event selection stays snappy (~250 ms worst case).
-  const doubleTap = Gesture.Tap()
-    .numberOfTaps(2)
-    .maxDuration(300)
-    .maxDelay(250)
-    .maxDistance(20)
-    .onEnd((e) => {
-      runOnJS(zoomAtPoint)(e.x, TAP_ZOOM_FACTOR);
-    });
+  const doubleTap = useMemo(
+    () =>
+      Gesture.Tap()
+        .numberOfTaps(2)
+        .maxDuration(300)
+        .maxDelay(250)
+        .maxDistance(20)
+        .onEnd((e) => {
+          runOnJS(zoomAtPoint)(e.x, TAP_ZOOM_FACTOR);
+        }),
+    [zoomAtPoint],
+  );
 
-  const gesture = Gesture.Simultaneous(
-    panGesture,
-    pinchGesture,
-    Gesture.Exclusive(doubleTap, singleTap),
+  const gesture = useMemo(
+    () => Gesture.Simultaneous(panGesture, pinchGesture, Gesture.Exclusive(doubleTap, singleTap)),
+    [panGesture, pinchGesture, doubleTap, singleTap],
   );
 
   const canvasHeight = Math.max(
@@ -627,6 +674,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                 const events = (webVisibleByLane.get(cat) ?? []).slice(0, MAX_EVENTS_PER_LANE);
                 const webTrackMap = webTracksByLane.get(cat);
                 const lblSize = eventLabelFontSize(zoomLevel);
+                const maxLines = eventLabelMaxLines(zoomLevel);
                 return (
                   <View key={cat}>
                     <View
@@ -651,6 +699,8 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                         w >= LABEL_MIN_BAR_PX ? Math.max(x + 3, webScrollX + 3) : null;
                       const stickyLabelMaxW =
                         stickyLabelLeft !== null ? Math.max(0, x + w - stickyLabelLeft - 3) : 0;
+                      const labelTopPos =
+                        maxLines === 1 ? barTop + barHeight / 2 - lblSize / 2 : barTop + 4;
                       // Expand thin bars to a >=44px touch target via hitSlop,
                       // without changing the visual bar width.
                       const hSlop = Math.max(0, (MIN_HIT_PX - w) / 2);
@@ -680,12 +730,12 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                               style={{
                                 position: 'absolute',
                                 left: stickyLabelLeft,
-                                top: barTop + barHeight / 2 - lblSize / 2,
+                                top: labelTopPos,
                                 maxWidth: stickyLabelMaxW,
                               }}
                             >
                               <Text
-                                numberOfLines={1}
+                                numberOfLines={maxLines}
                                 ellipsizeMode="tail"
                                 style={{
                                   ...typography.caption,
@@ -847,6 +897,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                 const events = visibleByLane.get(cat) ?? [];
                 const trackMap = tracksByLane.get(cat);
                 const lblSize = eventLabelFontSize(zoomLevel);
+                const maxLines = eventLabelMaxLines(zoomLevel);
                 return [
                   ...events.map((ev) => {
                     if (!labelVisibleIds.has(ev.id)) return null;
@@ -859,7 +910,8 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                     const trackIdx = trackMap?.get(ev.id) ?? 0;
                     const barY = laneTop + LANE_PADDING_V + trackIdx * TRACK_HEIGHT + 4;
                     const barH = TRACK_HEIGHT - 8;
-                    const labelTop = barY + barH / 2 - lblSize / 2;
+                    const labelTop =
+                      maxLines === 1 ? barY + barH / 2 - lblSize / 2 : barY + 4;
                     return (
                       <View
                         key={`lbl-${ev.id}`}
@@ -877,7 +929,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                             fontSize: lblSize,
                             color: colors.textPrimary,
                           }}
-                          numberOfLines={1}
+                          numberOfLines={maxLines}
                           ellipsizeMode="tail"
                         >
                           {ev.title}
