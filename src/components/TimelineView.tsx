@@ -31,6 +31,7 @@ if (Platform.OS !== 'web') {
 import { EpochJumpBar } from './EpochJumpBar';
 import { TimeAxis } from './TimeAxis';
 import { TimelineBreadcrumb } from './TimelineBreadcrumb';
+import { TimelineMinimap } from './TimelineMinimap';
 import { ZoomLevelIndicator } from './ZoomLevelIndicator';
 import { ALL_EVENTS } from '@/data/events';
 import { assignTracks, filterVisible, type TrackMap } from '@/timeline/culling';
@@ -80,6 +81,8 @@ const POPOVER_MAX_HEIGHT = 200;
 
 /** Minimum touch-target size (iOS HIG 44pt / Material 48dp) for event taps. */
 const MIN_HIT_PX = 44;
+/** Maximum events rendered per lane; excess shows a "+N" cluster badge. */
+const MAX_EVENTS_PER_LANE = 15;
 /** Zoom factor applied per double-tap / two-finger-tap. */
 const TAP_ZOOM_FACTOR = 1.8;
 
@@ -252,9 +255,21 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     return out;
   }, [canvasWidth, jsOffsetX, jsPixelsPerUnit, lanes, zoomLevel, continent]);
 
+  // How many events are hidden per lane due to the MAX_EVENTS_PER_LANE cap.
+  const overflowCounts = useMemo(() => {
+    const out = new Map<Category, number>();
+    for (const [cat, events] of visibleByLane) {
+      if (events.length > MAX_EVENTS_PER_LANE) out.set(cat, events.length - MAX_EVENTS_PER_LANE);
+    }
+    return out;
+  }, [visibleByLane]);
+
   const tracksByLane = useMemo(() => {
     const out = new Map<Category, TrackMap>();
-    for (const [cat, events] of visibleByLane) out.set(cat, assignTracks(events));
+    for (const [cat, events] of visibleByLane) {
+      // Only assign tracks for the capped set so layout stays predictable.
+      out.set(cat, assignTracks(events.slice(0, MAX_EVENTS_PER_LANE)));
+    }
     return out;
   }, [visibleByLane]);
 
@@ -448,6 +463,15 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     setPendingSelectEvent(event);
   };
 
+  function handleMinimapJump(newOffsetX: number) {
+    if (Platform.OS === 'web') {
+      const newScrollX = Math.max(0, (newOffsetX - TOTAL_T_MIN) * jsPixelsPerUnit);
+      setWebJumpScrollX(newScrollX);
+    } else {
+      offsetX.value = withTiming(newOffsetX, { duration: 300 });
+    }
+  }
+
   const zoomIn = () => {
     if (Platform.OS === 'web') {
       const centerT = TOTAL_T_MIN + (webScrollX + canvasWidth / 2) / jsPixelsPerUnit;
@@ -538,6 +562,12 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
             />
           </View>
         </View>
+        <TimelineMinimap
+          offsetX={webOffsetX}
+          pixelsPerUnit={WEB_PPU}
+          canvasWidth={canvasWidth}
+          onJump={handleMinimapJump}
+        />
         <EpochJumpBar onJump={zoomToFit} />
         <View style={styles.container}>
           <View
@@ -546,21 +576,27 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
               Platform.select({ web: { position: 'sticky', left: 0, zIndex: 5 } as any }),
             ]}
           >
-            {lanes.map((cat, idx) => (
-              <View
-                key={cat}
-                style={[
-                  styles.label,
-                  {
-                    top: laneTops[idx],
-                    height: laneHeightForTracks(laneTrackCounts.get(cat) ?? 1),
-                    borderLeftColor: colors.category[cat],
-                  },
-                ]}
-              >
-                <Text style={styles.labelText}>{t(`category.${cat}`)}</Text>
-              </View>
-            ))}
+            {lanes.map((cat, idx) => {
+              const overflow = overflowCounts.get(cat) ?? 0;
+              return (
+                <View
+                  key={cat}
+                  style={[
+                    styles.label,
+                    {
+                      top: laneTops[idx],
+                      height: laneHeightForTracks(laneTrackCounts.get(cat) ?? 1),
+                      borderLeftColor: colors.category[cat],
+                    },
+                  ]}
+                >
+                  <Text style={styles.labelText}>{t(`category.${cat}`)}</Text>
+                  {overflow > 0 && (
+                    <Text style={styles.clusterBadge}>+{overflow}</Text>
+                  )}
+                </View>
+              );
+            })}
           </View>
           <ScrollView
             ref={webScrollRef}
@@ -574,7 +610,8 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
               {lanes.map((cat, idx) => {
                 const laneTop = laneTops[idx] ?? 0;
                 const laneH = laneHeightForTracks(laneTrackCounts.get(cat) ?? 1);
-                const events = webVisibleByLane.get(cat) ?? [];
+                // Clip to MAX_EVENTS_PER_LANE; excess is shown as badge in lane label.
+                const events = (webVisibleByLane.get(cat) ?? []).slice(0, MAX_EVENTS_PER_LANE);
                 const webTrackMap = assignTracks(events);
                 const lblSize = eventLabelFontSize(zoomLevel);
                 return (
@@ -706,25 +743,37 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
         </View>
       </View>
 
+      <TimelineMinimap
+        offsetX={jsOffsetX}
+        pixelsPerUnit={jsPixelsPerUnit}
+        canvasWidth={canvasWidth}
+        onJump={handleMinimapJump}
+      />
       <EpochJumpBar onJump={zoomToFit} />
 
       <View style={styles.container}>
         <View style={styles.labels}>
-          {lanes.map((cat, idx) => (
-            <View
-              key={cat}
-              style={[
-                styles.label,
-                {
-                  top: laneTops[idx],
-                  height: laneHeightForTracks(laneTrackCounts.get(cat) ?? 1),
-                  borderLeftColor: colors.category[cat],
-                },
-              ]}
-            >
-              <Text style={styles.labelText}>{t(`category.${cat}`)}</Text>
-            </View>
-          ))}
+          {lanes.map((cat, idx) => {
+            const overflow = overflowCounts.get(cat) ?? 0;
+            return (
+              <View
+                key={cat}
+                style={[
+                  styles.label,
+                  {
+                    top: laneTops[idx],
+                    height: laneHeightForTracks(laneTrackCounts.get(cat) ?? 1),
+                    borderLeftColor: colors.category[cat],
+                  },
+                ]}
+              >
+                <Text style={styles.labelText}>{t(`category.${cat}`)}</Text>
+                {overflow > 0 && (
+                  <Text style={styles.clusterBadge}>+{overflow}</Text>
+                )}
+              </View>
+            );
+          })}
         </View>
 
         <GestureDetector gesture={gesture}>
@@ -733,7 +782,8 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
               {lanes.map((cat, idx) => {
                 const laneTop = laneTops[idx] ?? 0;
                 const laneH = laneHeightForTracks(laneTrackCounts.get(cat) ?? 1);
-                const events = visibleByLane.get(cat) ?? [];
+                // Clip to MAX_EVENTS_PER_LANE; excess is shown as badge in lane label.
+                const events = (visibleByLane.get(cat) ?? []).slice(0, MAX_EVENTS_PER_LANE);
                 const trackMap = tracksByLane.get(cat);
                 return (
                   <Group key={cat}>
@@ -921,6 +971,12 @@ const styles = StyleSheet.create({
   labelText: {
     ...typography.caption,
     color: colors.textSecondary,
+  },
+  clusterBadge: {
+    ...typography.caption,
+    fontSize: 10,
+    color: colors.textMuted,
+    marginTop: 2,
   },
   zoomButtons: {
     position: 'absolute',

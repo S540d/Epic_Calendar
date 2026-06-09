@@ -29,8 +29,8 @@ const T_NOW = yearToT(2026);
 export const HUMAN_T_SPAN = T_NOW - T_HUMAN_START;
 
 // Full timeline: Big Bang (−13.8 Gyr) to present.
-const T_MIN = yearToT(-13_800_000_000);
-const T_MAX = yearToT(2026);
+export const T_MIN = yearToT(-13_800_000_000);
+export const T_MAX = yearToT(2026);
 export const FULL_T_SPAN = T_MAX - T_MIN;
 
 /**
