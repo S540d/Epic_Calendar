@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { clampOffsetX, T_MIN, T_MAX, FULL_T_SPAN } from '@/timeline/lod';
 import { colors, LANE_LABEL_WIDTH, spacing } from '@/theme/tokens';
 
@@ -15,6 +16,7 @@ type Props = {
 const A11Y_STEP = 0.1;
 
 export function TimelineMinimap({ offsetX, pixelsPerUnit, canvasWidth, onJump }: Props) {
+  const { t } = useTranslation();
   const [barWidth, setBarWidth] = useState(0);
 
   const handlePress = useCallback(
@@ -63,14 +65,17 @@ export function TimelineMinimap({ offsetX, pixelsPerUnit, canvasWidth, onJump }:
         onLayout={(e) => setBarWidth(e.nativeEvent.layout.width)}
         onPress={handlePress}
         accessibilityRole="adjustable"
+        accessibilityLabel={t('minimap.label')}
         accessibilityValue={{ min: 0, max: 100, now: Math.round(indicatorFraction * 100) }}
         accessibilityActions={[
-          { name: 'increment', label: 'scroll forward' },
-          { name: 'decrement', label: 'scroll back' },
+          { name: 'increment', label: t('minimap.scrollForward') },
+          { name: 'decrement', label: t('minimap.scrollBack') },
         ]}
         onAccessibilityAction={handleAccessibilityAction}
       >
-        <View style={[styles.indicator, { left: indicatorLeft, width: indicatorWidth }]} />
+        {barWidth > 0 && (
+          <View style={[styles.indicator, { left: indicatorLeft, width: indicatorWidth }]} />
+        )}
       </Pressable>
     </View>
   );
