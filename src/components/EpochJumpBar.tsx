@@ -14,13 +14,13 @@ type Epoch = {
 const PRESENT_YEAR = Math.floor(tToYear(T_MAX));
 
 const EPOCHS: readonly Epoch[] = [
-  { key: 'bigBang',     startYear: -13_800_000_000, endYear: -13_000_000_000 },
-  { key: 'earth',       startYear: -4_600_000_000,  endYear: -3_500_000_000  },
-  { key: 'dinosaurs',   startYear: -252_000_000,    endYear: -66_000_000     },
-  { key: 'earlyHumans', startYear: -300_000,        endYear: -10_000         },
-  { key: 'antiquity',   startYear: -3_000,           endYear: 500             },
-  { key: 'middleAges',  startYear: 500,              endYear: 1_500           },
-  { key: 'modern',      startYear: 1_500,            endYear: PRESENT_YEAR   },
+  { key: 'bigBang', startYear: -13_800_000_000, endYear: -13_000_000_000 },
+  { key: 'earth', startYear: -4_600_000_000, endYear: -3_500_000_000 },
+  { key: 'dinosaurs', startYear: -252_000_000, endYear: -66_000_000 },
+  { key: 'earlyHumans', startYear: -300_000, endYear: -10_000 },
+  { key: 'antiquity', startYear: -3_000, endYear: 500 },
+  { key: 'middleAges', startYear: 500, endYear: 1_500 },
+  { key: 'modern', startYear: 1_500, endYear: PRESENT_YEAR },
 ];
 
 type ChipProps = {
@@ -30,10 +30,7 @@ type ChipProps = {
 
 function EpochChip({ epoch, onJump }: ChipProps) {
   const { t } = useTranslation();
-  const handlePress = useCallback(
-    () => onJump(epoch.startYear, epoch.endYear),
-    [onJump, epoch],
-  );
+  const handlePress = useCallback(() => onJump(epoch.startYear, epoch.endYear), [onJump, epoch]);
   return (
     <Pressable
       style={({ pressed }) => [styles.chip, pressed && styles.chipPressed]}

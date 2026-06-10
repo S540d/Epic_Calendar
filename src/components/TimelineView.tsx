@@ -361,13 +361,16 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     const visEndYear = tToYear(webOffsetX + canvasWidth / jsPixelsPerUnit);
     const out = new Map<Category, TimelineEvent[]>();
     for (const cat of lanes) {
-      out.set(cat, filterVisible(ALL_EVENTS, {
-        startYear: visStartYear,
-        endYear: visEndYear,
-        zoomLevel,
-        categories: new Set<Category>([cat]),
-        continent,
-      }));
+      out.set(
+        cat,
+        filterVisible(ALL_EVENTS, {
+          startYear: visStartYear,
+          endYear: visEndYear,
+          zoomLevel,
+          categories: new Set<Category>([cat]),
+          continent,
+        }),
+      );
     }
     return out;
   }, [webScrollX, jsPixelsPerUnit, canvasWidth, lanes, zoomLevel, continent]);
@@ -395,8 +398,13 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   // Stable (empty deps): reads current render data via tapDataRef, calls zoomToFit via zoomToFitRef.
   const handleCanvasTap = useCallback((px: number, py: number) => {
     const {
-      lanes, laneTops, laneTrackCounts, visibleByLane, tracksByLane,
-      jsOffsetX, jsPixelsPerUnit,
+      lanes,
+      laneTops,
+      laneTrackCounts,
+      visibleByLane,
+      tracksByLane,
+      jsOffsetX,
+      jsPixelsPerUnit,
     } = tapDataRef.current;
     const candidates: Array<{ ev: TimelineEvent; dist: number }> = [];
     for (let i = 0; i < lanes.length; i++) {
@@ -439,15 +447,18 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
 
   // Zoom keeping the given focal x-coordinate fixed (used by tap-to-zoom).
   // Stable except on screen resize (canvasWidth changes); shared values are stable refs.
-  const zoomAtPoint = useCallback((focalX: number, factor: number) => {
-    const current = pixelsPerUnit.value;
-    const next = clampPixelsPerUnit(current * factor);
-    if (next === current) return;
-    const focalT = offsetX.value + focalX / current;
-    const nextOffset = clampOffsetX(focalT - focalX / next, next, canvasWidth);
-    pixelsPerUnit.value = withTiming(next, { duration: 300 });
-    offsetX.value = withTiming(nextOffset, { duration: 300 });
-  }, [canvasWidth, pixelsPerUnit, offsetX]);
+  const zoomAtPoint = useCallback(
+    (focalX: number, factor: number) => {
+      const current = pixelsPerUnit.value;
+      const next = clampPixelsPerUnit(current * factor);
+      if (next === current) return;
+      const focalT = offsetX.value + focalX / current;
+      const nextOffset = clampOffsetX(focalT - focalX / next, next, canvasWidth);
+      pixelsPerUnit.value = withTiming(next, { duration: 300 });
+      offsetX.value = withTiming(nextOffset, { duration: 300 });
+    },
+    [canvasWidth, pixelsPerUnit, offsetX],
+  );
 
   // Pan: activeOffsetX / failOffsetY lets vertical swipes pass to the parent ScrollView.
   // The X threshold is a little wider than the tap maxDistance so a deliberate
@@ -538,33 +549,41 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
 
   // Animates the viewport to show [startYear, endYear] with ~30% padding each side.
   // For point events (no endYear), the 1.0 T-unit minimum prevents excessive zoom.
-  const zoomToFit = useCallback((startYear: number, endYear: number | null | undefined) => {
-    const startT = yearToT(startYear);
-    const rawEndT = yearToT(endYear ?? startYear);
-    const spanT = Math.max(Math.abs(rawEndT - startT), 1.0);
-    const centerT = (startT + rawEndT) / 2;
-    const newPPU = clampPixelsPerUnit(canvasWidth / (spanT / ZOOM_TO_FIT_FILL));
-    if (Platform.OS === 'web') {
-      // Direct PPU assignment is intentional on web: there is no Skia canvas, so
-      // withTiming would have no visual effect. The ScrollView scroll provides animation.
-      const maxScrollX = Math.max(0, (TOTAL_T_MAX - TOTAL_T_MIN) * newPPU - canvasWidth);
-      pixelsPerUnit.value = newPPU;
-      setJsPixelsPerUnit(newPPU);
-      setWebJumpScrollX(
-        Math.min(Math.max(0, (centerT - TOTAL_T_MIN) * newPPU - canvasWidth / 2), maxScrollX),
-      );
-    } else {
-      const newOffsetX = clampOffsetX(centerT - canvasWidth / (2 * newPPU), newPPU, canvasWidth);
-      pixelsPerUnit.value = withTiming(newPPU, { duration: ZOOM_TO_FIT_DURATION_MS });
-      offsetX.value = withTiming(newOffsetX, { duration: ZOOM_TO_FIT_DURATION_MS });
-    }
-  }, [canvasWidth, pixelsPerUnit, offsetX, setJsPixelsPerUnit, setWebJumpScrollX]);
+  const zoomToFit = useCallback(
+    (startYear: number, endYear: number | null | undefined) => {
+      const startT = yearToT(startYear);
+      const rawEndT = yearToT(endYear ?? startYear);
+      const spanT = Math.max(Math.abs(rawEndT - startT), 1.0);
+      const centerT = (startT + rawEndT) / 2;
+      const newPPU = clampPixelsPerUnit(canvasWidth / (spanT / ZOOM_TO_FIT_FILL));
+      if (Platform.OS === 'web') {
+        // Direct PPU assignment is intentional on web: there is no Skia canvas, so
+        // withTiming would have no visual effect. The ScrollView scroll provides animation.
+        const maxScrollX = Math.max(0, (TOTAL_T_MAX - TOTAL_T_MIN) * newPPU - canvasWidth);
+        pixelsPerUnit.value = newPPU;
+        setJsPixelsPerUnit(newPPU);
+        setWebJumpScrollX(
+          Math.min(Math.max(0, (centerT - TOTAL_T_MIN) * newPPU - canvasWidth / 2), maxScrollX),
+        );
+      } else {
+        const newOffsetX = clampOffsetX(centerT - canvasWidth / (2 * newPPU), newPPU, canvasWidth);
+        pixelsPerUnit.value = withTiming(newPPU, { duration: ZOOM_TO_FIT_DURATION_MS });
+        offsetX.value = withTiming(newOffsetX, { duration: ZOOM_TO_FIT_DURATION_MS });
+      }
+    },
+    [canvasWidth, pixelsPerUnit, offsetX, setJsPixelsPerUnit, setWebJumpScrollX],
+  );
 
   // tapDataRef: update every render so handleCanvasTap always reads current viewport state.
   useLayoutEffect(() => {
     Object.assign(tapDataRef.current, {
-      lanes, laneTops, laneTrackCounts, visibleByLane, tracksByLane,
-      jsOffsetX, jsPixelsPerUnit,
+      lanes,
+      laneTops,
+      laneTrackCounts,
+      visibleByLane,
+      tracksByLane,
+      jsOffsetX,
+      jsPixelsPerUnit,
     });
   });
   // zoomToFitRef: only update when zoomToFit rebuilds (on canvasWidth resize).
@@ -572,20 +591,29 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     zoomToFitRef.current = zoomToFit;
   }, [zoomToFit]);
 
-  const handleTap = useCallback((event: TimelineEvent) => {
-    zoomToFit(event.startYear, event.endYear);
-    setPendingSelectEvent(event);
-  }, [zoomToFit]);
+  const handleTap = useCallback(
+    (event: TimelineEvent) => {
+      zoomToFit(event.startYear, event.endYear);
+      setPendingSelectEvent(event);
+    },
+    [zoomToFit],
+  );
 
-  const handleMinimapJump = useCallback((newOffsetX: number) => {
-    if (Platform.OS === 'web') {
-      const maxScrollX = Math.max(0, (TOTAL_T_MAX - TOTAL_T_MIN) * jsPixelsPerUnit - canvasWidth);
-      const newScrollX = Math.max(0, Math.min((newOffsetX - TOTAL_T_MIN) * jsPixelsPerUnit, maxScrollX));
-      setWebJumpScrollX(newScrollX);
-    } else {
-      offsetX.value = withTiming(newOffsetX, { duration: 300 });
-    }
-  }, [jsPixelsPerUnit, canvasWidth, offsetX, setWebJumpScrollX]);
+  const handleMinimapJump = useCallback(
+    (newOffsetX: number) => {
+      if (Platform.OS === 'web') {
+        const maxScrollX = Math.max(0, (TOTAL_T_MAX - TOTAL_T_MIN) * jsPixelsPerUnit - canvasWidth);
+        const newScrollX = Math.max(
+          0,
+          Math.min((newOffsetX - TOTAL_T_MIN) * jsPixelsPerUnit, maxScrollX),
+        );
+        setWebJumpScrollX(newScrollX);
+      } else {
+        offsetX.value = withTiming(newOffsetX, { duration: 300 });
+      }
+    },
+    [jsPixelsPerUnit, canvasWidth, offsetX, setWebJumpScrollX],
+  );
 
   const zoomIn = () => {
     if (Platform.OS === 'web') {
@@ -693,9 +721,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                   ]}
                 >
                   <Text style={styles.labelText}>{t(`category.${cat}`)}</Text>
-                  {overflow > 0 && (
-                    <Text style={styles.clusterBadge}>+{overflow}</Text>
-                  )}
+                  {overflow > 0 && <Text style={styles.clusterBadge}>+{overflow}</Text>}
                 </View>
               );
             })}
@@ -873,9 +899,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                 ]}
               >
                 <Text style={styles.labelText}>{t(`category.${cat}`)}</Text>
-                {overflow > 0 && (
-                  <Text style={styles.clusterBadge}>+{overflow}</Text>
-                )}
+                {overflow > 0 && <Text style={styles.clusterBadge}>+{overflow}</Text>}
               </View>
             );
           })}
@@ -953,8 +977,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                     const trackIdx = trackMap?.get(ev.id) ?? 0;
                     const barY = laneTop + LANE_PADDING_V + trackIdx * TRACK_HEIGHT + 4;
                     const barH = TRACK_HEIGHT - 8;
-                    const labelTop =
-                      maxLines === 1 ? barY + barH / 2 - lblSize / 2 : barY + 4;
+                    const labelTop = maxLines === 1 ? barY + barH / 2 - lblSize / 2 : barY + 4;
                     return (
                       <View
                         key={`lbl-${ev.id}`}
@@ -1017,10 +1040,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
                   ),
                 ),
                 // Clamp vertically so the popover stays inside the canvas area.
-                top: Math.max(
-                  0,
-                  Math.min(popoverState.y - 8, canvasHeight - POPOVER_MAX_HEIGHT),
-                ),
+                top: Math.max(0, Math.min(popoverState.y - 8, canvasHeight - POPOVER_MAX_HEIGHT)),
               },
             ]}
           >
