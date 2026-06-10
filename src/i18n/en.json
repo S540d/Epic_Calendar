@@ -6,12 +6,20 @@
     "natur": "Nature & Science",
     "nation": "Nations & Politics"
   },
+  "category": {
+    "erdzeitalter": "Geological Eras",
+    "zivilisation": "Civilizations",
+    "natur": "Nature & Science",
+    "nation": "Nations & Politics",
+    "herrscher": "Rulers"
+  },
   "continent": {
     "all": "All",
-    "europe": "Europe",
-    "asia": "Asia",
-    "africa": "Africa",
-    "americas": "Americas",
+    "europa": "Europe",
+    "asien": "Asia",
+    "afrika": "Africa",
+    "amerika": "Americas",
+    "ozeanien": "Oceania",
     "global": "Global"
   },
   "event": {

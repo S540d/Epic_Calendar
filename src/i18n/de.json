@@ -6,12 +6,20 @@
     "natur": "Natur & Wissenschaft",
     "nation": "Nationen & Politik"
   },
+  "category": {
+    "erdzeitalter": "Erdzeitalter",
+    "zivilisation": "Zivilisationen",
+    "natur": "Natur & Wissenschaft",
+    "nation": "Nationen & Politik",
+    "herrscher": "Herrscher"
+  },
   "continent": {
     "all": "Alle",
-    "europe": "Europa",
-    "asia": "Asien",
-    "africa": "Afrika",
-    "americas": "Amerika",
+    "europa": "Europa",
+    "asien": "Asien",
+    "afrika": "Afrika",
+    "amerika": "Amerika",
+    "ozeanien": "Ozeanien",
     "global": "Global"
   },
   "event": {
