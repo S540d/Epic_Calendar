@@ -62,11 +62,15 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 
 ### Besonderheiten der Zeitachse
 
-- Logarithmische Zeitskala: `log10(jetzt - timestamp)` → Pixel-Position
+- Logarithmische Zeitskala: `yearToT(year)` / `tToYear(t)` aus `@/timeline/scale`
 - LOD-Bänder steuern welche Events bei welchem Zoom sichtbar sind
+  - Bandgrenzen: `< 12` → 0, `< 30` → 1, `< 100` → 2, `< 500` → 3, else → 4
 - `culling.ts`: filtert Events außerhalb des Viewports
 - `formatYear.ts`: formatiert Jahreszahlen (v. Chr., Mio., Mrd.)
-- `lod.ts`: Level-of-Detail-Berechnung
+- `lod.ts`: Level-of-Detail-Berechnung, exportiert `T_MIN`, `T_MAX`, `FULL_T_SPAN`
+- `scale.ts`: `yearToT`, `tToYear`, `pixelToYear`, `viewportYearRange`
+- `epoch.ts`: Epoche-Mapping für Breadcrumb
+- **MAX_EVENTS_PER_LANE = 15** – Skia-Loop, Hit-Test und Label-Overlay sind alle auf diesen Wert gecappt. Überschuss erscheint als Cluster-Badge.
 
 ### Datenhaltung
 
@@ -77,8 +81,8 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 ### Build & Test
 
 ```bash
-npm test          # Jest-Tests (48 Unit-Tests)
-npm run lint      # ESLint
+npm test          # Jest-Tests (94 Unit-Tests)
+npm run lint      # ESLint (flat-config via eslint.config.cjs)
 npm run type-check # TypeScript
 npm run build:web  # Expo Web-Export (GitHub Pages)
 ```
@@ -96,11 +100,17 @@ npm run build:web  # Expo Web-Export (GitHub Pages)
 App.tsx
 src/
 ├── components/
-│   ├── TimelineView.tsx       # Haupt-Canvas (Skia)
-│   ├── TimeAxis.tsx           # Zeitachse
-│   ├── TimelineBreadcrumb.tsx # Zoom-Breadcrumb
-│   ├── EventDetailModal.tsx   # Detail-Modal
-│   └── ...
+│   ├── TimelineView.tsx        # Haupt-Canvas (Skia + Web-Fallback)
+│   ├── TimeAxis.tsx            # Zeitachse
+│   ├── TimelineBreadcrumb.tsx  # Zoom-Breadcrumb mit Epochen-Kontext
+│   ├── TimelineMinimap.tsx     # Übersichtsleiste (Tap + a11y-Actions)
+│   ├── EpochJumpBar.tsx        # Schnellsprung-Chips (Urknall→Heute)
+│   ├── FilterChipBar.tsx       # Kategorie-/Kontinent-Filter
+│   ├── ContinentTabBar.tsx     # Kontinent-Auswahl
+│   ├── ZoomLevelIndicator.tsx  # Persistenter LOD-Indikator
+│   ├── EventDetailModal.tsx    # Detail-Modal
+│   ├── EventPickerPopover.tsx  # Disambiguierung bei überlappenden Events
+│   └── ui/                    # Shared UI-Primitives
 ├── data/
 │   ├── schema.ts              # Event-Typen
 │   ├── europe.ts              # Europa-Daten
@@ -108,7 +118,9 @@ src/
 │   └── ...
 ├── timeline/
 │   ├── culling.ts             # Viewport-Culling
-│   ├── lod.ts                 # Level of Detail
+│   ├── lod.ts                 # Level of Detail + T_MIN/T_MAX/FULL_T_SPAN
+│   ├── scale.ts               # yearToT, tToYear, pixelToYear
+│   ├── epoch.ts               # Epoche-Mapping
 │   ├── formatYear.ts          # Jahr-Formatierung
 │   └── __tests__/
 ├── theme/
@@ -119,12 +131,45 @@ src/
 
 ---
 
+## Architektur-Patterns (TimelineView)
+
+### tapDataRef-Pattern
+Stabile `useCallback([], [])` Tap-Handler, die aktuellen Viewport-State über einen Ref lesen:
+```ts
+const tapDataRef = useRef({ lanes, laneTops, visibleByLane, tracksByLane, jsOffsetX, jsPixelsPerUnit });
+useLayoutEffect(() => { Object.assign(tapDataRef.current, { ... }); }); // no deps → every render
+const handleCanvasTap = useCallback((px, py) => {
+  const { ... } = tapDataRef.current; // immer aktuell
+}, []);
+```
+
+### zoomToFitRef-Pattern
+`zoomToFit` ist ein `useCallback` mit `[canvasWidth, ...]` als Deps. Stable-Handler wie `handleCanvasTap` rufen ihn über einen Ref auf:
+```ts
+const zoomToFitRef = useRef<...>(() => {});
+useLayoutEffect(() => { zoomToFitRef.current = zoomToFit; }, [zoomToFit]);
+```
+
+### Gesture-Memoisation
+Alle RNGH-Gesten via `useMemo`, Reanimated Shared Values sind stabile Refs:
+```ts
+const panGesture = useMemo(() => Gesture.Pan()..., [canvasWidth, startOffsetX, offsetX, pixelsPerUnit]);
+const gesture = useMemo(() => Gesture.Simultaneous(pan, pinch, exclusive), [pan, pinch, exclusive]);
+```
+
+---
+
 ## Bekannte Eigenheiten
 
 - `baseUrl: '/Epic_Calendar'` in `app.json` – für GitHub Pages nötig
-- Skia auf Web: kein `WithSkiaWeb` – weiße Seite → Standard-Canvas-Fallback
+- Skia auf Web: kein `WithSkiaWeb` – weiße Seite → Standard-ScrollView-Fallback
 - `react-native-reanimated` 3.x (nicht 4.x) – Expo SDK 52 Kompatibilität
 - `jest-expo ~52` erwartet `"jest": "^29"` (nicht 30.x!)
+- ESLint: **flat-config** in `eslint.config.cjs` (via `@eslint/eslintrc` FlatCompat)
+- `react-hooks/refs` ist eine **valide** Expo-extended ESLint-Regel. Sie flaggt RNGH `.onEnd`-Callbacks in `useMemo` als false positive (Callbacks laufen außerhalb des Renders). Fix: `// eslint-disable-next-line react-hooks/refs` direkt vor `.onEnd(...)`.
+- `react-hooks/immutability` wird für Reanimated `.value`-Writes auf `'warn'` heruntergesetzt (Worklets schreiben intentional auf Shared Values).
+- Web-Pfad: `WEB_PPU` ist ein lokaler Alias für `jsPixelsPerUnit` — kein separater Wert.
+- `setWebJumpScrollX(null)` muss **innerhalb** von `requestAnimationFrame` aufgerufen werden, nicht synchron im Effect (sonst: "cascading renders" Lint-Fehler).
 
 ## Do's and Don'ts
 
@@ -134,6 +179,7 @@ src/
 - CHANGELOG.md bei user-facing Änderungen aktualisieren
 - LOD-Bänder bei neuen Events prüfen
 - Tests für Timeline-Logik schreiben
+- Hit-Test und Skia-Loop immer auf `MAX_EVENTS_PER_LANE` cappen
 
 ### ❌ Don't:
 
@@ -141,6 +187,16 @@ src/
 - Keine hardcodierten deutschen/englischen Strings
 - Kein `WithSkiaWeb` importieren (bricht Web-Build)
 - Nicht `--no-verify` nutzen außer auf explizite Bitte
+- `trackMap?.get(ev.id) ?? 0` im Hit-Test — stattdessen `=== undefined` prüfen und skippen
+
+## Offene Issues (legitim)
+
+| # | Titel | Priorität |
+|---|-------|-----------|
+| #5 | Performance-Optimierung (Skia + Reanimated) | ongoing |
+| #32 | Mobile Usability Überblick | Tracker |
+| #46 | Listen-/Story-Modus | P3 / Diskussion |
+| #51 | Triage-Plan (Tracking-Board) | Referenz |
 
 ## Referenzen
 

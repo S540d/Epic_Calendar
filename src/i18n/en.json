@@ -1,32 +1,53 @@
 {
-  "app": {
-    "title": "Epic Calendar",
-    "subtitle": "Zoom & swipe through history"
-  },
-  "category": {
-    "erdzeitalter": "Geological Ages",
-    "natur": "Nature",
+  "filter": {
+    "allCategories": "All Categories",
+    "erdzeitalter": "Geological Eras",
     "zivilisation": "Civilizations",
-    "nation": "Empires",
-    "herrscher": "Rulers"
+    "natur": "Nature & Science",
+    "nation": "Nations & Politics"
   },
   "continent": {
-    "europa": "Europe",
-    "asien": "Asia",
-    "afrika": "Africa",
-    "amerika": "Americas",
-    "ozeanien": "Oceania",
+    "all": "All",
+    "europe": "Europe",
+    "asia": "Asia",
+    "africa": "Africa",
+    "americas": "Americas",
     "global": "Global"
   },
   "event": {
-    "culture": "Culture",
+    "unknownDate": "Date unknown",
+    "present": "present",
     "bce": "BCE",
     "ce": "CE",
-    "million": "M",
-    "thousand": "K"
+    "duration": "Duration",
+    "category": "Category",
+    "continent": "Continent"
   },
-  "chip": {
-    "soon": "soon"
+  "breadcrumb": {
+    "from": "from",
+    "to": "to",
+    "zoom": "Zoom"
+  },
+  "zoomLevel": {
+    "0": "Eons",
+    "1": "Eras",
+    "2": "Epochs",
+    "3": "Centuries",
+    "4": "Years"
+  },
+  "epochChip": {
+    "bigBang": "Big Bang",
+    "earth": "Earth",
+    "dinosaurs": "Dinosaurs",
+    "earlyHumans": "Early Humans",
+    "antiquity": "Antiquity",
+    "middleAges": "Middle Ages",
+    "modern": "Modern Era"
+  },
+  "minimap": {
+    "label": "Timeline overview",
+    "scrollForward": "Scroll forward",
+    "scrollBack": "Scroll back"
   },
   "axis": {
     "billion": "Bn",

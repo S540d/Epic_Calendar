@@ -1,32 +1,53 @@
 {
-  "app": {
-    "title": "Epic Calendar",
-    "subtitle": "Zoome & wische durch die Geschichte"
-  },
-  "category": {
+  "filter": {
+    "allCategories": "Alle Kategorien",
     "erdzeitalter": "Erdzeitalter",
-    "natur": "Natur",
     "zivilisation": "Zivilisationen",
-    "nation": "Reiche",
-    "herrscher": "Herrscher"
+    "natur": "Natur & Wissenschaft",
+    "nation": "Nationen & Politik"
   },
   "continent": {
-    "europa": "Europa",
-    "asien": "Asien",
-    "afrika": "Afrika",
-    "amerika": "Amerika",
-    "ozeanien": "Ozeanien",
+    "all": "Alle",
+    "europe": "Europa",
+    "asia": "Asien",
+    "africa": "Afrika",
+    "americas": "Amerika",
     "global": "Global"
   },
   "event": {
-    "culture": "Kultur",
-    "bce": "v.Chr.",
-    "ce": "n.Chr.",
-    "million": "Mio.",
-    "thousand": "Tsd."
+    "unknownDate": "Datum unbekannt",
+    "present": "heute",
+    "bce": "v. Chr.",
+    "ce": "n. Chr.",
+    "duration": "Dauer",
+    "category": "Kategorie",
+    "continent": "Kontinent"
   },
-  "chip": {
-    "soon": "bald"
+  "breadcrumb": {
+    "from": "von",
+    "to": "bis",
+    "zoom": "Zoom"
+  },
+  "zoomLevel": {
+    "0": "Äonen",
+    "1": "Ären",
+    "2": "Epochen",
+    "3": "Jahrhunderte",
+    "4": "Jahre"
+  },
+  "epochChip": {
+    "bigBang": "Urknall",
+    "earth": "Erde",
+    "dinosaurs": "Dinosaurier",
+    "earlyHumans": "Frühmenschen",
+    "antiquity": "Antike",
+    "middleAges": "Mittelalter",
+    "modern": "Neuzeit"
+  },
+  "minimap": {
+    "label": "Zeitstrahl-Übersicht",
+    "scrollForward": "Vorwärts scrollen",
+    "scrollBack": "Zurück scrollen"
   },
   "axis": {
     "billion": "Mrd",

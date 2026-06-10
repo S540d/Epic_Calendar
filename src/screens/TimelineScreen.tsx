@@ -120,9 +120,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   homeButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
