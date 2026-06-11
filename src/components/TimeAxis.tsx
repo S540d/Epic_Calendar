@@ -36,38 +36,52 @@ type Props = {
 
 export function TimeAxis({ offsetX, pixelsPerUnit, canvasWidth, zoomLevel }: Props) {
   const { t } = useTranslation();
-  const numTicks = TICKS_BY_LOD[zoomLevel];
+  // Cap the tick count to what actually fits, so labels never overlap on
+  // narrow screens / deep zoom levels.
+  const numTicks = Math.max(
+    2,
+    Math.min(TICKS_BY_LOD[zoomLevel], Math.floor(canvasWidth / TICK_LABEL_WIDTH)),
+  );
 
   const ticks = useMemo(() => {
-    const result: Array<{ label: string; px: number }> = [];
+    const result: Array<{ label: string; px: number; year: number }> = [];
     for (let i = 0; i <= numTicks; i++) {
       const px = (i / numTicks) * canvasWidth;
       const tickT = px / pixelsPerUnit + offsetX;
-      result.push({ label: formatYear(tToYear(tickT), zoomLevel, t), px });
+      const year = tToYear(tickT);
+      result.push({ label: formatYear(year, zoomLevel, t), px, year });
     }
     return result;
   }, [offsetX, pixelsPerUnit, canvasWidth, zoomLevel, numTicks, t]);
 
   const heutePx = useMemo(() => (T_NOW - offsetX) * pixelsPerUnit, [offsetX, pixelsPerUnit]);
   const heuteVisible = heutePx >= 0 && heutePx <= canvasWidth;
+  // Min pixel gap a tick label needs from the "Heute" label to avoid overlap.
+  const HEUTE_LABEL_CLEARANCE = (TICK_LABEL_WIDTH + HEUTE_LABEL_WIDTH) / 2;
 
   return (
     <View style={[styles.axis, { width: canvasWidth }]}>
       <View style={styles.baseline} />
-      {ticks.map(({ label, px }, i) => {
+      {ticks.map(({ label, px, year }, i) => {
+        // No ticks/labels after "Heute": the future has no events to anchor them.
+        if (year > CURRENT_YEAR) return null;
         const labelLeft = Math.max(
           0,
           Math.min(canvasWidth - TICK_LABEL_WIDTH, px - TICK_LABEL_WIDTH / 2),
         );
+        // Suppress a tick label that would collide with the "Heute" label.
+        const collidesHeute = heuteVisible && Math.abs(px - heutePx) < HEUTE_LABEL_CLEARANCE;
         return (
           <React.Fragment key={i}>
             <View style={[styles.tickLine, { left: px }]} />
-            <Text
-              style={[styles.tickLabel, { left: labelLeft, fontSize: zoomLevel >= 3 ? 10 : 9 }]}
-              numberOfLines={1}
-            >
-              {label}
-            </Text>
+            {!collidesHeute && (
+              <Text
+                style={[styles.tickLabel, { left: labelLeft, fontSize: zoomLevel >= 3 ? 10 : 9 }]}
+                numberOfLines={1}
+              >
+                {label}
+              </Text>
+            )}
           </React.Fragment>
         );
       })}

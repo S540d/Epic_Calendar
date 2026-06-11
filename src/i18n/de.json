@@ -1,18 +1,26 @@
 {
-  "filter": {
-    "allCategories": "Alle Kategorien",
+  "app": {
+    "title": "Epic Calendar",
+    "subtitle": "Logarithmischer Zeitstrahl – vom Urknall bis heute"
+  },
+  "category": {
     "erdzeitalter": "Erdzeitalter",
     "zivilisation": "Zivilisationen",
     "natur": "Natur & Wissenschaft",
-    "nation": "Nationen & Politik"
+    "nation": "Nationen & Politik",
+    "herrscher": "Herrscher & Dynastien"
   },
   "continent": {
     "all": "Alle",
-    "europe": "Europa",
-    "asia": "Asien",
-    "africa": "Afrika",
-    "americas": "Amerika",
+    "europa": "Europa",
+    "asien": "Asien",
+    "afrika": "Afrika",
+    "amerika": "Amerika",
+    "ozeanien": "Ozeanien",
     "global": "Global"
+  },
+  "chip": {
+    "soon": "bald"
   },
   "event": {
     "unknownDate": "Datum unbekannt",
@@ -21,19 +29,24 @@
     "ce": "n. Chr.",
     "duration": "Dauer",
     "category": "Kategorie",
-    "continent": "Kontinent"
+    "continent": "Kontinent",
+    "culture": "Kultur",
+    "million": "Mio.",
+    "thousand": "Tsd."
   },
   "breadcrumb": {
     "from": "von",
     "to": "bis",
     "zoom": "Zoom"
   },
-  "zoomLevel": {
-    "0": "Äonen",
-    "1": "Ären",
-    "2": "Epochen",
-    "3": "Jahrhunderte",
-    "4": "Jahre"
+  "zoom": {
+    "level": {
+      "0": "Äonen",
+      "1": "Ären",
+      "2": "Epochen",
+      "3": "Jahrhunderte",
+      "4": "Jahre"
+    }
   },
   "epochChip": {
     "bigBang": "Urknall",
@@ -48,6 +61,10 @@
     "label": "Zeitstrahl-Übersicht",
     "scrollForward": "Vorwärts scrollen",
     "scrollBack": "Zurück scrollen"
+  },
+  "popover": {
+    "title": "Mehrere Ereignisse",
+    "dismiss": "Schließen"
   },
   "axis": {
     "billion": "Mrd",
