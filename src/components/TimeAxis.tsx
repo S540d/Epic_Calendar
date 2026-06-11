@@ -41,7 +41,7 @@ function formatYear(year: number, t: (key: string) => string): string {
   return `${Math.round(abs)}`;
 }
 
-type Tick = { label: string; px: number };
+type Tick = { label: string; px: number; year: number };
 
 function generateTicks(
   offsetX: number,
@@ -79,7 +79,7 @@ function generateTicks(
   for (let year = firstTick; year <= endYear; year += chosenStep) {
     const px = yearToPixel(year, offsetX, pixelsPerUnit);
     if (px < 0 || px > canvasWidth) continue;
-    ticks.push({ label: formatYear(year, t), px });
+    ticks.push({ label: formatYear(year, t), px, year });
   }
   return ticks;
 }
@@ -101,21 +101,30 @@ export function TimeAxis({ offsetX, pixelsPerUnit, canvasWidth }: Props) {
 
   const heutePx = useMemo(() => (T_NOW - offsetX) * pixelsPerUnit, [offsetX, pixelsPerUnit]);
   const heuteVisible = heutePx >= 0 && heutePx <= canvasWidth;
+  // Min pixel gap a tick label needs from the "Heute" label to avoid overlap.
+  const HEUTE_LABEL_CLEARANCE = (TICK_LABEL_WIDTH + HEUTE_LABEL_WIDTH) / 2;
 
   return (
     <View style={[styles.axis, { width: canvasWidth }]}>
       <View style={styles.baseline} />
-      {ticks.map(({ label, px }, i) => {
+      {ticks.map(({ label, px, year }, i) => {
+        // No ticks/labels after "Heute": the future has no events to anchor them
+        // (relevant once the viewport can be panned to center the present).
+        if (year > CURRENT_YEAR) return null;
         const labelLeft = Math.max(
           0,
           Math.min(canvasWidth - TICK_LABEL_WIDTH, px - TICK_LABEL_WIDTH / 2),
         );
+        // Suppress a tick label that would collide with the "Heute" label.
+        const collidesHeute = heuteVisible && Math.abs(px - heutePx) < HEUTE_LABEL_CLEARANCE;
         return (
           <React.Fragment key={i}>
             <View style={[styles.tickLine, { left: px }]} />
-            <Text style={[styles.tickLabel, { left: labelLeft }]} numberOfLines={1}>
-              {label}
-            </Text>
+            {!collidesHeute && (
+              <Text style={[styles.tickLabel, { left: labelLeft }]} numberOfLines={1}>
+                {label}
+              </Text>
+            )}
           </React.Fragment>
         );
       })}

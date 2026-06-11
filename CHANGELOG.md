@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- i18n: Fehlende/abweichende Übersetzungs-Keys – UI zeigte Roh-Keys statt Texte
+  (`app.title`, `app.subtitle`, `category.*`, `continent.europa` …, `zoom.level.*`,
+  `chip.soon`, `popover.*`, `event.culture/million/thousand`). DE + EN ergänzt,
+  Regressionstest für Key-Vollständigkeit hinzugefügt.
+- Zeitachse: Anzahl der Tick-Beschriftungen wird an die Breite angepasst –
+  keine überlappenden Jahreszahlen mehr bei schmalen Screens / tiefem Zoom.
+- Web: Untere Lanes/Spuren wurden bei mehreren Kategorien am unteren
+  Bildschirmrand abgeschnitten – Timeline-Bereich scrollt jetzt vertikal.
+
+### Changed
+
+- UX: „Heute" lässt sich jetzt zentrieren (Pan/Zoom bis zur Bildschirmmitte),
+  da die jüngste Geschichte im Fokus steht. Rechts von „Heute" gibt es bewusst
+  keine Achsen-Beschriftung.
+- UX: Schnellauswahl-Chips (Urknall, Dinosaurier …) liegen jetzt direkt unter
+  der Zeitachse statt unter der Minimap.
+
 ### Added
 
 - Mobile-UX: Persistenter Zoom-Level-Indikator (Äonen → Jahre) (#36)

@@ -42,6 +42,7 @@ import {
   eventLabelMaxLines,
   humanHistoryViewState,
   pixelsPerUnitToZoomLevel,
+  PRESENT_RIGHT_PAD_FRACTION,
 } from '@/timeline/lod';
 import { viewportYearRange, yearToT, tToYear, pixelToYear } from '@/timeline/scale';
 import { dominantEpoch } from '@/timeline/epoch';
@@ -559,7 +560,10 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
       if (Platform.OS === 'web') {
         // Direct PPU assignment is intentional on web: there is no Skia canvas, so
         // withTiming would have no visual effect. The ScrollView scroll provides animation.
-        const maxScrollX = Math.max(0, (TOTAL_T_MAX - TOTAL_T_MIN) * newPPU - canvasWidth);
+        const maxScrollX = Math.max(
+          0,
+          (TOTAL_T_MAX - TOTAL_T_MIN) * newPPU - canvasWidth * (1 - PRESENT_RIGHT_PAD_FRACTION),
+        );
         pixelsPerUnit.value = newPPU;
         setJsPixelsPerUnit(newPPU);
         setWebJumpScrollX(
@@ -602,7 +606,11 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   const handleMinimapJump = useCallback(
     (newOffsetX: number) => {
       if (Platform.OS === 'web') {
-        const maxScrollX = Math.max(0, (TOTAL_T_MAX - TOTAL_T_MIN) * jsPixelsPerUnit - canvasWidth);
+        const maxScrollX = Math.max(
+          0,
+          (TOTAL_T_MAX - TOTAL_T_MIN) * jsPixelsPerUnit -
+            canvasWidth * (1 - PRESENT_RIGHT_PAD_FRACTION),
+        );
         const newScrollX = Math.max(
           0,
           Math.min((newOffsetX - TOTAL_T_MIN) * jsPixelsPerUnit, maxScrollX),
@@ -656,7 +664,10 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   // ─── Web fallback ─────────────────────────────────────────────────────────
   if (Platform.OS === 'web') {
     const WEB_PPU = jsPixelsPerUnit;
-    const webCanvasWidth = Math.ceil((TOTAL_T_MAX - TOTAL_T_MIN) * WEB_PPU);
+    // Extra right padding so "Heute" can be scrolled to the canvas center
+    // (centering the recent past); this empty strip carries no axis labels.
+    const webRightPad = canvasWidth * PRESENT_RIGHT_PAD_FRACTION;
+    const webCanvasWidth = Math.ceil((TOTAL_T_MAX - TOTAL_T_MIN) * WEB_PPU + webRightPad);
     const webOffsetAtZero = TOTAL_T_MIN;
     const webOffsetX = webOffsetAtZero + webScrollX / WEB_PPU;
 
@@ -692,13 +703,13 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
             />
           </View>
         </View>
+        <EpochJumpBar onJump={zoomToFit} />
         <TimelineMinimap
           offsetX={webOffsetX}
           pixelsPerUnit={WEB_PPU}
           canvasWidth={canvasWidth}
           onJump={handleMinimapJump}
         />
-        <EpochJumpBar onJump={zoomToFit} />
         <View style={styles.container}>
           <View
             style={[
@@ -874,13 +885,13 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
         </View>
       </View>
 
+      <EpochJumpBar onJump={zoomToFit} />
       <TimelineMinimap
         offsetX={jsOffsetX}
         pixelsPerUnit={jsPixelsPerUnit}
         canvasWidth={canvasWidth}
         onJump={handleMinimapJump}
       />
-      <EpochJumpBar onJump={zoomToFit} />
 
       <View style={styles.container}>
         <View style={styles.labels}>

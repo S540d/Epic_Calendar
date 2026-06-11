@@ -1,18 +1,26 @@
 {
-  "filter": {
-    "allCategories": "All Categories",
+  "app": {
+    "title": "Epic Calendar",
+    "subtitle": "Logarithmic timeline – from the Big Bang to today"
+  },
+  "category": {
     "erdzeitalter": "Geological Eras",
     "zivilisation": "Civilizations",
     "natur": "Nature & Science",
-    "nation": "Nations & Politics"
+    "nation": "Nations & Politics",
+    "herrscher": "Rulers & Dynasties"
   },
   "continent": {
     "all": "All",
-    "europe": "Europe",
-    "asia": "Asia",
-    "africa": "Africa",
-    "americas": "Americas",
+    "europa": "Europe",
+    "asien": "Asia",
+    "afrika": "Africa",
+    "amerika": "Americas",
+    "ozeanien": "Oceania",
     "global": "Global"
+  },
+  "chip": {
+    "soon": "soon"
   },
   "event": {
     "unknownDate": "Date unknown",
@@ -21,19 +29,24 @@
     "ce": "CE",
     "duration": "Duration",
     "category": "Category",
-    "continent": "Continent"
+    "continent": "Continent",
+    "culture": "Culture",
+    "million": "M",
+    "thousand": "k"
   },
   "breadcrumb": {
     "from": "from",
     "to": "to",
     "zoom": "Zoom"
   },
-  "zoomLevel": {
-    "0": "Eons",
-    "1": "Eras",
-    "2": "Epochs",
-    "3": "Centuries",
-    "4": "Years"
+  "zoom": {
+    "level": {
+      "0": "Eons",
+      "1": "Eras",
+      "2": "Epochs",
+      "3": "Centuries",
+      "4": "Years"
+    }
   },
   "epochChip": {
     "bigBang": "Big Bang",
@@ -48,6 +61,10 @@
     "label": "Timeline overview",
     "scrollForward": "Scroll forward",
     "scrollBack": "Scroll back"
+  },
+  "popover": {
+    "title": "Multiple events",
+    "dismiss": "Close"
   },
   "axis": {
     "billion": "Bn",

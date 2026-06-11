@@ -80,12 +80,22 @@ export function clampPixelsPerUnit(v: number): number {
 }
 
 /**
- * Clamps the pan offset so the viewport cannot scroll past "today" on the right.
- * maxOffsetX: today sits exactly at the right edge of the canvas.
+ * Fraction of the viewport allowed to extend past "today" on the right, so the
+ * user can pan/zoom far enough to *center* the present (the interesting, recent
+ * part of history) instead of it being stuck against the right edge. The empty
+ * space to the right of "Heute" carries no axis labels (see TimeAxis).
+ */
+export const PRESENT_RIGHT_PAD_FRACTION = 0.5;
+
+/**
+ * Clamps the pan offset so the viewport cannot scroll arbitrarily far past
+ * "today". The right limit lets "Heute" reach the horizontal center of the
+ * canvas (PRESENT_RIGHT_PAD_FRACTION = 0.5) so the present can be centered.
  * Guard against negative maxOffsetX (fully zoomed out) with Math.max(0, ...).
  */
 export function clampOffsetX(offsetX: number, pixelsPerUnit: number, canvasWidth: number): number {
   'worklet';
-  const maxOffsetX = Math.max(0, T_MAX - canvasWidth / pixelsPerUnit);
+  const viewportT = canvasWidth / pixelsPerUnit;
+  const maxOffsetX = Math.max(0, T_MAX - viewportT * (1 - PRESENT_RIGHT_PAD_FRACTION));
   return Math.min(offsetX, maxOffsetX);
 }

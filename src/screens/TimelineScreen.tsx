@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
@@ -64,10 +64,7 @@ export function TimelineScreen() {
         </Pressable>
       </View>
       <FilterChipBar active={activeCategories} onToggle={toggleCategory} />
-      <ScrollView
-        style={styles.canvasWrap}
-        contentContainerStyle={[styles.canvasContent, Platform.OS === 'web' && { flex: 1 }]}
-      >
+      <ScrollView style={styles.canvasWrap} contentContainerStyle={styles.canvasContent}>
         <TimelineView
           activeCategories={activeCategories}
           continent={continent}
