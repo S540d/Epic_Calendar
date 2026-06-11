@@ -32,7 +32,7 @@ function formatYear(year: number, t: (key: string) => string): string {
   const neg = year < 0;
   const p = neg ? '–' : '';
 
-  if (abs >= 1_000_000_000) return `${p}${(abs / 1e9).toFixed(1)} ${t('axis.billion')}`;
+  if (abs >= 1_000_000_000) return `${p}${Math.round(abs / 1e9)} ${t('axis.billion')}`;
   if (abs >= 1_000_000) return `${p}${Math.round(abs / 1e6)} ${t('axis.million')}`;
   if (abs >= 100_000) return `${p}${Math.round(abs / 1000)}${t('axis.thousand')}`;
   if (abs >= 10_000) return `${p}${(abs / 1000).toFixed(0)}${t('axis.thousand')}`;

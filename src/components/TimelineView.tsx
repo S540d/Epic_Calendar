@@ -680,7 +680,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     const webEpochLabel = dominantEpoch(webCenterYear)?.title ?? null;
 
     return (
-      <View style={{ flex: 1 }}>
+      <View>
         <View
           style={[
             styles.axisRow,
@@ -710,7 +710,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
           canvasWidth={canvasWidth}
           onJump={handleMinimapJump}
         />
-        <View style={styles.container}>
+        <View style={[styles.container, { height: canvasHeight }]}>
           <View
             style={[
               styles.labels,
@@ -893,7 +893,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
         onJump={handleMinimapJump}
       />
 
-      <View style={styles.container}>
+      <View style={[styles.container, { height: canvasHeight }]}>
         <View style={styles.labels}>
           {lanes.map((cat, idx) => {
             const overflow = overflowCounts.get(cat) ?? 0;

@@ -5,7 +5,7 @@
 export function formatEventYear(y: number, t: (key: string) => string): string {
   const suffix = y < 0 ? ` ${t('event.bce')}` : ` ${t('event.ce')}`;
   const a = Math.abs(y);
-  if (a >= 1_000_000) return `${(a / 1_000_000).toFixed(1)} ${t('event.million')}${suffix}`;
-  if (a >= 10_000) return `${(a / 1_000).toFixed(1)} ${t('event.thousand')}${suffix}`;
+  if (a >= 1_000_000) return `${Math.round(a / 1_000_000)} ${t('event.million')}${suffix}`;
+  if (a >= 10_000) return `${Math.round(a / 1_000)} ${t('event.thousand')}${suffix}`;
   return `${a}${suffix}`;
 }
