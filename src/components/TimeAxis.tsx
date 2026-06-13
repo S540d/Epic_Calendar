@@ -1,17 +1,33 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { tToYear, yearToT } from '@/timeline/scale';
+import { tToYear, yearToT, yearToPixel } from '@/timeline/scale';
 import { colors, typography } from '@/theme/tokens';
 import type { ZoomLevel } from '@/data/schema';
 
 export const TIME_AXIS_HEIGHT = 44;
-const TICK_LABEL_WIDTH = 64;
+const TICK_LABEL_WIDTH = 72;
 const HEUTE_LABEL_WIDTH = 38;
 const CURRENT_YEAR = 2026;
 const T_NOW = yearToT(CURRENT_YEAR);
 
-function formatYear(year: number, lod: ZoomLevel, t: (key: string) => string): string {
+/**
+ * Candidate step sizes in years, ordered from finest to coarsest.
+ * The algorithm picks the coarsest step that still yields at least MIN_TICKS
+ * and no more than MAX_TICKS visible ticks.
+ */
+const STEP_CANDIDATES = [
+  1, 2, 5, 10, 20, 50, 100, 200, 500, 1_000, 2_000, 5_000, 10_000, 50_000, 100_000, 500_000,
+  1_000_000, 5_000_000, 10_000_000, 50_000_000, 100_000_000, 500_000_000, 1_000_000_000,
+  5_000_000_000,
+];
+
+const MIN_TICKS = 3;
+const MAX_TICKS = 9;
+/** Minimum pixel gap between two adjacent tick labels to avoid overlap. */
+const MIN_TICK_PX_GAP = 56;
+
+function formatYear(year: number, t: (key: string) => string): string {
   const abs = Math.abs(year);
   const neg = year < 0;
   const p = neg ? '–' : '';
@@ -21,11 +37,52 @@ function formatYear(year: number, lod: ZoomLevel, t: (key: string) => string): s
   if (abs >= 100_000) return `${p}${Math.round(abs / 1000)}${t('axis.thousand')}`;
   if (abs >= 10_000) return `${p}${(abs / 1000).toFixed(0)}${t('axis.thousand')}`;
   if (year === 0) return '0';
-  if (lod >= 3) return `${Math.round(abs)} ${neg ? t('axis.bce') : t('axis.ce')}`;
-  return `${p}${Math.round(abs)}`;
+  if (neg) return `${Math.round(abs)} ${t('axis.bce')}`;
+  return `${Math.round(abs)}`;
 }
 
-const TICKS_BY_LOD: Record<ZoomLevel, number> = { 0: 5, 1: 6, 2: 7, 3: 8, 4: 9 };
+type Tick = { label: string; px: number; year: number };
+
+function generateTicks(
+  offsetX: number,
+  pixelsPerUnit: number,
+  canvasWidth: number,
+  t: (key: string) => string,
+): Tick[] {
+  const startYear = tToYear(offsetX);
+  const endYear = tToYear(offsetX + canvasWidth / pixelsPerUnit);
+  const span = endYear - startYear;
+
+  // Pick the finest step that keeps ticks within [MIN_TICKS, MAX_TICKS] and
+  // has enough pixel gap between adjacent ticks to avoid label collisions.
+  let chosenStep: number = STEP_CANDIDATES[STEP_CANDIDATES.length - 1]!;
+  for (const step of STEP_CANDIDATES) {
+    const count = Math.floor(span / step);
+    if (count < MIN_TICKS) continue;
+    if (count > MAX_TICKS) continue;
+
+    // Estimate pixel gap: two consecutive round multiples of step.
+    const sampleYear = Math.ceil(startYear / step) * step;
+    const nextYear = sampleYear + step;
+    const pxA = yearToPixel(sampleYear, offsetX, pixelsPerUnit);
+    const pxB = yearToPixel(nextYear, offsetX, pixelsPerUnit);
+    if (Math.abs(pxB - pxA) < MIN_TICK_PX_GAP) continue;
+
+    chosenStep = step;
+    break;
+  }
+
+  // First tick: smallest multiple of chosenStep that is >= startYear.
+  const firstTick = Math.ceil(startYear / chosenStep) * chosenStep;
+
+  const ticks: Tick[] = [];
+  for (let year = firstTick; year <= endYear; year += chosenStep) {
+    const px = yearToPixel(year, offsetX, pixelsPerUnit);
+    if (px < 0 || px > canvasWidth) continue;
+    ticks.push({ label: formatYear(year, t), px, year });
+  }
+  return ticks;
+}
 
 type Props = {
   offsetX: number;
@@ -34,40 +91,40 @@ type Props = {
   zoomLevel: ZoomLevel;
 };
 
-export function TimeAxis({ offsetX, pixelsPerUnit, canvasWidth, zoomLevel }: Props) {
+export function TimeAxis({ offsetX, pixelsPerUnit, canvasWidth }: Props) {
   const { t } = useTranslation();
-  const numTicks = TICKS_BY_LOD[zoomLevel];
 
-  const ticks = useMemo(() => {
-    const result: Array<{ label: string; px: number }> = [];
-    for (let i = 0; i <= numTicks; i++) {
-      const px = (i / numTicks) * canvasWidth;
-      const tickT = px / pixelsPerUnit + offsetX;
-      result.push({ label: formatYear(tToYear(tickT), zoomLevel, t), px });
-    }
-    return result;
-  }, [offsetX, pixelsPerUnit, canvasWidth, zoomLevel, numTicks, t]);
+  const ticks = useMemo(
+    () => generateTicks(offsetX, pixelsPerUnit, canvasWidth, t),
+    [offsetX, pixelsPerUnit, canvasWidth, t],
+  );
 
   const heutePx = useMemo(() => (T_NOW - offsetX) * pixelsPerUnit, [offsetX, pixelsPerUnit]);
   const heuteVisible = heutePx >= 0 && heutePx <= canvasWidth;
+  // Min pixel gap a tick label needs from the "Heute" label to avoid overlap.
+  const HEUTE_LABEL_CLEARANCE = (TICK_LABEL_WIDTH + HEUTE_LABEL_WIDTH) / 2;
 
   return (
     <View style={[styles.axis, { width: canvasWidth }]}>
       <View style={styles.baseline} />
-      {ticks.map(({ label, px }, i) => {
+      {ticks.map(({ label, px, year }, i) => {
+        // No ticks/labels after "Heute": the future has no events to anchor them
+        // (relevant once the viewport can be panned to center the present).
+        if (year > CURRENT_YEAR) return null;
         const labelLeft = Math.max(
           0,
           Math.min(canvasWidth - TICK_LABEL_WIDTH, px - TICK_LABEL_WIDTH / 2),
         );
+        // Suppress a tick label that would collide with the "Heute" label.
+        const collidesHeute = heuteVisible && Math.abs(px - heutePx) < HEUTE_LABEL_CLEARANCE;
         return (
           <React.Fragment key={i}>
             <View style={[styles.tickLine, { left: px }]} />
-            <Text
-              style={[styles.tickLabel, { left: labelLeft, fontSize: zoomLevel >= 3 ? 10 : 9 }]}
-              numberOfLines={1}
-            >
-              {label}
-            </Text>
+            {!collidesHeute && (
+              <Text style={[styles.tickLabel, { left: labelLeft }]} numberOfLines={1}>
+                {label}
+              </Text>
+            )}
           </React.Fragment>
         );
       })}
@@ -82,7 +139,6 @@ export function TimeAxis({ offsetX, pixelsPerUnit, canvasWidth, zoomLevel }: Pro
                   0,
                   Math.min(canvasWidth - HEUTE_LABEL_WIDTH, heutePx - HEUTE_LABEL_WIDTH / 2),
                 ),
-                fontSize: zoomLevel >= 3 ? 10 : 9,
               },
             ]}
             numberOfLines={1}
@@ -124,6 +180,7 @@ const styles = StyleSheet.create({
     top: 12,
     width: TICK_LABEL_WIDTH,
     ...typography.caption,
+    fontSize: 10,
     color: colors.textMuted,
     textAlign: 'center',
   },
