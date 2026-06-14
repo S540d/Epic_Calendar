@@ -10,7 +10,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { useSharedValue, useAnimatedReaction, runOnJS, withTiming } from 'react-native-reanimated';
+import { runOnJS } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 
 // Only import Skia for native platforms
@@ -35,13 +35,12 @@ import { TimelineMinimap } from './TimelineMinimap';
 import { ZoomLevelIndicator } from './ZoomLevelIndicator';
 import { ALL_EVENTS } from '@/data/events';
 import { computeLaneData, type TrackMap } from '@/timeline/culling';
+import { useTimelineViewport } from './useTimelineViewport';
 import {
   clampOffsetX,
   clampPixelsPerUnit,
   eventLabelFontSize,
   eventLabelMaxLines,
-  humanHistoryViewState,
-  pixelsPerUnitToZoomLevel,
   PRESENT_RIGHT_PAD_FRACTION,
 } from '@/timeline/lod';
 import {
@@ -90,8 +89,6 @@ const POPOVER_MAX_HEIGHT = 200;
 
 /** Minimum touch-target size (iOS HIG 44pt / Material 48dp) for event taps. */
 const MIN_HIT_PX = 44;
-/** Fraction of viewport used by the event span when zooming to fit. */
-const ZOOM_TO_FIT_FILL = 0.7;
 /** Maximum events rendered per lane; excess shows a "+N" cluster badge. */
 const MAX_EVENTS_PER_LANE = 15;
 /** Zoom factor applied per double-tap / two-finger-tap. */
@@ -163,38 +160,38 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   const { width: screenWidth } = useWindowDimensions();
   const canvasWidth = Math.max(0, screenWidth - LANE_LABEL_WIDTH);
 
-  // Default view: −400 000 years → Heute at right edge
-  const initState = humanHistoryViewState(canvasWidth);
-
-  const offsetX = useSharedValue(initState.offsetX);
-  const pixelsPerUnit = useSharedValue(initState.pixelsPerUnit);
-  const startOffsetX = useSharedValue(0);
-  const startPixelsPerUnit = useSharedValue(0);
-  const startFocalT = useSharedValue(0);
-
-  // JS-side mirrors updated from worklets via runOnJS
-  const [jsOffsetX, setJsOffsetX] = useState(initState.offsetX);
-  const [jsPixelsPerUnit, setJsPixelsPerUnit] = useState(initState.pixelsPerUnit);
-
-  // Web: horizontal scroll position + ref for programmatic reset
-  const [webScrollX, setWebScrollX] = useState(0);
-  const webScrollRef = useRef<ScrollView>(null);
-  // When set, a useEffect fires to animate the web ScrollView to that X position.
-  const [webJumpScrollX, setWebJumpScrollX] = useState<number | null>(null);
-  // Tracks whether the initial scroll-to-present has been performed.
-  const webInitScrolled = useRef(false);
-  // Event queued to open after the zoom-to-fit animation completes (#44).
-  const [pendingSelectEvent, setPendingSelectEvent] = useState<TimelineEvent | null>(null);
-
   // Popover shown when a tap hits multiple overlapping events (#35)
   const [popoverState, setPopoverState] = useState<{
     events: TimelineEvent[];
     x: number;
     y: number;
   } | null>(null);
+  // Close the disambiguation popover whenever the viewport moves.
+  const closePopover = useCallback(() => setPopoverState(null), []);
 
-  // Ref so the reset effect always reads the current canvasWidth without re-subscribing
-  const canvasWidthRef = useRef(canvasWidth);
+  // Viewport state + zoom/pan/jump commands (platform-aware, see hook).
+  const {
+    offsetX,
+    pixelsPerUnit,
+    startOffsetX,
+    startPixelsPerUnit,
+    startFocalT,
+    jsOffsetX,
+    jsPixelsPerUnit,
+    setJsPixelsPerUnit,
+    zoomLevel,
+    webScrollX,
+    setWebScrollX,
+    webScrollRef,
+    zoomToFit,
+    zoomAtPoint,
+    zoomIn,
+    zoomOut,
+    handleMinimapJump,
+  } = useTimelineViewport({ canvasWidth, resetKey, onViewportMove: closePopover });
+
+  // Event queued to open after the zoom-to-fit animation completes (#44).
+  const [pendingSelectEvent, setPendingSelectEvent] = useState<TimelineEvent | null>(null);
 
   // Stable snapshot of all hit-test inputs, updated after every render so that
   // handleCanvasTap (memoized with []) always reads up-to-date data.
@@ -204,8 +201,8 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     laneTrackCounts: new Map<Category, number>(),
     visibleByLane: new Map<Category, TimelineEvent[]>(),
     tracksByLane: new Map<Category, TrackMap>(),
-    jsOffsetX: initState.offsetX,
-    jsPixelsPerUnit: initState.pixelsPerUnit,
+    jsOffsetX,
+    jsPixelsPerUnit,
   });
 
   // Stable ref to the latest zoomToFit closure so handleCanvasTap doesn't need it as dep.
@@ -220,10 +217,6 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     onSelectEventRef.current = onSelectEvent;
   }, [onSelectEvent]);
 
-  useLayoutEffect(() => {
-    canvasWidthRef.current = canvasWidth;
-  });
-
   // Open the detail modal after the zoom-to-fit animation; clears on unmount.
   useEffect(() => {
     if (!pendingSelectEvent) return;
@@ -235,73 +228,9 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     return () => clearTimeout(timer);
   }, [pendingSelectEvent]);
 
-  // Animate to default view whenever resetKey increments (0 = initial mount, skip)
-  useEffect(() => {
-    if (resetKey === 0) return;
-    const cw = canvasWidthRef.current;
-    if (!cw) return;
-    if (Platform.OS === 'web') {
-      const ppu = humanHistoryViewState(cw).pixelsPerUnit;
-      const heuteWebX = (T_HEUTE - TOTAL_T_MIN) * ppu;
-      webScrollRef.current?.scrollTo({ x: Math.max(0, heuteWebX - cw), animated: true });
-      return;
-    }
-    const state = humanHistoryViewState(cw);
-    offsetX.value = withTiming(state.offsetX, { duration: 600 });
-    pixelsPerUnit.value = withTiming(state.pixelsPerUnit, { duration: 600 });
-  }, [resetKey]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Scroll the web ScrollView to a jump target set by zoomToFit.
-  // Accessing refs in effects is the approved React pattern (#44/#39).
-  useEffect(() => {
-    if (webJumpScrollX === null) return;
-    const target = webJumpScrollX;
-    requestAnimationFrame(() => {
-      webScrollRef.current?.scrollTo({ x: target, animated: true });
-      setWebJumpScrollX(null);
-    });
-  }, [webJumpScrollX]);
-
-  // On web, sync pixelsPerUnit and scroll to "Heute" on the first render with a
-  // valid canvasWidth. contentOffset is only evaluated at mount (canvasWidth may
-  // be 0 then), and useState ignores updated initial values after first render.
-  useEffect(() => {
-    if (Platform.OS !== 'web') return;
-    if (webInitScrolled.current) return;
-    if (canvasWidth <= 0) return;
-    webInitScrolled.current = true;
-    const ppu = humanHistoryViewState(canvasWidth).pixelsPerUnit;
-    const heuteX = (T_HEUTE - TOTAL_T_MIN) * ppu;
-    const targetX = Math.max(0, heuteX - canvasWidth);
-    // Defer mutations outside the effect body to satisfy lint rules.
-    requestAnimationFrame(() => {
-      pixelsPerUnit.value = ppu; // eslint-disable-line react-hooks/immutability
-      setJsPixelsPerUnit(ppu);
-      webScrollRef.current?.scrollTo({ x: targetX, animated: false });
-    });
-  }, [canvasWidth]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useAnimatedReaction(
-    () => ({ o: offsetX.value, p: pixelsPerUnit.value }),
-    (curr, prev) => {
-      if (!prev || Math.abs(curr.o - prev.o) > 0.5 || Math.abs(curr.p - prev.p) > 0.5) {
-        runOnJS(setJsOffsetX)(curr.o);
-        runOnJS(setJsPixelsPerUnit)(curr.p);
-        // Close disambiguation popover when the viewport moves
-        runOnJS(setPopoverState)(null);
-      }
-    },
-    [],
-  );
-
   const lanes = useMemo(
     () => LANE_ORDER.filter((c) => activeCategories.has(c)),
     [activeCategories],
-  );
-
-  const zoomLevel: ZoomLevel = useMemo(
-    () => pixelsPerUnitToZoomLevel(jsPixelsPerUnit),
-    [jsPixelsPerUnit],
   );
 
   // Native-path lane data. Shared computation in computeLaneData(); only the
@@ -439,21 +368,6 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     }
   }, []);
 
-  // Zoom keeping the given focal x-coordinate fixed (used by tap-to-zoom).
-  // Stable except on screen resize (canvasWidth changes); shared values are stable refs.
-  const zoomAtPoint = useCallback(
-    (focalX: number, factor: number) => {
-      const current = pixelsPerUnit.value;
-      const next = clampPixelsPerUnit(current * factor);
-      if (next === current) return;
-      const focalT = offsetX.value + focalX / current;
-      const nextOffset = clampOffsetX(focalT - focalX / next, next, canvasWidth);
-      pixelsPerUnit.value = withTiming(next, { duration: 300 });
-      offsetX.value = withTiming(nextOffset, { duration: 300 });
-    },
-    [canvasWidth, pixelsPerUnit, offsetX],
-  );
-
   // Pan: activeOffsetX / failOffsetY lets vertical swipes pass to the parent ScrollView.
   // The X threshold is a little wider than the tap maxDistance so a deliberate
   // drag becomes a pan while a quick tap stays a tap (less accidental scrolling).
@@ -541,36 +455,6 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     80,
   );
 
-  // Animates the viewport to show [startYear, endYear] with ~30% padding each side.
-  // For point events (no endYear), the 1.0 T-unit minimum prevents excessive zoom.
-  const zoomToFit = useCallback(
-    (startYear: number, endYear: number | null | undefined) => {
-      const startT = yearToT(startYear);
-      const rawEndT = yearToT(endYear ?? startYear);
-      const spanT = Math.max(Math.abs(rawEndT - startT), 1.0);
-      const centerT = (startT + rawEndT) / 2;
-      const newPPU = clampPixelsPerUnit(canvasWidth / (spanT / ZOOM_TO_FIT_FILL));
-      if (Platform.OS === 'web') {
-        // Direct PPU assignment is intentional on web: there is no Skia canvas, so
-        // withTiming would have no visual effect. The ScrollView scroll provides animation.
-        const maxScrollX = Math.max(
-          0,
-          (TOTAL_T_MAX - TOTAL_T_MIN) * newPPU - canvasWidth * (1 - PRESENT_RIGHT_PAD_FRACTION),
-        );
-        pixelsPerUnit.value = newPPU;
-        setJsPixelsPerUnit(newPPU);
-        setWebJumpScrollX(
-          Math.min(Math.max(0, (centerT - TOTAL_T_MIN) * newPPU - canvasWidth / 2), maxScrollX),
-        );
-      } else {
-        const newOffsetX = clampOffsetX(centerT - canvasWidth / (2 * newPPU), newPPU, canvasWidth);
-        pixelsPerUnit.value = withTiming(newPPU, { duration: ZOOM_TO_FIT_DURATION_MS });
-        offsetX.value = withTiming(newOffsetX, { duration: ZOOM_TO_FIT_DURATION_MS });
-      }
-    },
-    [canvasWidth, pixelsPerUnit, offsetX, setJsPixelsPerUnit, setWebJumpScrollX],
-  );
-
   // tapDataRef: update every render so handleCanvasTap always reads current viewport state.
   useLayoutEffect(() => {
     Object.assign(tapDataRef.current, {
@@ -595,64 +479,6 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     },
     [zoomToFit],
   );
-
-  const handleMinimapJump = useCallback(
-    (newOffsetX: number) => {
-      if (Platform.OS === 'web') {
-        const maxScrollX = Math.max(
-          0,
-          (TOTAL_T_MAX - TOTAL_T_MIN) * jsPixelsPerUnit -
-            canvasWidth * (1 - PRESENT_RIGHT_PAD_FRACTION),
-        );
-        const newScrollX = Math.max(
-          0,
-          Math.min((newOffsetX - TOTAL_T_MIN) * jsPixelsPerUnit, maxScrollX),
-        );
-        setWebJumpScrollX(newScrollX);
-      } else {
-        offsetX.value = withTiming(newOffsetX, { duration: 300 });
-      }
-    },
-    [jsPixelsPerUnit, canvasWidth, offsetX, setWebJumpScrollX],
-  );
-
-  const zoomIn = () => {
-    if (Platform.OS === 'web') {
-      const centerT = TOTAL_T_MIN + (webScrollX + canvasWidth / 2) / jsPixelsPerUnit;
-      const newPPU = clampPixelsPerUnit(jsPixelsPerUnit * 1.5);
-      pixelsPerUnit.value = newPPU;
-      setJsPixelsPerUnit(newPPU);
-      const newScrollX = Math.max(0, (centerT - TOTAL_T_MIN) * newPPU - canvasWidth / 2);
-      requestAnimationFrame(() => {
-        webScrollRef.current?.scrollTo({ x: newScrollX, animated: false });
-      });
-    } else {
-      const center = offsetX.value + canvasWidth / (2 * pixelsPerUnit.value);
-      const next = clampPixelsPerUnit(pixelsPerUnit.value * 1.5);
-      const nextOffset = clampOffsetX(center - canvasWidth / (2 * next), next, canvasWidth);
-      pixelsPerUnit.value = withTiming(next, { duration: 300 });
-      offsetX.value = withTiming(nextOffset, { duration: 300 });
-    }
-  };
-
-  const zoomOut = () => {
-    if (Platform.OS === 'web') {
-      const centerT = TOTAL_T_MIN + (webScrollX + canvasWidth / 2) / jsPixelsPerUnit;
-      const newPPU = clampPixelsPerUnit(jsPixelsPerUnit / 1.5);
-      pixelsPerUnit.value = newPPU;
-      setJsPixelsPerUnit(newPPU);
-      const newScrollX = Math.max(0, (centerT - TOTAL_T_MIN) * newPPU - canvasWidth / 2);
-      requestAnimationFrame(() => {
-        webScrollRef.current?.scrollTo({ x: newScrollX, animated: false });
-      });
-    } else {
-      const center = offsetX.value + canvasWidth / (2 * pixelsPerUnit.value);
-      const next = clampPixelsPerUnit(pixelsPerUnit.value / 1.5);
-      const nextOffset = clampOffsetX(center - canvasWidth / (2 * next), next, canvasWidth);
-      pixelsPerUnit.value = withTiming(next, { duration: 300 });
-      offsetX.value = withTiming(nextOffset, { duration: 300 });
-    }
-  };
 
   // ─── Web fallback ─────────────────────────────────────────────────────────
   if (Platform.OS === 'web') {
