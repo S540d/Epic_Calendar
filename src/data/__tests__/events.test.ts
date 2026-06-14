@@ -1,4 +1,5 @@
 import { ALL_EVENTS } from '../events';
+import { validateEvent } from '../schema';
 import type { TimelineEvent } from '../schema';
 import type { Category } from '@/theme/tokens';
 
@@ -44,9 +45,19 @@ describe('ALL_EVENTS data integrity', () => {
     expect(invalid).toHaveLength(0);
   });
 
-  it('minZoomLevel is between 0 and 4', () => {
-    const invalid = ALL_EVENTS.filter((e) => e.minZoomLevel < 0 || e.minZoomLevel > 4);
+  it('minZoomLevel is a present integer between 0 and 4', () => {
+    const invalid = ALL_EVENTS.filter(
+      (e) => !Number.isInteger(e.minZoomLevel) || e.minZoomLevel < 0 || e.minZoomLevel > 4,
+    );
     expect(invalid).toHaveLength(0);
+  });
+
+  it('every event passes the schema validator', () => {
+    const problems = ALL_EVENTS.flatMap((e) => {
+      const errs = validateEvent(e, VALID_CATEGORIES);
+      return errs.length ? [`${e.id}: ${errs.join('; ')}`] : [];
+    });
+    expect(problems).toEqual([]);
   });
 
   it('all four enabled continents have events', () => {

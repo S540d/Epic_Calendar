@@ -18,6 +18,25 @@
 
 export const REFERENCE_YEAR = 0;
 
+/**
+ * Canonical timeline span endpoints. Single source of truth — do NOT redefine
+ * these (or their `yearToT` projections) in components or other modules.
+ *
+ * - `BIG_BANG_YEAR`: left edge of the full timeline (~13.8 Gyr ago).
+ * - `PRESENT_YEAR`:  right edge ("Heute" / now).
+ */
+export const BIG_BANG_YEAR = -13_800_000_000;
+export const PRESENT_YEAR = 2026;
+
+/** Projected `t` value of the timeline left edge (Big Bang). */
+export const T_MIN = yearToT(BIG_BANG_YEAR);
+/** Projected `t` value of the timeline right edge (present). */
+export const T_MAX = yearToT(PRESENT_YEAR);
+/** Alias for the present-day `t` value (== `T_MAX`). */
+export const T_PRESENT = T_MAX;
+/** Total length of the full timeline in `t`-units. */
+export const FULL_T_SPAN = T_MAX - T_MIN;
+
 export function yearToT(year: number): number {
   const delta = year - REFERENCE_YEAR;
   const sign = delta >= 0 ? 1 : -1;
