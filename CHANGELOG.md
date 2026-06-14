@@ -32,6 +32,12 @@
   `webVisibleByLane`, `tracksByLane`/`webTracksByLane`, je eigene Overflow-
   Zählung) — Bugfixes mussten zweimal erfolgen. Beide Pfade übergeben jetzt nur
   noch ihren eigenen Sichtbereich; alles Weitere ist identisch.
+- Code-Pflege (#68): Viewport-State und Zoom-/Pan-/Jump-Logik aus `TimelineView`
+  in den Hook `useTimelineViewport()` (`src/components/useTimelineViewport.ts`)
+  extrahiert (offset/ppu-SharedValues, JS-Spiegel, Web-Scroll-Mirror, Worklet↔JS-
+  Sync, `zoomToFit`/`zoomAtPoint`/`zoomIn`/`zoomOut`/`handleMinimapJump`).
+  TimelineView von ~1187 auf ~1013 Zeilen verschlankt; das plattformabhängige
+  Branching liegt jetzt gebündelt im Hook. Kein Verhaltensbruch.
 - UX: „Heute" lässt sich jetzt zentrieren (Pan/Zoom bis zur Bildschirmmitte),
   da die jüngste Geschichte im Fokus steht. Rechts von „Heute" gibt es bewusst
   keine Achsen-Beschriftung.
