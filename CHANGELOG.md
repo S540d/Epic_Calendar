@@ -19,6 +19,13 @@
 
 ### Changed
 
+- Code-Pflege (#68): Zeit-Span-Konstanten (`T_MIN`/`T_MAX`/`T_PRESENT`,
+  `BIG_BANG_YEAR`/`PRESENT_YEAR`, `FULL_T_SPAN`) zentral in `src/timeline/scale.ts`
+  als Single Source of Truth. Bisher in `TimelineView` und `lod.ts` dupliziert
+  (Risiko divergierender Werte). `lod.ts` re-exportiert sie kompatibel.
+- Datenschema gehärtet (#68): `validateEvent()` in `src/data/schema.ts` prüft
+  Pflichtfelder inkl. `minZoomLevel`; neue Tests gegen die Event-JSONs und den
+  Validator (vorheriger Test übersah ein fehlendes `minZoomLevel`).
 - UX: „Heute" lässt sich jetzt zentrieren (Pan/Zoom bis zur Bildschirmmitte),
   da die jüngste Geschichte im Fokus steht. Rechts von „Heute" gibt es bewusst
   keine Achsen-Beschriftung.

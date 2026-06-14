@@ -1,5 +1,5 @@
 import type { ZoomLevel } from '@/data/schema';
-import { yearToT } from './scale';
+import { yearToT, T_MIN, T_MAX, FULL_T_SPAN } from './scale';
 
 /**
  * LOD bands (pixels per t-unit → discrete level).
@@ -25,13 +25,10 @@ export const ZOOM_LEVEL_NAMES: Record<ZoomLevel, string> = {
 };
 
 const T_HUMAN_START = yearToT(-400_000);
-const T_NOW = yearToT(2026);
-export const HUMAN_T_SPAN = T_NOW - T_HUMAN_START;
+export const HUMAN_T_SPAN = T_MAX - T_HUMAN_START;
 
-// Full timeline: Big Bang (−13.8 Gyr) to present.
-export const T_MIN = yearToT(-13_800_000_000);
-export const T_MAX = yearToT(2026);
-export const FULL_T_SPAN = T_MAX - T_MIN;
+// Re-export the canonical full-timeline span from scale (single source of truth).
+export { T_MIN, T_MAX, FULL_T_SPAN };
 
 /**
  * Default view: human prehistory (−400 000 years) to today.

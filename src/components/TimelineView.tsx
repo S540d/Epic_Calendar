@@ -44,7 +44,15 @@ import {
   pixelsPerUnitToZoomLevel,
   PRESENT_RIGHT_PAD_FRACTION,
 } from '@/timeline/lod';
-import { viewportYearRange, yearToT, tToYear, pixelToYear } from '@/timeline/scale';
+import {
+  viewportYearRange,
+  yearToT,
+  tToYear,
+  pixelToYear,
+  T_MIN as TOTAL_T_MIN,
+  T_MAX as TOTAL_T_MAX,
+  T_PRESENT as T_HEUTE,
+} from '@/timeline/scale';
 import { dominantEpoch } from '@/timeline/epoch';
 import { type Continent, type TimelineEvent, type ZoomLevel } from '@/data/schema';
 import {
@@ -71,9 +79,8 @@ type Props = {
 
 const LANE_ORDER: Category[] = ['erdzeitalter', 'zivilisation', 'natur', 'nation'];
 
-const TOTAL_T_MIN = yearToT(-13_800_000_000);
-const T_HEUTE = yearToT(2026);
-const TOTAL_T_MAX = T_HEUTE;
+// Timeline span constants (TOTAL_T_MIN / TOTAL_T_MAX / T_HEUTE) are imported from
+// '@/timeline/scale' — single source of truth, see scale.ts.
 
 /** Minimum visible bar width to attempt rendering a (possibly truncated) label. */
 const LABEL_MIN_BAR_PX = 22;
