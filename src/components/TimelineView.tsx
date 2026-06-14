@@ -1,70 +1,33 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  Pressable,
-  useWindowDimensions,
-  Platform,
-  ScrollView,
-} from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { runOnJS } from 'react-native-reanimated';
-import { useTranslation } from 'react-i18next';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Platform, useWindowDimensions } from 'react-native';
 
-// Only import Skia for native platforms
-let Canvas: any = null;
-let Group: any = null;
-let Rect: any = null;
-if (Platform.OS !== 'web') {
-  try {
-    const skia = require('@shopify/react-native-skia');
-    Canvas = skia.Canvas;
-    Group = skia.Group;
-    Rect = skia.Rect;
-  } catch {
-    // Skia not available
-  }
-}
-
-import { EpochJumpBar } from './EpochJumpBar';
-import { TimeAxis } from './TimeAxis';
-import { TimelineBreadcrumb } from './TimelineBreadcrumb';
-import { TimelineMinimap } from './TimelineMinimap';
-import { ZoomLevelIndicator } from './ZoomLevelIndicator';
 import { ALL_EVENTS } from '@/data/events';
 import { computeLaneData, type TrackMap } from '@/timeline/culling';
 import { useTimelineViewport } from './useTimelineViewport';
+import { useTimelineGestures } from './useTimelineGestures';
+import { TimelineCanvasWeb } from './TimelineCanvasWeb';
+import { TimelineCanvasNative, type PopoverState } from './TimelineCanvasNative';
 import {
-  clampOffsetX,
-  clampPixelsPerUnit,
-  eventLabelFontSize,
-  eventLabelMaxLines,
-  PRESENT_RIGHT_PAD_FRACTION,
-} from '@/timeline/lod';
+  computeLabelVisibleIds,
+  laneHeightForTracks,
+  MAX_EVENTS_PER_LANE,
+  MIN_HIT_PX,
+} from './timelineRenderShared';
 import {
   viewportYearRange,
   yearToT,
   tToYear,
   pixelToYear,
   T_MIN as TOTAL_T_MIN,
-  T_MAX as TOTAL_T_MAX,
   T_PRESENT as T_HEUTE,
 } from '@/timeline/scale';
 import { dominantEpoch } from '@/timeline/epoch';
-import { type Continent, type TimelineEvent, type ZoomLevel } from '@/data/schema';
+import { type Continent, type TimelineEvent } from '@/data/schema';
 import {
   LANE_GAP,
-  LANE_HEIGHT,
   LANE_LABEL_WIDTH,
   LANE_PADDING_V,
   TRACK_HEIGHT,
-  colors,
-  eventColor,
-  shadows,
-  spacing,
-  typography,
   type Category,
 } from '@/theme/tokens';
 
@@ -78,94 +41,17 @@ type Props = {
 
 const LANE_ORDER: Category[] = ['erdzeitalter', 'zivilisation', 'natur', 'nation'];
 
-// Timeline span constants (TOTAL_T_MIN / TOTAL_T_MAX / T_HEUTE) are imported from
-// '@/timeline/scale' — single source of truth, see scale.ts.
-
-/** Minimum visible bar width to attempt rendering a (possibly truncated) label. */
-const LABEL_MIN_BAR_PX = 22;
-const LABEL_MAX_WIDTH = 96;
-const POPOVER_MAX_WIDTH = 220;
-const POPOVER_MAX_HEIGHT = 200;
-
-/** Minimum touch-target size (iOS HIG 44pt / Material 48dp) for event taps. */
-const MIN_HIT_PX = 44;
-/** Maximum events rendered per lane; excess shows a "+N" cluster badge. */
-const MAX_EVENTS_PER_LANE = 15;
-/** Zoom factor applied per double-tap / two-finger-tap. */
-const TAP_ZOOM_FACTOR = 1.8;
-/** Duration of the zoom-to-fit pan/scale animation on native. */
-const ZOOM_TO_FIT_DURATION_MS = 600;
 /** Delay before opening the detail modal after a zoom-to-fit animation.
  *  On web there is no animated zoom (direct PPU assignment), so a shorter
  *  delay covers the scroll animation only. */
-const ZOOM_MODAL_DELAY_MS = Platform.OS === 'web' ? 350 : ZOOM_TO_FIT_DURATION_MS + 50;
-
-/** Returns the pixel height of a lane with the given number of tracks. */
-function laneHeightForTracks(n: number): number {
-  return n * TRACK_HEIGHT + LANE_PADDING_V * 2;
-}
-
-/**
- * Collision-aware label visibility: checks collisions per track so events
- * in different tracks never suppress each other. Largest bars win.
- */
-function computeLabelVisibleIds(
-  visibleByLane: Map<Category, TimelineEvent[]>,
-  tracksByLane: Map<Category, TrackMap>,
-  jsOffsetX: number,
-  jsPixelsPerUnit: number,
-  canvasWidth: number,
-): Set<string> {
-  const result = new Set<string>();
-  for (const [cat, events] of visibleByLane.entries()) {
-    const trackMap = tracksByLane.get(cat);
-    // Group events by track
-    const byTrack = new Map<number, TimelineEvent[]>();
-    for (const ev of events) {
-      const t = trackMap?.get(ev.id);
-      if (t === undefined) continue; // event beyond MAX_EVENTS_PER_LANE cap — no bar rendered
-      if (!byTrack.has(t)) byTrack.set(t, []);
-      byTrack.get(t)!.push(ev);
-    }
-    for (const trackEvents of byTrack.values()) {
-      const placed: Array<{ l: number; r: number }> = [];
-      const sorted = [...trackEvents].sort((a, b) => {
-        const wa = (yearToT(a.endYear ?? a.startYear) - yearToT(a.startYear)) * jsPixelsPerUnit;
-        const wb = (yearToT(b.endYear ?? b.startYear) - yearToT(b.startYear)) * jsPixelsPerUnit;
-        return wb - wa;
-      });
-      for (const ev of sorted) {
-        const x = (yearToT(ev.startYear) - jsOffsetX) * jsPixelsPerUnit;
-        const w = Math.max(
-          0,
-          (yearToT(ev.endYear ?? ev.startYear) - yearToT(ev.startYear)) * jsPixelsPerUnit,
-        );
-        if (w < LABEL_MIN_BAR_PX) continue;
-        const visibleLeft = Math.max(x, 0);
-        const visibleRight = Math.min(x + w, canvasWidth);
-        if (visibleRight - visibleLeft < 6) continue;
-        const lx = visibleLeft + 3;
-        const rx = lx + Math.min(LABEL_MAX_WIDTH, visibleRight - visibleLeft - 6);
-        if (placed.some((p) => lx < p.r && rx > p.l)) continue;
-        placed.push({ l: lx, r: rx });
-        result.add(ev.id);
-      }
-    }
-  }
-  return result;
-}
+const ZOOM_MODAL_DELAY_MS = Platform.OS === 'web' ? 350 : 650;
 
 export function TimelineView({ activeCategories, continent, onSelectEvent, resetKey = 0 }: Props) {
-  const { t } = useTranslation();
   const { width: screenWidth } = useWindowDimensions();
   const canvasWidth = Math.max(0, screenWidth - LANE_LABEL_WIDTH);
 
   // Popover shown when a tap hits multiple overlapping events (#35)
-  const [popoverState, setPopoverState] = useState<{
-    events: TimelineEvent[];
-    x: number;
-    y: number;
-  } | null>(null);
+  const [popoverState, setPopoverState] = useState<PopoverState | null>(null);
   // Close the disambiguation popover whenever the viewport moves.
   const closePopover = useCallback(() => setPopoverState(null), []);
 
@@ -178,7 +64,6 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     startFocalT,
     jsOffsetX,
     jsPixelsPerUnit,
-    setJsPixelsPerUnit,
     zoomLevel,
     webScrollX,
     setWebScrollX,
@@ -312,8 +197,6 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
       maxEventsPerLane: MAX_EVENTS_PER_LANE,
     });
   }, [webScrollX, jsPixelsPerUnit, canvasWidth, lanes, zoomLevel, continent]);
-  const { visibleByLane: webVisibleByLane, tracksByLane: webTracksByLane } = webLaneData;
-  const webOverflowCounts = webLaneData.overflowCounts;
 
   // Canvas-space hit-test (native). Enforces a minimum 44px hit-box per event.
   // If exactly one event is hit, selects it immediately.
@@ -368,81 +251,16 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     }
   }, []);
 
-  // Pan: activeOffsetX / failOffsetY lets vertical swipes pass to the parent ScrollView.
-  // The X threshold is a little wider than the tap maxDistance so a deliberate
-  // drag becomes a pan while a quick tap stays a tap (less accidental scrolling).
-  // Memoized so RNGH doesn't rebuild the handler tree on every pan frame.
-  const panGesture = useMemo(
-    () =>
-      Gesture.Pan()
-        .activeOffsetX([-12, 12])
-        .failOffsetY([-8, 8])
-        .onStart(() => {
-          startOffsetX.value = offsetX.value;
-        })
-        .onUpdate((e) => {
-          const raw = startOffsetX.value - e.translationX / pixelsPerUnit.value;
-          offsetX.value = clampOffsetX(raw, pixelsPerUnit.value, canvasWidth);
-        }),
-    [canvasWidth, startOffsetX, offsetX, pixelsPerUnit],
-  );
-
-  const pinchGesture = useMemo(
-    () =>
-      Gesture.Pinch()
-        .onStart((e) => {
-          startPixelsPerUnit.value = pixelsPerUnit.value;
-          startFocalT.value = offsetX.value + e.focalX / pixelsPerUnit.value;
-        })
-        .onUpdate((e) => {
-          const next = clampPixelsPerUnit(startPixelsPerUnit.value * e.scale);
-          pixelsPerUnit.value = next;
-          offsetX.value = clampOffsetX(startFocalT.value - e.focalX / next, next, canvasWidth);
-        }),
-    [canvasWidth, startPixelsPerUnit, pixelsPerUnit, offsetX, startFocalT],
-  );
-
-  // Single tap → select the nearest event under the finger (with an enforced
-  // minimum hit-box so even hair-thin bars are reachable). maxDistance keeps it
-  // from firing once a pan starts.
-  const singleTap = useMemo(
-    () =>
-      Gesture.Tap()
-        .maxDuration(250)
-        .maxDistance(10)
-        // eslint-disable-next-line react-hooks/refs
-        .onEnd((e) => {
-          runOnJS(handleCanvasTap)(e.x, e.y);
-        }),
-    [handleCanvasTap],
-  );
-
-  // Double tap → zoom in centered on the tap point. (Zoom-out is covered by
-  // pinch and the − button; gesture-handler's Tap has no multi-pointer mode.)
-  // maxDelay bounds how long singleTap waits for a possible second tap before
-  // firing, so event selection stays snappy (~250 ms worst case).
-  const doubleTap = useMemo(
-    () =>
-      Gesture.Tap()
-        .numberOfTaps(2)
-        .maxDuration(300)
-        .maxDelay(250)
-        .maxDistance(20)
-        .onEnd((e) => {
-          runOnJS(zoomAtPoint)(e.x, TAP_ZOOM_FACTOR);
-        }),
-    [zoomAtPoint],
-  );
-
-  const exclusiveGesture = useMemo(
-    () => Gesture.Exclusive(doubleTap, singleTap),
-    [doubleTap, singleTap],
-  );
-
-  const gesture = useMemo(
-    () => Gesture.Simultaneous(panGesture, pinchGesture, exclusiveGesture),
-    [panGesture, pinchGesture, exclusiveGesture],
-  );
+  const gesture = useTimelineGestures({
+    canvasWidth,
+    offsetX,
+    pixelsPerUnit,
+    startOffsetX,
+    startPixelsPerUnit,
+    startFocalT,
+    onTap: handleCanvasTap,
+    zoomAtPoint,
+  });
 
   const canvasHeight = Math.max(
     lanes.reduce(
@@ -472,7 +290,8 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     zoomToFitRef.current = zoomToFit;
   }, [zoomToFit]);
 
-  const handleTap = useCallback(
+  // Tap on a web event bar → zoom to fit + queue the detail modal.
+  const handleEventTap = useCallback(
     (event: TimelineEvent) => {
       zoomToFit(event.startYear, event.endYear);
       setPendingSelectEvent(event);
@@ -480,534 +299,67 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     [zoomToFit],
   );
 
-  // ─── Web fallback ─────────────────────────────────────────────────────────
+  // Tap on a popover entry (native multi-hit) → close, zoom, queue modal.
+  const handlePopoverSelect = useCallback(
+    (event: TimelineEvent) => {
+      setPopoverState(null);
+      zoomToFit(event.startYear, event.endYear);
+      setPendingSelectEvent(event);
+    },
+    [zoomToFit],
+  );
+
   if (Platform.OS === 'web') {
-    const WEB_PPU = jsPixelsPerUnit;
-    // Extra right padding so "Heute" can be scrolled to the canvas center
-    // (centering the recent past); this empty strip carries no axis labels.
-    const webRightPad = canvasWidth * PRESENT_RIGHT_PAD_FRACTION;
-    const webCanvasWidth = Math.ceil((TOTAL_T_MAX - TOTAL_T_MIN) * WEB_PPU + webRightPad);
-    const webOffsetAtZero = TOTAL_T_MIN;
-    const webOffsetX = webOffsetAtZero + webScrollX / WEB_PPU;
-
-    const heuteWebX = (T_HEUTE - TOTAL_T_MIN) * WEB_PPU;
-    const initWebScrollX = Math.max(0, heuteWebX - canvasWidth);
-
-    const visibleStartYear = tToYear(webOffsetX);
-    const visibleEndYear = tToYear(webOffsetX + canvasWidth / WEB_PPU);
-    const webCenterYear = tToYear(webOffsetX + canvasWidth / (2 * WEB_PPU));
-    const webEpochLabel = dominantEpoch(webCenterYear)?.title ?? null;
-
     return (
-      <View>
-        <View
-          style={[
-            styles.axisRow,
-            Platform.select({ web: { position: 'sticky', top: 0, zIndex: 10 } as any }),
-          ]}
-        >
-          <View style={{ width: LANE_LABEL_WIDTH }} />
-          <TimeAxis
-            offsetX={webOffsetX}
-            pixelsPerUnit={WEB_PPU}
-            canvasWidth={canvasWidth}
-            zoomLevel={zoomLevel}
-          />
-          <View style={StyleSheet.absoluteFill} pointerEvents="none">
-            <ZoomLevelIndicator zoomLevel={zoomLevel} />
-            <TimelineBreadcrumb
-              startYear={visibleStartYear}
-              endYear={visibleEndYear}
-              epoch={webEpochLabel}
-            />
-          </View>
-        </View>
-        <EpochJumpBar onJump={zoomToFit} />
-        <TimelineMinimap
-          offsetX={webOffsetX}
-          pixelsPerUnit={WEB_PPU}
-          canvasWidth={canvasWidth}
-          onJump={handleMinimapJump}
-        />
-        <View style={[styles.container, { height: canvasHeight }]}>
-          <View
-            style={[
-              styles.labels,
-              Platform.select({ web: { position: 'sticky', left: 0, zIndex: 5 } as any }),
-            ]}
-          >
-            {lanes.map((cat, idx) => {
-              const overflow = webOverflowCounts.get(cat) ?? 0;
-              return (
-                <View
-                  key={cat}
-                  style={[
-                    styles.label,
-                    {
-                      top: laneTops[idx],
-                      height: laneHeightForTracks(laneTrackCounts.get(cat) ?? 1),
-                      borderLeftColor: colors.category[cat],
-                    },
-                  ]}
-                >
-                  <Text style={styles.labelText}>{t(`category.${cat}`)}</Text>
-                  {overflow > 0 && <Text style={styles.clusterBadge}>+{overflow}</Text>}
-                </View>
-              );
-            })}
-          </View>
-          <ScrollView
-            ref={webScrollRef}
-            horizontal
-            style={{ flex: 1, backgroundColor: colors.bg }}
-            scrollEventThrottle={16}
-            onScroll={(e) => setWebScrollX(e.nativeEvent.contentOffset.x)}
-            contentOffset={{ x: initWebScrollX, y: 0 }}
-          >
-            <View style={{ width: webCanvasWidth, height: canvasHeight }}>
-              {lanes.map((cat, idx) => {
-                const laneTop = laneTops[idx] ?? 0;
-                const laneH = laneHeightForTracks(laneTrackCounts.get(cat) ?? 1);
-                // Clip to MAX_EVENTS_PER_LANE; excess is shown as badge in lane label.
-                const events = (webVisibleByLane.get(cat) ?? []).slice(0, MAX_EVENTS_PER_LANE);
-                const webTrackMap = webTracksByLane.get(cat);
-                const lblSize = eventLabelFontSize(zoomLevel);
-                const maxLines = eventLabelMaxLines(zoomLevel);
-                return (
-                  <View key={cat}>
-                    <View
-                      style={{
-                        position: 'absolute',
-                        left: 0,
-                        top: laneTop,
-                        width: webCanvasWidth,
-                        height: laneH,
-                        backgroundColor: colors.laneBg[cat],
-                      }}
-                    />
-                    {events.map((ev) => {
-                      const startT = yearToT(ev.startYear);
-                      const endT = yearToT(ev.endYear ?? ev.startYear);
-                      const x = (startT - webOffsetAtZero) * WEB_PPU;
-                      const w = Math.max(2, (endT - startT) * WEB_PPU);
-                      const trackIdx = webTrackMap?.get(ev.id) ?? 0;
-                      const barTop = laneTop + LANE_PADDING_V + trackIdx * TRACK_HEIGHT + 4;
-                      const barHeight = TRACK_HEIGHT - 8;
-                      const stickyLabelLeft =
-                        w >= LABEL_MIN_BAR_PX ? Math.max(x + 3, webScrollX + 3) : null;
-                      const stickyLabelMaxW =
-                        stickyLabelLeft !== null ? Math.max(0, x + w - stickyLabelLeft - 3) : 0;
-                      const labelTopPos =
-                        maxLines === 1 ? barTop + barHeight / 2 - lblSize / 2 : barTop + 4;
-                      // Expand thin bars to a >=44px touch target via hitSlop,
-                      // without changing the visual bar width.
-                      const hSlop = Math.max(0, (MIN_HIT_PX - w) / 2);
-                      return (
-                        <React.Fragment key={ev.id}>
-                          <Pressable
-                            onPress={() => handleTap(ev)}
-                            hitSlop={{ left: hSlop, right: hSlop, top: 4, bottom: 4 }}
-                            accessibilityRole="button"
-                            accessibilityLabel={ev.title}
-                            style={
-                              {
-                                position: 'absolute',
-                                left: x,
-                                top: barTop,
-                                width: w,
-                                height: barHeight,
-                                backgroundColor: eventColor(ev),
-                                borderRadius: 3,
-                                cursor: 'pointer',
-                              } as any
-                            }
-                          />
-                          {stickyLabelLeft !== null && stickyLabelMaxW > 4 && lblSize > 0 && (
-                            <View
-                              pointerEvents="none"
-                              style={{
-                                position: 'absolute',
-                                left: stickyLabelLeft,
-                                top: labelTopPos,
-                                maxWidth: stickyLabelMaxW,
-                              }}
-                            >
-                              <Text
-                                numberOfLines={maxLines}
-                                ellipsizeMode="tail"
-                                style={{
-                                  ...typography.caption,
-                                  fontSize: lblSize,
-                                  color: colors.textPrimary,
-                                }}
-                              >
-                                {ev.title}
-                              </Text>
-                            </View>
-                          )}
-                        </React.Fragment>
-                      );
-                    })}
-                  </View>
-                );
-              })}
-              <View
-                style={{
-                  position: 'absolute',
-                  left: heuteWebX - 0.75,
-                  top: 0,
-                  width: 1.5,
-                  height: canvasHeight,
-                  backgroundColor: '#FF5050',
-                  pointerEvents: 'none',
-                }}
-              />
-            </View>
-          </ScrollView>
-        </View>
-        <View
-          style={[
-            styles.zoomButtons,
-            Platform.select({ web: { position: 'fixed', right: 12, bottom: 12 } as any }),
-          ]}
-          pointerEvents="box-none"
-        >
-          <TouchableOpacity style={styles.zoomBtn} onPress={zoomIn} accessibilityLabel="Zoom in">
-            <Text style={styles.zoomBtnText}>+</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.zoomBtn} onPress={zoomOut} accessibilityLabel="Zoom out">
-            <Text style={styles.zoomBtnText}>−</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <TimelineCanvasWeb
+        lanes={lanes}
+        laneTops={laneTops}
+        laneTrackCounts={laneTrackCounts}
+        visibleByLane={webLaneData.visibleByLane}
+        tracksByLane={webLaneData.tracksByLane}
+        overflowCounts={webLaneData.overflowCounts}
+        canvasWidth={canvasWidth}
+        canvasHeight={canvasHeight}
+        jsPixelsPerUnit={jsPixelsPerUnit}
+        zoomLevel={zoomLevel}
+        webScrollX={webScrollX}
+        setWebScrollX={setWebScrollX}
+        webScrollRef={webScrollRef}
+        onEventTap={handleEventTap}
+        zoomToFit={zoomToFit}
+        handleMinimapJump={handleMinimapJump}
+        zoomIn={zoomIn}
+        zoomOut={zoomOut}
+      />
     );
   }
 
-  // ─── Native (Skia) ────────────────────────────────────────────────────────
   return (
-    <View>
-      <View style={styles.axisRow}>
-        <View style={{ width: LANE_LABEL_WIDTH }} />
-        <TimeAxis
-          offsetX={jsOffsetX}
-          pixelsPerUnit={jsPixelsPerUnit}
-          canvasWidth={canvasWidth}
-          zoomLevel={zoomLevel}
-        />
-        <View style={StyleSheet.absoluteFill} pointerEvents="none">
-          <ZoomLevelIndicator zoomLevel={zoomLevel} />
-          <TimelineBreadcrumb
-            startYear={viewportRange.startYear}
-            endYear={viewportRange.endYear}
-            epoch={epochLabel}
-          />
-        </View>
-      </View>
-
-      <EpochJumpBar onJump={zoomToFit} />
-      <TimelineMinimap
-        offsetX={jsOffsetX}
-        pixelsPerUnit={jsPixelsPerUnit}
-        canvasWidth={canvasWidth}
-        onJump={handleMinimapJump}
-      />
-
-      <View style={[styles.container, { height: canvasHeight }]}>
-        <View style={styles.labels}>
-          {lanes.map((cat, idx) => {
-            const overflow = overflowCounts.get(cat) ?? 0;
-            return (
-              <View
-                key={cat}
-                style={[
-                  styles.label,
-                  {
-                    top: laneTops[idx],
-                    height: laneHeightForTracks(laneTrackCounts.get(cat) ?? 1),
-                    borderLeftColor: colors.category[cat],
-                  },
-                ]}
-              >
-                <Text style={styles.labelText}>{t(`category.${cat}`)}</Text>
-                {overflow > 0 && <Text style={styles.clusterBadge}>+{overflow}</Text>}
-              </View>
-            );
-          })}
-        </View>
-
-        <GestureDetector gesture={gesture}>
-          <View style={{ width: canvasWidth, height: canvasHeight }}>
-            <Canvas style={{ width: canvasWidth, height: canvasHeight }}>
-              {lanes.map((cat, idx) => {
-                const laneTop = laneTops[idx] ?? 0;
-                const laneH = laneHeightForTracks(laneTrackCounts.get(cat) ?? 1);
-                // Clip to MAX_EVENTS_PER_LANE; excess is shown as badge in lane label.
-                const events = (visibleByLane.get(cat) ?? []).slice(0, MAX_EVENTS_PER_LANE);
-                const trackMap = tracksByLane.get(cat);
-                return (
-                  <Group key={cat}>
-                    <Rect
-                      x={0}
-                      y={laneTop}
-                      width={canvasWidth}
-                      height={laneH}
-                      color={colors.laneBg[cat]}
-                    />
-                    {events.map((ev) => {
-                      const startT = yearToT(ev.startYear);
-                      const endT = yearToT(ev.endYear ?? ev.startYear);
-                      const x = (startT - jsOffsetX) * jsPixelsPerUnit;
-                      const w = Math.max(2, (endT - startT) * jsPixelsPerUnit);
-                      const trackIdx = trackMap?.get(ev.id) ?? 0;
-                      const barY = laneTop + LANE_PADDING_V + trackIdx * TRACK_HEIGHT + 4;
-                      const barH = TRACK_HEIGHT - 8;
-                      return (
-                        <Rect
-                          key={ev.id}
-                          x={x}
-                          y={barY}
-                          width={w}
-                          height={barH}
-                          color={eventColor(ev)}
-                        />
-                      );
-                    })}
-                  </Group>
-                );
-              })}
-              {heuteVisible && (
-                <Rect
-                  x={heutePx - 0.75}
-                  y={0}
-                  width={1.5}
-                  height={canvasHeight}
-                  color="rgba(255, 80, 80, 0.9)"
-                />
-              )}
-            </Canvas>
-
-            {/* Labels only; taps are handled by the GestureDetector hit-test. */}
-            <View style={StyleSheet.absoluteFill} pointerEvents="none">
-              {lanes.map((cat, idx) => {
-                const laneTop = laneTops[idx] ?? 0;
-                // Cap to match the Skia bar-drawing loop so labels only appear over real bars.
-                const events = (visibleByLane.get(cat) ?? []).slice(0, MAX_EVENTS_PER_LANE);
-                const trackMap = tracksByLane.get(cat);
-                const lblSize = eventLabelFontSize(zoomLevel);
-                const maxLines = eventLabelMaxLines(zoomLevel);
-                return [
-                  ...events.map((ev) => {
-                    if (!labelVisibleIds.has(ev.id)) return null;
-                    if (lblSize === 0) return null;
-                    const startT = yearToT(ev.startYear);
-                    const endT = yearToT(ev.endYear ?? ev.startYear);
-                    const x = (startT - jsOffsetX) * jsPixelsPerUnit;
-                    const w = Math.max(2, (endT - startT) * jsPixelsPerUnit);
-                    if (x + w < 0 || x > canvasWidth) return null;
-                    const trackIdx = trackMap?.get(ev.id) ?? 0;
-                    const barY = laneTop + LANE_PADDING_V + trackIdx * TRACK_HEIGHT + 4;
-                    const barH = TRACK_HEIGHT - 8;
-                    const labelTop = maxLines === 1 ? barY + barH / 2 - lblSize / 2 : barY + 4;
-                    return (
-                      <View
-                        key={`lbl-${ev.id}`}
-                        pointerEvents="none"
-                        style={{
-                          position: 'absolute',
-                          left: Math.max(x, 0) + 3,
-                          top: labelTop,
-                          maxWidth: Math.max(0, Math.min(x + w, canvasWidth) - Math.max(x, 0) - 6),
-                        }}
-                      >
-                        <Text
-                          style={{
-                            ...typography.caption,
-                            fontSize: lblSize,
-                            color: colors.textPrimary,
-                          }}
-                          numberOfLines={maxLines}
-                          ellipsizeMode="tail"
-                        >
-                          {ev.title}
-                        </Text>
-                      </View>
-                    );
-                  }),
-                ];
-              })}
-            </View>
-          </View>
-        </GestureDetector>
-      </View>
-      <View style={styles.zoomButtons} pointerEvents="box-none">
-        <TouchableOpacity style={styles.zoomBtn} onPress={zoomIn} accessibilityLabel="Zoom in">
-          <Text style={styles.zoomBtnText}>+</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.zoomBtn} onPress={zoomOut} accessibilityLabel="Zoom out">
-          <Text style={styles.zoomBtnText}>−</Text>
-        </TouchableOpacity>
-      </View>
-
-      {popoverState && (
-        <>
-          {/* Transparent backdrop — tap outside closes the popover */}
-          <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={() => setPopoverState(null)}
-            accessible={false}
-          />
-          <View
-            style={[
-              styles.popover,
-              {
-                // px is in canvas coords; add LANE_LABEL_WIDTH to convert to
-                // screen coords, then clamp to [0, right edge - popover width].
-                left: Math.max(
-                  0,
-                  Math.min(
-                    popoverState.x + LANE_LABEL_WIDTH,
-                    canvasWidth + LANE_LABEL_WIDTH - POPOVER_MAX_WIDTH,
-                  ),
-                ),
-                // Clamp vertically so the popover stays inside the canvas area.
-                top: Math.max(0, Math.min(popoverState.y - 8, canvasHeight - POPOVER_MAX_HEIGHT)),
-              },
-            ]}
-          >
-            <Text style={styles.popoverTitle}>{t('popover.title')}</Text>
-            {popoverState.events.map((ev) => (
-              <Pressable
-                key={ev.id}
-                style={styles.popoverItem}
-                onPress={() => {
-                  setPopoverState(null);
-                  zoomToFit(ev.startYear, ev.endYear);
-                  setPendingSelectEvent(ev);
-                }}
-                accessibilityRole="button"
-                accessibilityLabel={ev.title}
-              >
-                <View style={[styles.popoverDot, { backgroundColor: eventColor(ev) }]} />
-                <Text style={styles.popoverText} numberOfLines={1}>
-                  {ev.title}
-                </Text>
-              </Pressable>
-            ))}
-            <Pressable
-              style={styles.popoverDismiss}
-              onPress={() => setPopoverState(null)}
-              accessibilityLabel={t('popover.dismiss')}
-            >
-              <Text style={styles.popoverDismissText}>✕</Text>
-            </Pressable>
-          </View>
-        </>
-      )}
-    </View>
+    <TimelineCanvasNative
+      lanes={lanes}
+      laneTops={laneTops}
+      laneTrackCounts={laneTrackCounts}
+      visibleByLane={visibleByLane}
+      tracksByLane={tracksByLane}
+      overflowCounts={overflowCounts}
+      labelVisibleIds={labelVisibleIds}
+      canvasWidth={canvasWidth}
+      canvasHeight={canvasHeight}
+      jsOffsetX={jsOffsetX}
+      jsPixelsPerUnit={jsPixelsPerUnit}
+      zoomLevel={zoomLevel}
+      viewportRange={viewportRange}
+      epochLabel={epochLabel}
+      heutePx={heutePx}
+      heuteVisible={heuteVisible}
+      gesture={gesture}
+      zoomToFit={zoomToFit}
+      handleMinimapJump={handleMinimapJump}
+      zoomIn={zoomIn}
+      zoomOut={zoomOut}
+      popoverState={popoverState}
+      onPopoverClose={closePopover}
+      onPopoverSelect={handlePopoverSelect}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  axisRow: {
-    flexDirection: 'row',
-  },
-  container: {
-    flexDirection: 'row',
-  },
-  labels: {
-    width: LANE_LABEL_WIDTH,
-    position: 'relative',
-  },
-  label: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    paddingLeft: spacing.sm,
-    borderLeftWidth: 3,
-    justifyContent: 'center',
-  },
-  labelText: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  clusterBadge: {
-    ...typography.caption,
-    fontSize: 10,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  zoomButtons: {
-    position: 'absolute',
-    right: 12,
-    bottom: 12,
-    flexDirection: 'column',
-    gap: 6,
-  },
-  zoomBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(31, 36, 45, 0.90)',
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  zoomBtnText: {
-    fontSize: 20,
-    color: colors.textSecondary,
-    lineHeight: 24,
-  },
-  popover: {
-    position: 'absolute',
-    minWidth: 160,
-    maxWidth: POPOVER_MAX_WIDTH,
-    backgroundColor: colors.bgElevated,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingVertical: spacing.xs,
-    zIndex: 100,
-    ...shadows.md,
-  },
-  popoverTitle: {
-    ...typography.caption,
-    fontSize: 11,
-    fontWeight: '600',
-    color: colors.textMuted,
-    paddingHorizontal: spacing.sm,
-    paddingTop: spacing.xs,
-    paddingBottom: 2,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  popoverItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs + 2,
-    gap: 8,
-  },
-  popoverDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    flexShrink: 0,
-  },
-  popoverText: {
-    ...typography.caption,
-    color: colors.textPrimary,
-    flex: 1,
-  },
-  popoverDismiss: {
-    alignItems: 'center',
-    paddingVertical: spacing.xs,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    marginTop: spacing.xs,
-  },
-  popoverDismissText: {
-    ...typography.caption,
-    color: colors.textMuted,
-  },
-});

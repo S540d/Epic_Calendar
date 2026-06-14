@@ -38,6 +38,12 @@
   Sync, `zoomToFit`/`zoomAtPoint`/`zoomIn`/`zoomOut`/`handleMinimapJump`).
   TimelineView von ~1187 auf ~1013 Zeilen verschlankt; das plattformabhängige
   Branching liegt jetzt gebündelt im Hook. Kein Verhaltensbruch.
+- Code-Pflege (#68): Render-Pfade entflochten — Web und Native sind jetzt
+  eigene Komponenten `TimelineCanvasWeb`/`TimelineCanvasNative` hinter einem
+  Prop-Interface; geteilte Styles/Konstanten/Helfer in `timelineRenderShared.ts`,
+  die Gesten in `useTimelineGestures()`. `TimelineView` ist nur noch Logik +
+  Komposition und von ~1013 auf **~359 Zeilen** geschrumpft (ursprünglich 1367).
+  Kein Verhaltensbruch. Schließt die Code-Pflege-Akzeptanzkriterien von #68 ab.
 - UX: „Heute" lässt sich jetzt zentrieren (Pan/Zoom bis zur Bildschirmmitte),
   da die jüngste Geschichte im Fokus steht. Rechts von „Heute" gibt es bewusst
   keine Achsen-Beschriftung.
