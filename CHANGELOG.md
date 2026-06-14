@@ -26,6 +26,12 @@
 - Datenschema gehärtet (#68): `validateEvent()` in `src/data/schema.ts` prüft
   Pflichtfelder inkl. `minZoomLevel`; neue Tests gegen die Event-JSONs und den
   Validator (vorheriger Test übersah ein fehlendes `minZoomLevel`).
+- Code-Pflege (#68): Sichtbarkeits-/Track-Berechnung für Web und Native in
+  einer geteilten Funktion `computeLaneData()` (`src/timeline/culling.ts`)
+  zusammengeführt. Vorher doppelt in `TimelineView` (`visibleByLane`/
+  `webVisibleByLane`, `tracksByLane`/`webTracksByLane`, je eigene Overflow-
+  Zählung) — Bugfixes mussten zweimal erfolgen. Beide Pfade übergeben jetzt nur
+  noch ihren eigenen Sichtbereich; alles Weitere ist identisch.
 - UX: „Heute" lässt sich jetzt zentrieren (Pan/Zoom bis zur Bildschirmmitte),
   da die jüngste Geschichte im Fokus steht. Rechts von „Heute" gibt es bewusst
   keine Achsen-Beschriftung.

@@ -34,7 +34,7 @@ import { TimelineBreadcrumb } from './TimelineBreadcrumb';
 import { TimelineMinimap } from './TimelineMinimap';
 import { ZoomLevelIndicator } from './ZoomLevelIndicator';
 import { ALL_EVENTS } from '@/data/events';
-import { assignTracks, filterVisible, type TrackMap } from '@/timeline/culling';
+import { computeLaneData, type TrackMap } from '@/timeline/culling';
 import {
   clampOffsetX,
   clampPixelsPerUnit,
@@ -304,41 +304,21 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     [jsPixelsPerUnit],
   );
 
-  const visibleByLane = useMemo(() => {
+  // Native-path lane data. Shared computation in computeLaneData(); only the
+  // visible year range differs from the web path (driven by jsOffsetX here).
+  const laneData = useMemo(() => {
     const range = viewportYearRange(canvasWidth, jsOffsetX, jsPixelsPerUnit);
-    const out = new Map<Category, TimelineEvent[]>();
-    for (const cat of lanes) {
-      out.set(
-        cat,
-        filterVisible(ALL_EVENTS, {
-          startYear: range.startYear,
-          endYear: range.endYear,
-          zoomLevel,
-          categories: new Set<Category>([cat]),
-          continent,
-        }),
-      );
-    }
-    return out;
+    return computeLaneData({
+      events: ALL_EVENTS,
+      startYear: range.startYear,
+      endYear: range.endYear,
+      zoomLevel,
+      lanes,
+      continent,
+      maxEventsPerLane: MAX_EVENTS_PER_LANE,
+    });
   }, [canvasWidth, jsOffsetX, jsPixelsPerUnit, lanes, zoomLevel, continent]);
-
-  // How many events are hidden per lane due to the MAX_EVENTS_PER_LANE cap.
-  const overflowCounts = useMemo(() => {
-    const out = new Map<Category, number>();
-    for (const [cat, events] of visibleByLane) {
-      if (events.length > MAX_EVENTS_PER_LANE) out.set(cat, events.length - MAX_EVENTS_PER_LANE);
-    }
-    return out;
-  }, [visibleByLane]);
-
-  const tracksByLane = useMemo(() => {
-    const out = new Map<Category, TrackMap>();
-    for (const [cat, events] of visibleByLane) {
-      // Only assign tracks for the capped set so layout stays predictable.
-      out.set(cat, assignTracks(events.slice(0, MAX_EVENTS_PER_LANE)));
-    }
-    return out;
-  }, [visibleByLane]);
+  const { visibleByLane, overflowCounts, tracksByLane } = laneData;
 
   const laneTrackCounts = useMemo(() => {
     const out = new Map<Category, number>();
@@ -381,45 +361,30 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   );
   const heuteVisible = heutePx >= -1 && heutePx <= canvasWidth + 1;
 
-  // Web-path visibility data, memoized like native counterparts.
-  // Returns empty maps on native (Platform.OS is a compile-time constant).
-  const webVisibleByLane = useMemo(() => {
-    if (Platform.OS !== 'web') return new Map<Category, TimelineEvent[]>();
+  // Web-path lane data. Same computeLaneData() as native; only the visible year
+  // range differs (derived from webScrollX). Empty on native (Platform.OS is a
+  // compile-time constant, so the branch is dead-code-eliminated there).
+  const webLaneData = useMemo(() => {
+    if (Platform.OS !== 'web') {
+      return {
+        visibleByLane: new Map<Category, TimelineEvent[]>(),
+        overflowCounts: new Map<Category, number>(),
+        tracksByLane: new Map<Category, TrackMap>(),
+      };
+    }
     const webOffsetX = TOTAL_T_MIN + webScrollX / jsPixelsPerUnit;
-    const visStartYear = tToYear(webOffsetX);
-    const visEndYear = tToYear(webOffsetX + canvasWidth / jsPixelsPerUnit);
-    const out = new Map<Category, TimelineEvent[]>();
-    for (const cat of lanes) {
-      out.set(
-        cat,
-        filterVisible(ALL_EVENTS, {
-          startYear: visStartYear,
-          endYear: visEndYear,
-          zoomLevel,
-          categories: new Set<Category>([cat]),
-          continent,
-        }),
-      );
-    }
-    return out;
+    return computeLaneData({
+      events: ALL_EVENTS,
+      startYear: tToYear(webOffsetX),
+      endYear: tToYear(webOffsetX + canvasWidth / jsPixelsPerUnit),
+      zoomLevel,
+      lanes,
+      continent,
+      maxEventsPerLane: MAX_EVENTS_PER_LANE,
+    });
   }, [webScrollX, jsPixelsPerUnit, canvasWidth, lanes, zoomLevel, continent]);
-
-  const webOverflowCounts = useMemo(() => {
-    const out = new Map<Category, number>();
-    for (const [cat, events] of webVisibleByLane) {
-      if (events.length > MAX_EVENTS_PER_LANE) out.set(cat, events.length - MAX_EVENTS_PER_LANE);
-    }
-    return out;
-  }, [webVisibleByLane]);
-
-  const webTracksByLane = useMemo(() => {
-    const out = new Map<Category, TrackMap>();
-    for (const cat of lanes) {
-      const evs = (webVisibleByLane.get(cat) ?? []).slice(0, MAX_EVENTS_PER_LANE);
-      out.set(cat, assignTracks(evs));
-    }
-    return out;
-  }, [webVisibleByLane, lanes]);
+  const { visibleByLane: webVisibleByLane, tracksByLane: webTracksByLane } = webLaneData;
+  const webOverflowCounts = webLaneData.overflowCounts;
 
   // Canvas-space hit-test (native). Enforces a minimum 44px hit-box per event.
   // If exactly one event is hit, selects it immediately.
