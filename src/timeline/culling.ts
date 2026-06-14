@@ -62,3 +62,56 @@ export function filterVisible(events: TimelineEvent[], f: VisibilityFilter): Tim
   }
   return result;
 }
+
+/** Per-lane visibility, overflow and track data for one viewport. */
+export type LaneData = {
+  /** Events overlapping the viewport, per lane (uncapped). */
+  visibleByLane: Map<Category, TimelineEvent[]>;
+  /** Events hidden per lane because the lane exceeds `maxEventsPerLane`. */
+  overflowCounts: Map<Category, number>;
+  /** Track assignment per lane, computed on the capped event set. */
+  tracksByLane: Map<Category, TrackMap>;
+};
+
+export type LaneDataInput = {
+  events: TimelineEvent[];
+  /** Visible year range of the current viewport. */
+  startYear: number;
+  endYear: number;
+  zoomLevel: ZoomLevel;
+  /** Active lanes (categories), in render order. */
+  lanes: Category[];
+  continent: Continent;
+  /** Cap on rendered events per lane; excess is counted into `overflowCounts`. */
+  maxEventsPerLane: number;
+};
+
+/**
+ * Computes visibility, overflow and track data for every active lane in one
+ * pass. Shared by the web and native render paths — they only differ in how
+ * the visible year range is derived, which is passed in here.
+ */
+export function computeLaneData(input: LaneDataInput): LaneData {
+  const { events, startYear, endYear, zoomLevel, lanes, continent, maxEventsPerLane } = input;
+  const visibleByLane = new Map<Category, TimelineEvent[]>();
+  const overflowCounts = new Map<Category, number>();
+  const tracksByLane = new Map<Category, TrackMap>();
+
+  for (const cat of lanes) {
+    const visible = filterVisible(events, {
+      startYear,
+      endYear,
+      zoomLevel,
+      categories: new Set<Category>([cat]),
+      continent,
+    });
+    visibleByLane.set(cat, visible);
+    if (visible.length > maxEventsPerLane) {
+      overflowCounts.set(cat, visible.length - maxEventsPerLane);
+    }
+    // Only assign tracks for the capped set so layout stays predictable.
+    tracksByLane.set(cat, assignTracks(visible.slice(0, maxEventsPerLane)));
+  }
+
+  return { visibleByLane, overflowCounts, tracksByLane };
+}

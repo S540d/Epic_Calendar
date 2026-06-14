@@ -1,4 +1,4 @@
-import { assignTracks, filterVisible, type VisibilityFilter } from '../culling';
+import { assignTracks, computeLaneData, filterVisible, type VisibilityFilter } from '../culling';
 import type { TimelineEvent } from '@/data/schema';
 import type { Category } from '@/theme/tokens';
 
@@ -128,5 +128,68 @@ describe('timeline/culling.assignTracks', () => {
     const result = assignTracks([a, b]);
     expect(result.get('a')).toBe(0);
     expect(result.get('b')).toBe(0);
+  });
+});
+
+describe('timeline/culling.computeLaneData', () => {
+  const lanes: Category[] = ['zivilisation', 'nation'];
+
+  it('groups visible events per lane and assigns tracks', () => {
+    const a = ev({ id: 'a', startYear: 0, endYear: 100, category: 'zivilisation' });
+    const b = ev({ id: 'b', startYear: 50, endYear: 150, category: 'zivilisation' }); // overlaps a
+    const c = ev({ id: 'c', startYear: 200, endYear: 300, category: 'nation' });
+    const result = computeLaneData({
+      events: [a, b, c],
+      startYear: 0,
+      endYear: 1000,
+      zoomLevel: 4,
+      lanes,
+      continent: 'europa',
+      maxEventsPerLane: 15,
+    });
+    expect(result.visibleByLane.get('zivilisation')).toEqual([a, b]);
+    expect(result.visibleByLane.get('nation')).toEqual([c]);
+    // a and b overlap → different tracks.
+    expect(result.tracksByLane.get('zivilisation')?.get('a')).toBe(0);
+    expect(result.tracksByLane.get('zivilisation')?.get('b')).toBe(1);
+    expect(result.overflowCounts.size).toBe(0);
+  });
+
+  it('caps tracks at maxEventsPerLane and records overflow', () => {
+    // 3 non-overlapping events, cap at 2 → one overflow, only 2 get tracks.
+    const events = [
+      ev({ id: 'a', startYear: 0, endYear: 10 }),
+      ev({ id: 'b', startYear: 100, endYear: 110 }),
+      ev({ id: 'c', startYear: 200, endYear: 210 }),
+    ];
+    const result = computeLaneData({
+      events,
+      startYear: -100,
+      endYear: 1000,
+      zoomLevel: 4,
+      lanes: ['zivilisation'],
+      continent: 'europa',
+      maxEventsPerLane: 2,
+    });
+    // visibleByLane stays uncapped (used for overflow accounting).
+    expect(result.visibleByLane.get('zivilisation')).toHaveLength(3);
+    expect(result.overflowCounts.get('zivilisation')).toBe(1);
+    // Tracks only for the capped set.
+    expect(result.tracksByLane.get('zivilisation')?.size).toBe(2);
+  });
+
+  it('only includes the requested lanes', () => {
+    const a = ev({ id: 'a', startYear: 0, endYear: 100, category: 'natur' });
+    const result = computeLaneData({
+      events: [a],
+      startYear: -100,
+      endYear: 1000,
+      zoomLevel: 4,
+      lanes: ['zivilisation'],
+      continent: 'europa',
+      maxEventsPerLane: 15,
+    });
+    expect(result.visibleByLane.has('natur')).toBe(false);
+    expect(result.visibleByLane.get('zivilisation')).toEqual([]);
   });
 });
