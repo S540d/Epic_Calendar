@@ -11,6 +11,17 @@ ios/
 android/
 coverage/
 
+# Secrets / sensible Dateien (dev-standards Pflichteinträge, project-templates #69)
+# .env / .env.local sind bereits via .env* abgedeckt – hier explizit für den Audit.
+.env
+.env.local
+credentials.json
+*.jks
+*.keystore
+*.p12
+*.p8
+docs/private/
+
 # Claude Code – nur .claude/commands/ wird versioniert (Issue #28 / project-templates)
 .claude/CLAUDE.md
 .claude/settings.json
