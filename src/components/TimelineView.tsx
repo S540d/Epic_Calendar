@@ -262,16 +262,17 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     if (Platform.OS !== 'web') return;
     if (webInitScrolled.current) return;
     if (canvasWidth <= 0) return;
+    webInitScrolled.current = true;
     const ppu = humanHistoryViewState(canvasWidth).pixelsPerUnit;
-    pixelsPerUnit.value = ppu;
-    setJsPixelsPerUnit(ppu);
     const heuteX = (T_HEUTE - TOTAL_T_MIN) * ppu;
     const targetX = Math.max(0, heuteX - canvasWidth);
-    webInitScrolled.current = true;
+    // Defer mutations outside the effect body to satisfy lint rules.
     requestAnimationFrame(() => {
+      pixelsPerUnit.value = ppu; // eslint-disable-line react-hooks/immutability
+      setJsPixelsPerUnit(ppu);
       webScrollRef.current?.scrollTo({ x: targetX, animated: false });
     });
-  }, [canvasWidth, pixelsPerUnit]);
+  }, [canvasWidth]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useAnimatedReaction(
     () => ({ o: offsetX.value, p: pixelsPerUnit.value }),
