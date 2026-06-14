@@ -174,6 +174,8 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   const webScrollRef = useRef<ScrollView>(null);
   // When set, a useEffect fires to animate the web ScrollView to that X position.
   const [webJumpScrollX, setWebJumpScrollX] = useState<number | null>(null);
+  // Tracks whether the initial scroll-to-present has been performed.
+  const webInitScrolled = useRef(false);
   // Event queued to open after the zoom-to-fit animation completes (#44).
   const [pendingSelectEvent, setPendingSelectEvent] = useState<TimelineEvent | null>(null);
 
@@ -252,6 +254,25 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
       setWebJumpScrollX(null);
     });
   }, [webJumpScrollX]);
+
+  // On web, sync pixelsPerUnit and scroll to "Heute" on the first render with a
+  // valid canvasWidth. contentOffset is only evaluated at mount (canvasWidth may
+  // be 0 then), and useState ignores updated initial values after first render.
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    if (webInitScrolled.current) return;
+    if (canvasWidth <= 0) return;
+    webInitScrolled.current = true;
+    const ppu = humanHistoryViewState(canvasWidth).pixelsPerUnit;
+    const heuteX = (T_HEUTE - TOTAL_T_MIN) * ppu;
+    const targetX = Math.max(0, heuteX - canvasWidth);
+    // Defer mutations outside the effect body to satisfy lint rules.
+    requestAnimationFrame(() => {
+      pixelsPerUnit.value = ppu; // eslint-disable-line react-hooks/immutability
+      setJsPixelsPerUnit(ppu);
+      webScrollRef.current?.scrollTo({ x: targetX, animated: false });
+    });
+  }, [canvasWidth]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useAnimatedReaction(
     () => ({ o: offsetX.value, p: pixelsPerUnit.value }),
