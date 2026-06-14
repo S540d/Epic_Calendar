@@ -21,8 +21,10 @@ export const POPOVER_MAX_HEIGHT = 200;
 
 /** Minimum touch-target size (iOS HIG 44pt / Material 48dp) for event taps. */
 export const MIN_HIT_PX = 44;
-/** Maximum events rendered per lane; excess shows a "+N" cluster badge. */
-export const MAX_EVENTS_PER_LANE = 15;
+/** Maximum events rendered per lane; excess shows a "+N" cluster badge.
+ *  Higher cap lets dense eras stack into multiple tracks (the user scrolls
+ *  down as far as needed); culling to the visible range keeps this bounded. */
+export const MAX_EVENTS_PER_LANE = 40;
 /** Zoom factor applied per double-tap / two-finger-tap. */
 export const TAP_ZOOM_FACTOR = 1.8;
 /** Duration of the zoom-to-fit pan/scale animation on native. */
@@ -87,6 +89,12 @@ export function computeLabelVisibleIds(
 export const timelineStyles = StyleSheet.create({
   axisRow: {
     flexDirection: 'row',
+  },
+  epochBandRow: {
+    flexDirection: 'row',
+    backgroundColor: colors.bg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   container: {
     flexDirection: 'row',

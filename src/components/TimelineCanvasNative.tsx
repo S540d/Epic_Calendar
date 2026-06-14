@@ -6,7 +6,7 @@ import {
   type GestureType,
 } from 'react-native-gesture-handler';
 import { useTranslation } from 'react-i18next';
-import { EpochJumpBar } from './EpochJumpBar';
+import { EpochBand } from './EpochBand';
 import { TimeAxis } from './TimeAxis';
 import { TimelineBreadcrumb } from './TimelineBreadcrumb';
 import { TimelineMinimap } from './TimelineMinimap';
@@ -129,13 +129,23 @@ export function TimelineCanvasNative({
         </View>
       </View>
 
-      <EpochJumpBar onJump={zoomToFit} />
       <TimelineMinimap
         offsetX={jsOffsetX}
         pixelsPerUnit={jsPixelsPerUnit}
         canvasWidth={canvasWidth}
         onJump={handleMinimapJump}
       />
+      <View style={styles.epochBandRow}>
+        <View style={{ width: LANE_LABEL_WIDTH }} />
+        <View style={{ width: canvasWidth, overflow: 'hidden' }}>
+          <EpochBand
+            offsetAtZero={jsOffsetX}
+            pixelsPerUnit={jsPixelsPerUnit}
+            width={canvasWidth}
+            onJump={zoomToFit}
+          />
+        </View>
+      </View>
 
       <View style={[styles.container, { height: canvasHeight }]}>
         <View style={styles.labels}>
