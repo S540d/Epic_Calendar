@@ -12,6 +12,10 @@
   keine überlappenden Jahreszahlen mehr bei schmalen Screens / tiefem Zoom.
 - Web: Untere Lanes/Spuren wurden bei mehreren Kategorien am unteren
   Bildschirmrand abgeschnitten – Timeline-Bereich scrollt jetzt vertikal.
+- Web: Timeline startete beim initialen Laden immer am Urknall statt bei
+  „Heute" – `useWindowDimensions()` liefert beim ersten Render oft `width=0`,
+  was `contentOffset` und `pixelsPerUnit` falsch initialisierte. Ein einmaliger
+  `useEffect` korrigiert beides nach dem ersten Render mit gültiger Canvas-Breite.
 
 ### Changed
 
