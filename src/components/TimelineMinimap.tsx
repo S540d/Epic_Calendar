@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Animated, View, StyleSheet, Pressable } from 'react-native';
+import { Animated, Platform, View, StyleSheet, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { clampOffsetX, T_MIN, T_MAX, FULL_T_SPAN } from '@/timeline/lod';
+import { clampOffsetX, T_MIN, FULL_T_SPAN } from '@/timeline/lod';
 import { colors, LANE_LABEL_WIDTH, spacing } from '@/theme/tokens';
 
 type Props = {
@@ -16,6 +16,8 @@ type Props = {
 };
 
 const A11Y_STEP = 0.1;
+// useNativeDriver is not supported by react-native-web; must be false on web.
+const PULSE_NATIVE_DRIVER = Platform.OS !== 'web';
 
 export function TimelineMinimap({
   offsetX,
@@ -37,8 +39,16 @@ export function TimelineMinimap({
     pulseAnim.setValue(0.8);
     Animated.loop(
       Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 0.2, duration: 150, useNativeDriver: true }),
-        Animated.timing(pulseAnim, { toValue: 0.8, duration: 150, useNativeDriver: true }),
+        Animated.timing(pulseAnim, {
+          toValue: 0.2,
+          duration: 150,
+          useNativeDriver: PULSE_NATIVE_DRIVER,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 0.8,
+          duration: 150,
+          useNativeDriver: PULSE_NATIVE_DRIVER,
+        }),
       ]),
       { iterations: 3 },
     ).start(() => pulseAnim.setValue(0));
