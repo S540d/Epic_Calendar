@@ -99,7 +99,7 @@ export function TimelineScreen() {
           activeCategories={activeCategories}
           continent={continent}
           onSelectEvent={setSelected}
-          initialEpochRange={epochRange}
+          epochRange={epochRange}
         />
       </ScrollView>
       <ContinentTabBar active={continent} onChange={setContinent} />

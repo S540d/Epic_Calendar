@@ -53,7 +53,7 @@ export type TimelineViewport = {
   webScrollRef: React.RefObject<ScrollView>;
 
   // Viewport commands (platform-aware internally).
-  zoomToFit: (startYear: number, endYear: number | null | undefined) => void;
+  zoomToFit: (startYear: number, endYear: number | null | undefined, webAnimated?: boolean) => void;
   zoomAtPoint: (focalX: number, factor: number) => void;
   zoomIn: () => void;
   zoomOut: () => void;
@@ -65,8 +65,6 @@ type Options = {
   canvasWidth: number;
   /** Increment to animate back to the default human-history view (0 = skip). */
   resetKey: number;
-  /** When set, the timeline opens zoomed to this year range instead of human history. */
-  initialEpochRange?: { startYear: number; endYear: number };
   /** Called when the viewport moves (native), e.g. to close an open popover. */
   onViewportMove?: () => void;
 };
@@ -83,21 +81,9 @@ type Options = {
 export function useTimelineViewport({
   canvasWidth,
   resetKey,
-  initialEpochRange,
   onViewportMove,
 }: Options): TimelineViewport {
-  const initState = (() => {
-    if (initialEpochRange && canvasWidth > 0) {
-      const startT = yearToT(initialEpochRange.startYear);
-      const endT = yearToT(initialEpochRange.endYear);
-      const spanT = Math.max(Math.abs(endT - startT), 1.0);
-      const centerT = (startT + endT) / 2;
-      const newPPU = clampPixelsPerUnit(canvasWidth / ZOOM_TO_FIT_FILL / spanT);
-      const newOffsetX = clampOffsetX(centerT - canvasWidth / (2 * newPPU), newPPU, canvasWidth);
-      return { offsetX: newOffsetX, pixelsPerUnit: newPPU };
-    }
-    return humanHistoryViewState(canvasWidth);
-  })();
+  const initState = humanHistoryViewState(canvasWidth);
 
   const offsetX = useSharedValue(initState.offsetX);
   const pixelsPerUnit = useSharedValue(initState.pixelsPerUnit);
@@ -203,7 +189,7 @@ export function useTimelineViewport({
 
   // Animates the viewport to show [startYear, endYear] with padding each side.
   const zoomToFit = useCallback(
-    (startYear: number, endYear: number | null | undefined) => {
+    (startYear: number, endYear: number | null | undefined, webAnimated = false) => {
       const startT = yearToT(startYear);
       const rawEndT = yearToT(endYear ?? startYear);
       const rawSpanT = Math.abs(rawEndT - startT);
@@ -231,7 +217,7 @@ export function useTimelineViewport({
         // throttle ref (set to targetX) and the still-animating DOM disagree and
         // swallow the next gesture.
         requestAnimationFrame(() => {
-          webScrollRef.current?.scrollTo({ x: targetX, animated: false });
+          webScrollRef.current?.scrollTo({ x: targetX, animated: webAnimated });
           commitScrollX(targetX);
         });
       } else {

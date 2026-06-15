@@ -37,8 +37,8 @@ type Props = {
   onSelectEvent: (event: TimelineEvent) => void;
   /** Increment to animate back to the default human-history view. */
   resetKey?: number;
-  /** When set, the timeline opens zoomed to this year range instead of human history. */
-  initialEpochRange?: { startYear: number; endYear: number };
+  /** When set, the timeline animates to this epoch after mount. */
+  epochRange?: { startYear: number; endYear: number };
 };
 
 const LANE_ORDER: Category[] = ['erdzeitalter', 'zivilisation', 'natur', 'nation'];
@@ -53,7 +53,7 @@ export function TimelineView({
   continent,
   onSelectEvent,
   resetKey = 0,
-  initialEpochRange,
+  epochRange,
 }: Props) {
   const { width: screenWidth } = useWindowDimensions();
   const canvasWidth = Math.max(0, screenWidth - LANE_LABEL_WIDTH);
@@ -85,7 +85,6 @@ export function TimelineView({
   } = useTimelineViewport({
     canvasWidth,
     resetKey,
-    initialEpochRange,
     onViewportMove: closePopover,
   });
 
@@ -105,9 +104,9 @@ export function TimelineView({
   });
 
   // Stable ref to the latest zoomToFit closure so handleCanvasTap doesn't need it as dep.
-  const zoomToFitRef = useRef<(startYear: number, endYear: number | null | undefined) => void>(
-    () => {},
-  );
+  const zoomToFitRef = useRef<
+    (startYear: number, endYear: number | null | undefined, webAnimated?: boolean) => void
+  >(() => {});
 
   // Stable ref to onSelectEvent so the pending-modal timer doesn't restart if the
   // parent recreates the callback while a zoom animation is in progress.
@@ -311,6 +310,20 @@ export function TimelineView({
   useLayoutEffect(() => {
     zoomToFitRef.current = zoomToFit;
   }, [zoomToFit]);
+
+  // Animate to the selected epoch after mount. Waits for a valid canvasWidth so
+  // zoomToFit computes correct PPU. The ref prevents re-firing on window resize.
+  const hasZoomedToEpochRef = useRef(false);
+  useEffect(() => {
+    if (!epochRange) return;
+    if (canvasWidth <= 0) return;
+    if (hasZoomedToEpochRef.current) return;
+    hasZoomedToEpochRef.current = true;
+    const timer = setTimeout(() => {
+      zoomToFitRef.current(epochRange.startYear, epochRange.endYear, true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [epochRange, canvasWidth]);
 
   // Tap on a web event bar → zoom to fit + queue the detail modal.
   const handleEventTap = useCallback(
