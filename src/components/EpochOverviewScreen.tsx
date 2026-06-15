@@ -27,7 +27,11 @@ const EPOCH_COLORS: Record<string, string> = {
   modern: '#CF8A30',
 };
 
-function formatDuration(startYear: number, endYear: number, t: (k: string, o?: object) => string): string {
+function formatDuration(
+  startYear: number,
+  endYear: number,
+  t: (k: string, o?: object) => string,
+): string {
   const durationYears = Math.abs(endYear - startYear);
   if (durationYears >= 1_000_000_000) {
     return t('epochNav.durationBillion', { n: (durationYears / 1_000_000_000).toFixed(1) });
@@ -45,7 +49,8 @@ function formatYearLabel(year: number, t: (k: string) => string): string {
   if (year >= 2020) return t('event.present');
   const abs = Math.abs(year);
   const suffix = year < 0 ? ` ${t('event.bce')}` : ` ${t('event.ce')}`;
-  if (abs >= 1_000_000_000) return `${(abs / 1_000_000_000).toFixed(1)} ${t('axis.billion')}${suffix}`;
+  if (abs >= 1_000_000_000)
+    return `${(abs / 1_000_000_000).toFixed(1)} ${t('axis.billion')}${suffix}`;
   if (abs >= 1_000_000) return `${Math.round(abs / 1_000_000)} ${t('event.million')}${suffix}`;
   if (abs >= 10_000) return `${Math.round(abs / 1_000)} ${t('event.thousand')}${suffix}`;
   return `${abs}${suffix}`;
@@ -64,7 +69,11 @@ function EpochTile({ epoch, onPress, indent = false }: EpochTileProps) {
 
   return (
     <Pressable
-      style={({ pressed }) => [styles.tile, indent && styles.tileIndent, pressed && styles.tilePressed]}
+      style={({ pressed }) => [
+        styles.tile,
+        indent && styles.tileIndent,
+        pressed && styles.tilePressed,
+      ]}
       onPress={handlePress}
       accessibilityRole="button"
       accessibilityLabel={t(`epochNav.${epoch.key}`)}
@@ -133,7 +142,10 @@ export function EpochOverviewScreen({
         ))}
 
         <Pressable
-          style={({ pressed }) => [styles.fullTimelineButton, pressed && styles.fullTimelinePressed]}
+          style={({ pressed }) => [
+            styles.fullTimelineButton,
+            pressed && styles.fullTimelinePressed,
+          ]}
           onPress={onShowFullTimeline}
           accessibilityRole="button"
         >
