@@ -65,6 +65,8 @@ type Options = {
   canvasWidth: number;
   /** Increment to animate back to the default human-history view (0 = skip). */
   resetKey: number;
+  /** When set, the timeline opens zoomed to this year range instead of human history. */
+  initialEpochRange?: { startYear: number; endYear: number };
   /** Called when the viewport moves (native), e.g. to close an open popover. */
   onViewportMove?: () => void;
 };
@@ -81,10 +83,21 @@ type Options = {
 export function useTimelineViewport({
   canvasWidth,
   resetKey,
+  initialEpochRange,
   onViewportMove,
 }: Options): TimelineViewport {
-  // Default view: −400 000 years → Heute at right edge.
-  const initState = humanHistoryViewState(canvasWidth);
+  const initState = (() => {
+    if (initialEpochRange && canvasWidth > 0) {
+      const startT = yearToT(initialEpochRange.startYear);
+      const endT = yearToT(initialEpochRange.endYear);
+      const spanT = Math.max(Math.abs(endT - startT), 1.0);
+      const centerT = (startT + endT) / 2;
+      const newPPU = clampPixelsPerUnit(canvasWidth / ZOOM_TO_FIT_FILL / spanT);
+      const newOffsetX = clampOffsetX(centerT - canvasWidth / (2 * newPPU), newPPU, canvasWidth);
+      return { offsetX: newOffsetX, pixelsPerUnit: newPPU };
+    }
+    return humanHistoryViewState(canvasWidth);
+  })();
 
   const offsetX = useSharedValue(initState.offsetX);
   const pixelsPerUnit = useSharedValue(initState.pixelsPerUnit);
