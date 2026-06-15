@@ -28,11 +28,7 @@ const EPOCH_COLORS: Record<string, string> = {
   modern: '#CF8A30',
 };
 
-function formatDuration(
-  startYear: number,
-  endYear: number,
-  t: TFunction,
-): string {
+function formatDuration(startYear: number, endYear: number, t: TFunction): string {
   const durationYears = Math.abs(endYear - startYear);
   if (durationYears >= 1_000_000_000) {
     return t('epochNav.durationBillion', { n: (durationYears / 1_000_000_000).toFixed(1) });
