@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import type { NavigationEpoch } from '@/timeline/epoch';
 import { NAVIGATION_EPOCHS } from '@/timeline/epoch';
 import { colors, radii, spacing, typography } from '@/theme/tokens';
@@ -30,7 +31,7 @@ const EPOCH_COLORS: Record<string, string> = {
 function formatDuration(
   startYear: number,
   endYear: number,
-  t: (k: string, o?: object) => string,
+  t: TFunction,
 ): string {
   const durationYears = Math.abs(endYear - startYear);
   if (durationYears >= 1_000_000_000) {
@@ -45,7 +46,7 @@ function formatDuration(
   return t('epochNav.durationYears', { n: durationYears.toLocaleString() });
 }
 
-function formatYearLabel(year: number, t: (k: string) => string): string {
+function formatYearLabel(year: number, t: TFunction): string {
   if (year >= 2020) return t('event.present');
   const abs = Math.abs(year);
   const suffix = year < 0 ? ` ${t('event.bce')}` : ` ${t('event.ce')}`;
