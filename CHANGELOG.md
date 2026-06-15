@@ -18,6 +18,16 @@
 - **Gezielter Zoom beim Epochen-Einstieg**: Wird eine Epoche auf der
   Landing Page gewählt, öffnet sich der Zeitstrahl direkt auf diesen
   Zeitraum (statt immer bei der menschlichen Vorgeschichte). (#77)
+- **Epoch-Chip-Leiste (Drill-Down)**: Eine neue horizontale Chip-Leiste
+  unterhalb des Epochen-Bands erlaubt schnellen Epochenwechsel direkt aus
+  dem Zeitstrahl – ohne Umweg über die Landing Page. Tap auf
+  „Menschheitsgeschichte ▸" zeigt Unterepocen (Steinzeit, Hochkulturen,
+  Antike, Mittelalter, Neuzeit); „← Zurück" kehrt zur Übersicht zurück. (#81)
+- **Zoom-Animation beim Epochen-Einstieg**: Tap auf eine Epochen-Kachel
+  zeigt kurz den Gesamtzeitstrahl, bevor die Kamera auf den Zielbereich
+  zoomt (600 ms). Web: ScrollView scrollt sichtbar zum Ziel. (#81)
+- **Minimap-Highlight**: Vor dem Epochen-Zoom pulsiert die Zielposition
+  ~450 ms auf der Minimap – zeigt dem Nutzer vorab „wohin die Reise geht". (#81)
 - i18n: `epochNav.*`-Keys für Landing Page (DE/EN).
 
 ### Fixed
