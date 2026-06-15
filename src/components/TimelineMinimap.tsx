@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Animated, View, StyleSheet, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { clampOffsetX, T_MIN, T_MAX, FULL_T_SPAN } from '@/timeline/lod';
@@ -27,7 +27,7 @@ export function TimelineMinimap({
   const { t } = useTranslation();
   const [barWidth, setBarWidth] = useState(0);
 
-  const pulseAnim = useRef(new Animated.Value(0)).current;
+  const [pulseAnim] = useState(() => new Animated.Value(0));
   useEffect(() => {
     if (!highlightRange) {
       pulseAnim.stopAnimation();
