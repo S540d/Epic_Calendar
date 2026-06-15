@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import { ContinentTabBar } from '@/components/ContinentTabBar';
+import { EpochOverviewScreen } from '@/components/EpochOverviewScreen';
 import { FilterChipBar } from '@/components/FilterChipBar';
 import { TimelineView } from '@/components/TimelineView';
 import { EventDetailModal } from '@/screens/EventDetailModal';
@@ -24,7 +25,10 @@ export function TimelineScreen() {
 
   const [continent, setContinent] = usePersistedState<Continent>('selectedContinent', 'europa');
   const [selected, setSelected] = useState<TimelineEvent | null>(null);
-  const [resetKey, setResetKey] = useState(0);
+  const [showOverview, setShowOverview] = useState(true);
+  const [epochRange, setEpochRange] = useState<{ startYear: number; endYear: number } | undefined>(
+    undefined,
+  );
 
   const toggleCategory = (cat: Category) => {
     setPersistedCategories((prev) => {
@@ -38,6 +42,32 @@ export function TimelineScreen() {
   const toggleLanguage = () => {
     i18n.changeLanguage(i18n.language === 'de' ? 'en' : 'de');
   };
+
+  const handleSelectEpoch = useCallback((startYear: number, endYear: number) => {
+    setEpochRange({ startYear, endYear });
+    setShowOverview(false);
+  }, []);
+
+  const handleShowFullTimeline = useCallback(() => {
+    setEpochRange({ startYear: -13_800_000_000, endYear: 2026 });
+    setShowOverview(false);
+  }, []);
+
+  const handleHomePress = useCallback(() => {
+    setShowOverview(true);
+    setEpochRange(undefined);
+  }, []);
+
+  if (showOverview) {
+    return (
+      <EpochOverviewScreen
+        onSelectEpoch={handleSelectEpoch}
+        onShowFullTimeline={handleShowFullTimeline}
+        onToggleLanguage={toggleLanguage}
+        currentLanguage={i18n.language}
+      />
+    );
+  }
 
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
@@ -56,7 +86,7 @@ export function TimelineScreen() {
         </Pressable>
         <Pressable
           style={({ pressed }) => [styles.homeButton, pressed && styles.homeButtonPressed]}
-          onPress={() => setResetKey((k) => k + 1)}
+          onPress={handleHomePress}
           accessibilityLabel="Zur Übersicht zurücksetzen"
           accessibilityRole="button"
         >
@@ -69,7 +99,7 @@ export function TimelineScreen() {
           activeCategories={activeCategories}
           continent={continent}
           onSelectEvent={setSelected}
-          resetKey={resetKey}
+          initialEpochRange={epochRange}
         />
       </ScrollView>
       <ContinentTabBar active={continent} onChange={setContinent} />

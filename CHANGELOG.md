@@ -9,6 +9,16 @@
   Klick auf ein Segment zoomt zur Epoche. Scrollt mit der Zeitachse mit.
 - **„Zu heute"-Button (⌖)** neben den Zoom-Buttons – holt die Ansicht aus jeder
   Position/Zoomstufe zuverlässig zur Gegenwart zurück.
+- **Epochen-Übersicht (Landing Page)**: Die App startet jetzt mit einer
+  übersichtlichen Epochen-Auswahl statt direkt im Zeitstrahl. Alle Epochen
+  von der kosmischen Frühzeit bis zur Neuzeit sind als Kacheln sichtbar –
+  mit Zeitraum und tatsächlicher Dauer (z. B. „186 Mio. Jahre" für Dinos).
+  Das macht die logarithmische Verzerrung des Zeitstrahls erklärbar: Die
+  Zahlen sprechen für sich. (#77)
+- **Gezielter Zoom beim Epochen-Einstieg**: Wird eine Epoche auf der
+  Landing Page gewählt, öffnet sich der Zeitstrahl direkt auf diesen
+  Zeitraum (statt immer bei der menschlichen Vorgeschichte). (#77)
+- i18n: `epochNav.*`-Keys für Landing Page (DE/EN).
 
 ### Fixed
 
