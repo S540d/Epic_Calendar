@@ -311,6 +311,12 @@ export function TimelineView({
     zoomToFitRef.current = zoomToFit;
   }, [zoomToFit]);
 
+  // Minimap highlight: set while the epoch zoom-in animation is in progress.
+  const [minimapHighlight, setMinimapHighlight] = useState<{
+    startT: number;
+    endT: number;
+  } | null>(null);
+
   // Animate to the selected epoch after mount. Waits for a valid canvasWidth so
   // zoomToFit computes correct PPU. The ref prevents re-firing on window resize.
   const hasZoomedToEpochRef = useRef(false);
@@ -319,10 +325,19 @@ export function TimelineView({
     if (canvasWidth <= 0) return;
     if (hasZoomedToEpochRef.current) return;
     hasZoomedToEpochRef.current = true;
-    const timer = setTimeout(() => {
+    // Show minimap highlight immediately so the user sees the target before zoom.
+    setMinimapHighlight({
+      startT: yearToT(epochRange.startYear),
+      endT: yearToT(epochRange.endYear),
+    });
+    const zoomTimer = setTimeout(() => {
       zoomToFitRef.current(epochRange.startYear, epochRange.endYear, true);
     }, 100);
-    return () => clearTimeout(timer);
+    const clearTimer = setTimeout(() => setMinimapHighlight(null), 450);
+    return () => {
+      clearTimeout(zoomTimer);
+      clearTimeout(clearTimer);
+    };
   }, [epochRange, canvasWidth]);
 
   // Tap on a web event bar → zoom to fit + queue the detail modal.
@@ -367,6 +382,7 @@ export function TimelineView({
         zoomOut={zoomOut}
         jumpToToday={jumpToToday}
         showEpochLabel={showEpochLabel}
+        minimapHighlight={minimapHighlight}
       />
     );
   }
@@ -398,6 +414,7 @@ export function TimelineView({
       popoverState={popoverState}
       onPopoverClose={closePopover}
       onPopoverSelect={handlePopoverSelect}
+      minimapHighlight={minimapHighlight}
     />
   );
 }
