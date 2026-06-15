@@ -104,9 +104,9 @@ export function TimelineView({
   });
 
   // Stable ref to the latest zoomToFit closure so handleCanvasTap doesn't need it as dep.
-  const zoomToFitRef = useRef<(startYear: number, endYear: number | null | undefined, webAnimated?: boolean) => void>(
-    () => {},
-  );
+  const zoomToFitRef = useRef<
+    (startYear: number, endYear: number | null | undefined, webAnimated?: boolean) => void
+  >(() => {});
 
   // Stable ref to onSelectEvent so the pending-modal timer doesn't restart if the
   // parent recreates the callback while a zoom animation is in progress.
