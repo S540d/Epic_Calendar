@@ -7,6 +7,7 @@ import {
 } from 'react-native-gesture-handler';
 import { useTranslation } from 'react-i18next';
 import { EpochBand } from './EpochBand';
+import { EpochChipBar } from './EpochChipBar';
 import { TimeAxis } from './TimeAxis';
 import { TimelineBreadcrumb } from './TimelineBreadcrumb';
 import { TimelineMinimap } from './TimelineMinimap';
@@ -75,6 +76,7 @@ type Props = {
   popoverState: PopoverState | null;
   onPopoverClose: () => void;
   onPopoverSelect: (event: TimelineEvent) => void;
+  minimapHighlight?: { startT: number; endT: number } | null;
 };
 
 /**
@@ -108,6 +110,7 @@ export function TimelineCanvasNative({
   popoverState,
   onPopoverClose,
   onPopoverSelect,
+  minimapHighlight,
 }: Props) {
   const { t } = useTranslation();
 
@@ -136,6 +139,7 @@ export function TimelineCanvasNative({
         pixelsPerUnit={jsPixelsPerUnit}
         canvasWidth={canvasWidth}
         onJump={handleMinimapJump}
+        highlightRange={minimapHighlight}
       />
       <View style={styles.epochBandRow}>
         <View style={{ width: LANE_LABEL_WIDTH }} />
@@ -148,6 +152,7 @@ export function TimelineCanvasNative({
           />
         </View>
       </View>
+      <EpochChipBar onJump={zoomToFit} />
 
       <View style={[styles.container, { height: canvasHeight }]}>
         <View style={styles.labels}>

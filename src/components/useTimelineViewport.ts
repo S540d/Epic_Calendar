@@ -53,7 +53,7 @@ export type TimelineViewport = {
   webScrollRef: React.RefObject<ScrollView>;
 
   // Viewport commands (platform-aware internally).
-  zoomToFit: (startYear: number, endYear: number | null | undefined) => void;
+  zoomToFit: (startYear: number, endYear: number | null | undefined, webAnimated?: boolean) => void;
   zoomAtPoint: (focalX: number, factor: number) => void;
   zoomIn: () => void;
   zoomOut: () => void;
@@ -83,7 +83,6 @@ export function useTimelineViewport({
   resetKey,
   onViewportMove,
 }: Options): TimelineViewport {
-  // Default view: −400 000 years → Heute at right edge.
   const initState = humanHistoryViewState(canvasWidth);
 
   const offsetX = useSharedValue(initState.offsetX);
@@ -190,7 +189,7 @@ export function useTimelineViewport({
 
   // Animates the viewport to show [startYear, endYear] with padding each side.
   const zoomToFit = useCallback(
-    (startYear: number, endYear: number | null | undefined) => {
+    (startYear: number, endYear: number | null | undefined, webAnimated = false) => {
       const startT = yearToT(startYear);
       const rawEndT = yearToT(endYear ?? startYear);
       const rawSpanT = Math.abs(rawEndT - startT);
@@ -218,7 +217,7 @@ export function useTimelineViewport({
         // throttle ref (set to targetX) and the still-animating DOM disagree and
         // swallow the next gesture.
         requestAnimationFrame(() => {
-          webScrollRef.current?.scrollTo({ x: targetX, animated: false });
+          webScrollRef.current?.scrollTo({ x: targetX, animated: webAnimated });
           commitScrollX(targetX);
         });
       } else {

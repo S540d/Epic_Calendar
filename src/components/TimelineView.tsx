@@ -37,6 +37,8 @@ type Props = {
   onSelectEvent: (event: TimelineEvent) => void;
   /** Increment to animate back to the default human-history view. */
   resetKey?: number;
+  /** When set, the timeline animates to this epoch after mount. */
+  epochRange?: { startYear: number; endYear: number };
 };
 
 const LANE_ORDER: Category[] = ['erdzeitalter', 'zivilisation', 'natur', 'nation'];
@@ -46,7 +48,13 @@ const LANE_ORDER: Category[] = ['erdzeitalter', 'zivilisation', 'natur', 'nation
  *  delay covers the scroll animation only. */
 const ZOOM_MODAL_DELAY_MS = Platform.OS === 'web' ? 350 : 650;
 
-export function TimelineView({ activeCategories, continent, onSelectEvent, resetKey = 0 }: Props) {
+export function TimelineView({
+  activeCategories,
+  continent,
+  onSelectEvent,
+  resetKey = 0,
+  epochRange,
+}: Props) {
   const { width: screenWidth } = useWindowDimensions();
   const canvasWidth = Math.max(0, screenWidth - LANE_LABEL_WIDTH);
 
@@ -74,7 +82,11 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     zoomOut,
     jumpToToday,
     handleMinimapJump,
-  } = useTimelineViewport({ canvasWidth, resetKey, onViewportMove: closePopover });
+  } = useTimelineViewport({
+    canvasWidth,
+    resetKey,
+    onViewportMove: closePopover,
+  });
 
   // Event queued to open after the zoom-to-fit animation completes (#44).
   const [pendingSelectEvent, setPendingSelectEvent] = useState<TimelineEvent | null>(null);
@@ -92,9 +104,9 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   });
 
   // Stable ref to the latest zoomToFit closure so handleCanvasTap doesn't need it as dep.
-  const zoomToFitRef = useRef<(startYear: number, endYear: number | null | undefined) => void>(
-    () => {},
-  );
+  const zoomToFitRef = useRef<
+    (startYear: number, endYear: number | null | undefined, webAnimated?: boolean) => void
+  >(() => {});
 
   // Stable ref to onSelectEvent so the pending-modal timer doesn't restart if the
   // parent recreates the callback while a zoom animation is in progress.
@@ -299,6 +311,35 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     zoomToFitRef.current = zoomToFit;
   }, [zoomToFit]);
 
+  // Minimap highlight: set while the epoch zoom-in animation is in progress.
+  const [minimapHighlight, setMinimapHighlight] = useState<{
+    startT: number;
+    endT: number;
+  } | null>(null);
+
+  // Animate to the selected epoch after mount. Waits for a valid canvasWidth so
+  // zoomToFit computes correct PPU. The ref prevents re-firing on window resize.
+  const hasZoomedToEpochRef = useRef(false);
+  useEffect(() => {
+    if (!epochRange) return;
+    if (canvasWidth <= 0) return;
+    if (hasZoomedToEpochRef.current) return;
+    hasZoomedToEpochRef.current = true;
+    // Show minimap highlight immediately so the user sees the target before zoom.
+    setMinimapHighlight({
+      startT: yearToT(epochRange.startYear),
+      endT: yearToT(epochRange.endYear),
+    });
+    const zoomTimer = setTimeout(() => {
+      zoomToFitRef.current(epochRange.startYear, epochRange.endYear, true);
+    }, 100);
+    const clearTimer = setTimeout(() => setMinimapHighlight(null), 450);
+    return () => {
+      clearTimeout(zoomTimer);
+      clearTimeout(clearTimer);
+    };
+  }, [epochRange, canvasWidth]);
+
   // Tap on a web event bar → zoom to fit + queue the detail modal.
   const handleEventTap = useCallback(
     (event: TimelineEvent) => {
@@ -341,6 +382,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
         zoomOut={zoomOut}
         jumpToToday={jumpToToday}
         showEpochLabel={showEpochLabel}
+        minimapHighlight={minimapHighlight}
       />
     );
   }
@@ -372,6 +414,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
       popoverState={popoverState}
       onPopoverClose={closePopover}
       onPopoverSelect={handlePopoverSelect}
+      minimapHighlight={minimapHighlight}
     />
   );
 }

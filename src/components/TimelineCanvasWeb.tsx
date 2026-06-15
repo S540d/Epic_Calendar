@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { EpochBand } from './EpochBand';
+import { EpochChipBar } from './EpochChipBar';
 import { TimeAxis } from './TimeAxis';
 import { TimelineBreadcrumb } from './TimelineBreadcrumb';
 import { TimelineMinimap } from './TimelineMinimap';
@@ -65,6 +66,7 @@ type Props = {
   jumpToToday: () => void;
   /** Whether the Erdzeitalter lane is active (epoch pill only meaningful then). */
   showEpochLabel: boolean;
+  minimapHighlight?: { startT: number; endT: number } | null;
 };
 
 /**
@@ -93,6 +95,7 @@ export function TimelineCanvasWeb({
   zoomOut,
   jumpToToday,
   showEpochLabel,
+  minimapHighlight,
 }: Props) {
   const { t } = useTranslation();
   const WEB_PPU = jsPixelsPerUnit;
@@ -165,6 +168,7 @@ export function TimelineCanvasWeb({
         pixelsPerUnit={WEB_PPU}
         canvasWidth={canvasWidth}
         onJump={handleMinimapJump}
+        highlightRange={minimapHighlight}
       />
       <View style={styles.epochBandRow}>
         <View style={{ width: LANE_LABEL_WIDTH }} />
@@ -177,6 +181,7 @@ export function TimelineCanvasWeb({
           />
         </View>
       </View>
+      <EpochChipBar onJump={zoomToFit} />
       <View
         style={Platform.select({
           web: { flex: 1, overflowY: 'auto', overflowX: 'hidden' } as any,

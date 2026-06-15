@@ -1,7 +1,7 @@
-import React, { useCallback, useState } from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Animated, Platform, View, StyleSheet, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { clampOffsetX, T_MIN, T_MAX, FULL_T_SPAN } from '@/timeline/lod';
+import { clampOffsetX, T_MIN, FULL_T_SPAN } from '@/timeline/lod';
 import { colors, LANE_LABEL_WIDTH, spacing } from '@/theme/tokens';
 
 type Props = {
@@ -11,13 +11,48 @@ type Props = {
   canvasWidth: number;
   /** Called when the user taps the minimap; receives the new offsetX to jump to. */
   onJump: (newOffsetX: number) => void;
+  /** When set, a pulsing highlight is shown at this T-unit range on the minimap. */
+  highlightRange?: { startT: number; endT: number } | null;
 };
 
 const A11Y_STEP = 0.1;
+// useNativeDriver is not supported by react-native-web; must be false on web.
+const PULSE_NATIVE_DRIVER = Platform.OS !== 'web';
 
-export function TimelineMinimap({ offsetX, pixelsPerUnit, canvasWidth, onJump }: Props) {
+export function TimelineMinimap({
+  offsetX,
+  pixelsPerUnit,
+  canvasWidth,
+  onJump,
+  highlightRange,
+}: Props) {
   const { t } = useTranslation();
   const [barWidth, setBarWidth] = useState(0);
+
+  const [pulseAnim] = useState(() => new Animated.Value(0));
+  useEffect(() => {
+    if (!highlightRange) {
+      pulseAnim.stopAnimation();
+      pulseAnim.setValue(0);
+      return;
+    }
+    pulseAnim.setValue(0.8);
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 0.2,
+          duration: 150,
+          useNativeDriver: PULSE_NATIVE_DRIVER,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 0.8,
+          duration: 150,
+          useNativeDriver: PULSE_NATIVE_DRIVER,
+        }),
+      ]),
+      { iterations: 3 },
+    ).start(() => pulseAnim.setValue(0));
+  }, [highlightRange, pulseAnim]);
 
   const handlePress = useCallback(
     (e: { nativeEvent: { locationX: number } }) => {
@@ -76,6 +111,21 @@ export function TimelineMinimap({ offsetX, pixelsPerUnit, canvasWidth, onJump }:
         {barWidth > 0 && (
           <View style={[styles.indicator, { left: indicatorLeft, width: indicatorWidth }]} />
         )}
+        {barWidth > 0 && highlightRange && (
+          <Animated.View
+            style={[
+              styles.highlight,
+              {
+                left: Math.max(0, ((highlightRange.startT - T_MIN) / FULL_T_SPAN) * barWidth),
+                width: Math.max(
+                  4,
+                  ((highlightRange.endT - highlightRange.startT) / FULL_T_SPAN) * barWidth,
+                ),
+                opacity: pulseAnim,
+              },
+            ]}
+          />
+        )}
       </Pressable>
     </View>
   );
@@ -106,6 +156,13 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: colors.accent,
     opacity: 0.55,
+    borderRadius: 4,
+  },
+  highlight: {
+    position: 'absolute',
+    top: -1,
+    bottom: -1,
+    backgroundColor: colors.accent,
     borderRadius: 4,
   },
 });
