@@ -75,6 +75,7 @@ type Props = {
   popoverState: PopoverState | null;
   onPopoverClose: () => void;
   onPopoverSelect: (event: TimelineEvent) => void;
+  minimapHighlight?: { startT: number; endT: number } | null;
 };
 
 /**
@@ -108,6 +109,7 @@ export function TimelineCanvasNative({
   popoverState,
   onPopoverClose,
   onPopoverSelect,
+  minimapHighlight,
 }: Props) {
   const { t } = useTranslation();
 
@@ -136,6 +138,7 @@ export function TimelineCanvasNative({
         pixelsPerUnit={jsPixelsPerUnit}
         canvasWidth={canvasWidth}
         onJump={handleMinimapJump}
+        highlightRange={minimapHighlight}
       />
       <View style={styles.epochBandRow}>
         <View style={{ width: LANE_LABEL_WIDTH }} />

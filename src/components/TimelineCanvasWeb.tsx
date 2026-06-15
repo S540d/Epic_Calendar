@@ -65,6 +65,7 @@ type Props = {
   jumpToToday: () => void;
   /** Whether the Erdzeitalter lane is active (epoch pill only meaningful then). */
   showEpochLabel: boolean;
+  minimapHighlight?: { startT: number; endT: number } | null;
 };
 
 /**
@@ -93,6 +94,7 @@ export function TimelineCanvasWeb({
   zoomOut,
   jumpToToday,
   showEpochLabel,
+  minimapHighlight,
 }: Props) {
   const { t } = useTranslation();
   const WEB_PPU = jsPixelsPerUnit;
@@ -165,6 +167,7 @@ export function TimelineCanvasWeb({
         pixelsPerUnit={WEB_PPU}
         canvasWidth={canvasWidth}
         onJump={handleMinimapJump}
+        highlightRange={minimapHighlight}
       />
       <View style={styles.epochBandRow}>
         <View style={{ width: LANE_LABEL_WIDTH }} />
