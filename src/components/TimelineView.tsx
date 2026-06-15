@@ -82,7 +82,12 @@ export function TimelineView({
     zoomOut,
     jumpToToday,
     handleMinimapJump,
-  } = useTimelineViewport({ canvasWidth, resetKey, initialEpochRange, onViewportMove: closePopover });
+  } = useTimelineViewport({
+    canvasWidth,
+    resetKey,
+    initialEpochRange,
+    onViewportMove: closePopover,
+  });
 
   // Event queued to open after the zoom-to-fit animation completes (#44).
   const [pendingSelectEvent, setPendingSelectEvent] = useState<TimelineEvent | null>(null);
