@@ -69,7 +69,7 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 - `formatYear.ts`: formatiert Jahreszahlen (v. Chr., Mio., Mrd.)
 - `lod.ts`: Level-of-Detail-Berechnung, exportiert `T_MIN`, `T_MAX`, `FULL_T_SPAN`
 - `scale.ts`: `yearToT`, `tToYear`, `pixelToYear`, `viewportYearRange`
-- `epoch.ts`: Epoche-Mapping für Breadcrumb
+- `epoch.ts`: Epoche-Mapping für Breadcrumb + `NavigationEpoch`-Typ + `NAVIGATION_EPOCHS`-Baum (kosmische Frühzeit → Neuzeit)
 - **MAX_EVENTS_PER_LANE = 15** – Skia-Loop, Hit-Test und Label-Overlay sind alle auf diesen Wert gecappt. Überschuss erscheint als Cluster-Badge.
 
 ### Datenhaltung
@@ -81,7 +81,7 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 ### Build & Test
 
 ```bash
-npm test          # Jest-Tests (94 Unit-Tests)
+npm test          # Jest-Tests (140 Unit-Tests)
 npm run lint      # ESLint (flat-config via eslint.config.cjs)
 npm run type-check # TypeScript
 npm run build:web  # Expo Web-Export (GitHub Pages)
@@ -100,32 +100,38 @@ npm run build:web  # Expo Web-Export (GitHub Pages)
 App.tsx
 src/
 ├── components/
-│   ├── TimelineView.tsx        # Haupt-Canvas (Skia + Web-Fallback)
-│   ├── TimeAxis.tsx            # Zeitachse
-│   ├── TimelineBreadcrumb.tsx  # Zoom-Breadcrumb mit Epochen-Kontext
-│   ├── TimelineMinimap.tsx     # Übersichtsleiste (Tap + a11y-Actions)
-│   ├── EpochJumpBar.tsx        # Schnellsprung-Chips (Urknall→Heute)
-│   ├── FilterChipBar.tsx       # Kategorie-/Kontinent-Filter
-│   ├── ContinentTabBar.tsx     # Kontinent-Auswahl
-│   ├── ZoomLevelIndicator.tsx  # Persistenter LOD-Indikator
-│   ├── EventDetailModal.tsx    # Detail-Modal
-│   ├── EventPickerPopover.tsx  # Disambiguierung bei überlappenden Events
-│   └── ui/                    # Shared UI-Primitives
+│   ├── TimelineView.tsx           # Komposition: Logik + Routing Web/Native
+│   ├── TimelineCanvasWeb.tsx      # Web-Renderer (ScrollView-basiert)
+│   ├── TimelineCanvasNative.tsx   # Native-Renderer (Skia + Reanimated)
+│   ├── timelineRenderShared.ts    # Geteilte Konstanten/Helfer (beide Renderer)
+│   ├── useTimelineViewport.ts     # Viewport-State + Zoom/Pan/Jump-Commands
+│   ├── useTimelineGestures.ts     # RNGH Pan/Pinch/Tap-Gesten
+│   ├── TimeAxis.tsx               # Zeitachse
+│   ├── TimelineBreadcrumb.tsx     # Zoom-Breadcrumb mit Epochen-Kontext
+│   ├── TimelineMinimap.tsx        # Übersichtsleiste (Tap + a11y-Actions)
+│   ├── EpochBand.tsx              # Visuelles Epochen-Band (ersetzt EpochJumpBar)
+│   ├── EpochOverviewScreen.tsx    # Landing Page: Epochen-Kacheln als Einstieg
+│   ├── FilterChipBar.tsx          # Kategorie-/Kontinent-Filter
+│   ├── ContinentTabBar.tsx        # Kontinent-Auswahl
+│   ├── ZoomLevelIndicator.tsx     # Persistenter LOD-Indikator
+│   ├── EventPickerPopover.tsx     # Disambiguierung bei überlappenden Events
+│   └── ui/                        # Shared UI-Primitives
 ├── data/
 │   ├── schema.ts              # Event-Typen
 │   ├── europe.ts              # Europa-Daten
 │   ├── asia.ts                # Asien-Daten
 │   └── ...
 ├── timeline/
-│   ├── culling.ts             # Viewport-Culling
+│   ├── culling.ts             # Viewport-Culling + computeLaneData()
 │   ├── lod.ts                 # Level of Detail + T_MIN/T_MAX/FULL_T_SPAN
 │   ├── scale.ts               # yearToT, tToYear, pixelToYear
-│   ├── epoch.ts               # Epoche-Mapping
+│   ├── epoch.ts               # Epoche-Mapping + NavigationEpoch + NAVIGATION_EPOCHS
 │   ├── formatYear.ts          # Jahr-Formatierung
 │   └── __tests__/
 ├── theme/
 │   └── tokens.ts              # Design-Tokens
 └── screens/
+    ├── TimelineScreen.tsx     # Haupt-Screen: Landing Page ↔ Timeline-Umschaltung
     └── EventDetailModal.tsx
 ```
 
@@ -175,7 +181,9 @@ const gesture = useMemo(() => Gesture.Simultaneous(pan, pinch, exclusive), [pan,
 - `react-hooks/refs` ist eine **valide** Expo-extended ESLint-Regel. Sie flaggt RNGH `.onEnd`-Callbacks in `useMemo` als false positive (Callbacks laufen außerhalb des Renders). Fix: `// eslint-disable-next-line react-hooks/refs` direkt vor `.onEnd(...)`.
 - `react-hooks/immutability` wird für Reanimated `.value`-Writes auf `'warn'` heruntergesetzt (Worklets schreiben intentional auf Shared Values).
 - Web-Pfad: `WEB_PPU` ist ein lokaler Alias für `jsPixelsPerUnit` — kein separater Wert.
-- `setWebJumpScrollX(null)` muss **innerhalb** von `requestAnimationFrame` aufgerufen werden, nicht synchron im Effect (sonst: "cascading renders" Lint-Fehler).
+- `TFunction` aus `i18next` als Typ für Helper-Funktionen, die `t` übergeben bekommen — `(k: string) => string` oder `(k: string, o?: object) => string` ist inkompatibel mit dem strikten `TFunction<"translation", undefined>`-Typ.
+- `useTimelineViewport` akzeptiert `initialEpochRange?: { startYear: number; endYear: number }` — setzt den Anfangs-Viewport auf die gewählte Epoche (statt `humanHistoryViewState`). Wird beim Remount von `TimelineView` ausgewertet (kein Laufzeit-Update nach Mount).
+- `EpochOverviewScreen` → `TimelineScreen`: Navigation via `showOverview`-State in `TimelineScreen.tsx`. `TimelineView` mountet neu bei jedem Epochen-Wechsel (kein `resetKey` mehr nötig).
 
 ## Do's and Don'ts
 
@@ -203,6 +211,7 @@ const gesture = useMemo(() => Gesture.Simultaneous(pan, pinch, exclusive), [pan,
 | #32 | Mobile Usability Überblick                  | Tracker         |
 | #46 | Listen-/Story-Modus                         | P3 / Diskussion |
 | #51 | Triage-Plan (Tracking-Board)                | Referenz        |
+| #77 | Epochen-Landing-Page + gezielter Zoom       | In Review (PR #80 → testing) |
 
 ## Referenzen
 
