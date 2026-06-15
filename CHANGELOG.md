@@ -2,7 +2,31 @@
 
 ## [Unreleased]
 
+### Added
+
+- Farbiges, klickbares **Epochen-Band** direkt unter der Zeitachse (Erde, Dinos,
+  Frühmenschen, Antike, Mittelalter, Neuzeit) – ersetzt die separate Chip-Leiste;
+  Klick auf ein Segment zoomt zur Epoche. Scrollt mit der Zeitachse mit.
+- **„Zu heute"-Button (⌖)** neben den Zoom-Buttons – holt die Ansicht aus jeder
+  Position/Zoomstufe zuverlässig zur Gegenwart zurück.
+
 ### Fixed
+
+- Web: Timeline fror nach einem Epochen-Sprung ein (`useAnimatedReaction` lief
+  auch auf Web und überschrieb `jsOffsetX` mit einem veralteten Wert) – Reaction
+  jetzt nur nativ.
+- Web: Navigation blieb nach Pan in die Vergangenheit hängen – fragiler
+  `webJumpScrollX`-State-Roundtrip entfernt; Sprünge scrollen direkt.
+- Web: Zoom nach Klick auf „Neuzeit" sprang zu einem unverwandten früheren Jahr –
+  `zoomToFit` nutzt jetzt die echte (in der Log-Skala kurze) Spanne moderner
+  Epochen statt eines zu großen Minimums.
+- Web: Zoom-/Sprung-Buttons waren unsichtbar (`position:fixed` in einem
+  scrollenden Container) – nur noch der Lane-Bereich scrollt, Buttons fix.
+- Web: Lanes überlappten bei mehreren Kategorien (Nationen über Zivilisationen) –
+  Lane-Höhen werden auf Web aus den scroll-getriebenen Lane-Daten berechnet.
+- Performance: Scroll löst erst ab ~6 px Bewegung ein Re-Render aus.
+- Zeitstrahl beginnt jetzt bei −5 Mrd (Erdentstehung) statt beim Urknall; mehr
+  vertikaler Platz pro Spur (`TRACK_HEIGHT` 60→80).
 
 - i18n: Fehlende/abweichende Übersetzungs-Keys – UI zeigte Roh-Keys statt Texte
   (`app.title`, `app.subtitle`, `category.*`, `continent.europa` …, `zoom.level.*`,
@@ -19,6 +43,31 @@
 
 ### Changed
 
+- Code-Pflege (#68): Zeit-Span-Konstanten (`T_MIN`/`T_MAX`/`T_PRESENT`,
+  `BIG_BANG_YEAR`/`PRESENT_YEAR`, `FULL_T_SPAN`) zentral in `src/timeline/scale.ts`
+  als Single Source of Truth. Bisher in `TimelineView` und `lod.ts` dupliziert
+  (Risiko divergierender Werte). `lod.ts` re-exportiert sie kompatibel.
+- Datenschema gehärtet (#68): `validateEvent()` in `src/data/schema.ts` prüft
+  Pflichtfelder inkl. `minZoomLevel`; neue Tests gegen die Event-JSONs und den
+  Validator (vorheriger Test übersah ein fehlendes `minZoomLevel`).
+- Code-Pflege (#68): Sichtbarkeits-/Track-Berechnung für Web und Native in
+  einer geteilten Funktion `computeLaneData()` (`src/timeline/culling.ts`)
+  zusammengeführt. Vorher doppelt in `TimelineView` (`visibleByLane`/
+  `webVisibleByLane`, `tracksByLane`/`webTracksByLane`, je eigene Overflow-
+  Zählung) — Bugfixes mussten zweimal erfolgen. Beide Pfade übergeben jetzt nur
+  noch ihren eigenen Sichtbereich; alles Weitere ist identisch.
+- Code-Pflege (#68): Viewport-State und Zoom-/Pan-/Jump-Logik aus `TimelineView`
+  in den Hook `useTimelineViewport()` (`src/components/useTimelineViewport.ts`)
+  extrahiert (offset/ppu-SharedValues, JS-Spiegel, Web-Scroll-Mirror, Worklet↔JS-
+  Sync, `zoomToFit`/`zoomAtPoint`/`zoomIn`/`zoomOut`/`handleMinimapJump`).
+  TimelineView von ~1187 auf ~1013 Zeilen verschlankt; das plattformabhängige
+  Branching liegt jetzt gebündelt im Hook. Kein Verhaltensbruch.
+- Code-Pflege (#68): Render-Pfade entflochten — Web und Native sind jetzt
+  eigene Komponenten `TimelineCanvasWeb`/`TimelineCanvasNative` hinter einem
+  Prop-Interface; geteilte Styles/Konstanten/Helfer in `timelineRenderShared.ts`,
+  die Gesten in `useTimelineGestures()`. `TimelineView` ist nur noch Logik +
+  Komposition und von ~1013 auf **~359 Zeilen** geschrumpft (ursprünglich 1367).
+  Kein Verhaltensbruch. Schließt die Code-Pflege-Akzeptanzkriterien von #68 ab.
 - UX: „Heute" lässt sich jetzt zentrieren (Pan/Zoom bis zur Bildschirmmitte),
   da die jüngste Geschichte im Fokus steht. Rechts von „Heute" gibt es bewusst
   keine Achsen-Beschriftung.

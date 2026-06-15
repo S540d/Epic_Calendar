@@ -57,7 +57,7 @@ describe('i18n resources', () => {
     'event.ce',
     'zoom.level.0',
     'zoom.level.4',
-    'epochChip.bigBang',
+    'epochChip.earth',
     'epochChip.modern',
     'minimap.label',
     'popover.title',

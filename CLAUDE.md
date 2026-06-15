@@ -134,7 +134,9 @@ src/
 ## Architektur-Patterns (TimelineView)
 
 ### tapDataRef-Pattern
+
 Stabile `useCallback([], [])` Tap-Handler, die aktuellen Viewport-State über einen Ref lesen:
+
 ```ts
 const tapDataRef = useRef({ lanes, laneTops, visibleByLane, tracksByLane, jsOffsetX, jsPixelsPerUnit });
 useLayoutEffect(() => { Object.assign(tapDataRef.current, { ... }); }); // no deps → every render
@@ -144,14 +146,18 @@ const handleCanvasTap = useCallback((px, py) => {
 ```
 
 ### zoomToFitRef-Pattern
+
 `zoomToFit` ist ein `useCallback` mit `[canvasWidth, ...]` als Deps. Stable-Handler wie `handleCanvasTap` rufen ihn über einen Ref auf:
+
 ```ts
 const zoomToFitRef = useRef<...>(() => {});
 useLayoutEffect(() => { zoomToFitRef.current = zoomToFit; }, [zoomToFit]);
 ```
 
 ### Gesture-Memoisation
+
 Alle RNGH-Gesten via `useMemo`, Reanimated Shared Values sind stabile Refs:
+
 ```ts
 const panGesture = useMemo(() => Gesture.Pan()..., [canvasWidth, startOffsetX, offsetX, pixelsPerUnit]);
 const gesture = useMemo(() => Gesture.Simultaneous(pan, pinch, exclusive), [pan, pinch, exclusive]);
@@ -191,12 +197,12 @@ const gesture = useMemo(() => Gesture.Simultaneous(pan, pinch, exclusive), [pan,
 
 ## Offene Issues (legitim)
 
-| # | Titel | Priorität |
-|---|-------|-----------|
-| #5 | Performance-Optimierung (Skia + Reanimated) | ongoing |
-| #32 | Mobile Usability Überblick | Tracker |
-| #46 | Listen-/Story-Modus | P3 / Diskussion |
-| #51 | Triage-Plan (Tracking-Board) | Referenz |
+| #   | Titel                                       | Priorität       |
+| --- | ------------------------------------------- | --------------- |
+| #5  | Performance-Optimierung (Skia + Reanimated) | ongoing         |
+| #32 | Mobile Usability Überblick                  | Tracker         |
+| #46 | Listen-/Story-Modus                         | P3 / Diskussion |
+| #51 | Triage-Plan (Tracking-Board)                | Referenz        |
 
 ## Referenzen
 

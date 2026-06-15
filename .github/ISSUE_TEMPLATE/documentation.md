@@ -28,7 +28,7 @@ labels: ['type: documentation', 'status: triage']
 - [ ] Datei-Headern / API Docs
 - [ ] Checklisten / Guidelines
 - [ ] GitHub Discussions / Wiki
-- [ ] Sonstiges: _________
+- [ ] Sonstiges: ****\_****
 
 ---
 

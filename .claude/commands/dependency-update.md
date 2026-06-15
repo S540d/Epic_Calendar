@@ -100,6 +100,7 @@ Nach jedem Update-Batch:
 ### 8. Dokumentation
 
 - Aktualisiere CHANGELOG.md:
+
   ```markdown
   ## [Version] - YYYY-MM-DD
 
@@ -108,6 +109,7 @@ Nach jedem Update-Batch:
   - Updated [package] from X.Y.Z to A.B.C
   - Fixed security vulnerability in [package]
   ```
+
 - Falls Major Updates: Dokumentiere Breaking Changes
 - Aktualisiere README falls Versions-Anforderungen ändern (z.B. Node.js Version)
 
