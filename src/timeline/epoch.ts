@@ -1,6 +1,33 @@
 import { ALL_EVENTS } from '@/data/events';
 import type { TimelineEvent } from '@/data/schema';
 
+export type NavigationEpoch = {
+  readonly key: string;
+  readonly startYear: number;
+  readonly endYear: number;
+  readonly children?: readonly NavigationEpoch[];
+};
+
+export const NAVIGATION_EPOCHS: readonly NavigationEpoch[] = [
+  { key: 'cosmicDawn', startYear: -13_800_000_000, endYear: -4_600_000_000 },
+  { key: 'earlyEarth', startYear: -4_600_000_000, endYear: -541_000_000 },
+  { key: 'paleozoic', startYear: -541_000_000, endYear: -252_000_000 },
+  { key: 'mesozoic', startYear: -252_000_000, endYear: -66_000_000 },
+  { key: 'cenozoic', startYear: -66_000_000, endYear: -2_580_000 },
+  {
+    key: 'humanHistory',
+    startYear: -2_580_000,
+    endYear: 2026,
+    children: [
+      { key: 'stoneAge', startYear: -2_580_000, endYear: -10_000 },
+      { key: 'ancientCiv', startYear: -10_000, endYear: -500 },
+      { key: 'antiquity', startYear: -500, endYear: 500 },
+      { key: 'middleAges', startYear: 500, endYear: 1500 },
+      { key: 'modern', startYear: 1500, endYear: 2026 },
+    ],
+  },
+];
+
 /**
  * Returns the most specific geological era ('erdzeitalter') that contains the
  * given year, used to give the viewport an "epoch context" beyond the raw

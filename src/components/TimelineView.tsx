@@ -37,6 +37,8 @@ type Props = {
   onSelectEvent: (event: TimelineEvent) => void;
   /** Increment to animate back to the default human-history view. */
   resetKey?: number;
+  /** When set, the timeline opens zoomed to this year range instead of human history. */
+  initialEpochRange?: { startYear: number; endYear: number };
 };
 
 const LANE_ORDER: Category[] = ['erdzeitalter', 'zivilisation', 'natur', 'nation'];
@@ -46,7 +48,13 @@ const LANE_ORDER: Category[] = ['erdzeitalter', 'zivilisation', 'natur', 'nation
  *  delay covers the scroll animation only. */
 const ZOOM_MODAL_DELAY_MS = Platform.OS === 'web' ? 350 : 650;
 
-export function TimelineView({ activeCategories, continent, onSelectEvent, resetKey = 0 }: Props) {
+export function TimelineView({
+  activeCategories,
+  continent,
+  onSelectEvent,
+  resetKey = 0,
+  initialEpochRange,
+}: Props) {
   const { width: screenWidth } = useWindowDimensions();
   const canvasWidth = Math.max(0, screenWidth - LANE_LABEL_WIDTH);
 
@@ -74,7 +82,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     zoomOut,
     jumpToToday,
     handleMinimapJump,
-  } = useTimelineViewport({ canvasWidth, resetKey, onViewportMove: closePopover });
+  } = useTimelineViewport({ canvasWidth, resetKey, initialEpochRange, onViewportMove: closePopover });
 
   // Event queued to open after the zoom-to-fit animation completes (#44).
   const [pendingSelectEvent, setPendingSelectEvent] = useState<TimelineEvent | null>(null);
