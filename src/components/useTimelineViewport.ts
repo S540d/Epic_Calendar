@@ -48,15 +48,16 @@ export type TimelineViewport = {
 
   /** Web horizontal scroll state + ref. */
   webScrollX: number;
-  setWebScrollX: (v: number) => void;
+  /** Commits a scroll position to state + throttle ref (use for scroll events). */
+  commitScrollX: (x: number) => void;
   webScrollRef: React.RefObject<ScrollView>;
-  webJumpScrollX: number | null;
 
   // Viewport commands (platform-aware internally).
   zoomToFit: (startYear: number, endYear: number | null | undefined) => void;
   zoomAtPoint: (focalX: number, factor: number) => void;
   zoomIn: () => void;
   zoomOut: () => void;
+  jumpToToday: () => void;
   handleMinimapJump: (newOffsetX: number) => void;
 };
 
@@ -96,8 +97,18 @@ export function useTimelineViewport({
 
   const [webScrollX, setWebScrollX] = useState(0);
   const webScrollRef = useRef<ScrollView>(null);
-  const [webJumpScrollX, setWebJumpScrollX] = useState<number | null>(null);
   const webInitScrolled = useRef(false);
+  // Last scroll X committed to state; the render-throttle compares against it,
+  // and zoom/jump commands read it for the live position (the webScrollX state
+  // lags right after a programmatic jump).
+  const lastScrollXRef = useRef(0);
+
+  // Commit a scroll position to both state and the throttle ref so a following
+  // manual scroll measures its delta against the real current position.
+  const commitScrollX = useCallback((x: number) => {
+    lastScrollXRef.current = x;
+    setWebScrollX(x);
+  }, []);
 
   // Read the current canvasWidth in effects without re-subscribing.
   const canvasWidthRef = useRef(canvasWidth);
@@ -117,9 +128,13 @@ export function useTimelineViewport({
   }, [onViewportMove]);
 
   // Worklet → JS mirror sync. Threshold avoids spamming React on sub-pixel moves.
+  // NATIVE ONLY: on web the position is driven by webScrollX while offsetX.value
+  // stays at its static init value — running this there would overwrite jsOffsetX
+  // with that stale value and desync the render (timeline freezes after a jump).
   useAnimatedReaction(
     () => ({ o: offsetX.value, p: pixelsPerUnit.value }),
     (curr, prev) => {
+      if (Platform.OS === 'web') return;
       if (!prev || Math.abs(curr.o - prev.o) > 0.5 || Math.abs(curr.p - prev.p) > 0.5) {
         runOnJS(setJsOffsetX)(curr.o);
         runOnJS(setJsPixelsPerUnit)(curr.p);
@@ -135,25 +150,24 @@ export function useTimelineViewport({
     const cw = canvasWidthRef.current;
     if (!cw) return;
     if (Platform.OS === 'web') {
+      // Reset zoom too: without this the container stays rendered at the old
+      // (possibly huge) PPU, so the scroll target is computed wrong and "Heute"
+      // is never reached.
       const ppu = humanHistoryViewState(cw).pixelsPerUnit;
+      pixelsPerUnit.value = ppu;
+      setJsPixelsPerUnit(ppu);
       const heuteWebX = (T_HEUTE - TOTAL_T_MIN) * ppu;
-      webScrollRef.current?.scrollTo({ x: Math.max(0, heuteWebX - cw), animated: true });
+      const targetX = Math.max(0, heuteWebX - cw);
+      requestAnimationFrame(() => {
+        webScrollRef.current?.scrollTo({ x: targetX, animated: false });
+        commitScrollX(targetX);
+      });
       return;
     }
     const state = humanHistoryViewState(cw);
     offsetX.value = withTiming(state.offsetX, { duration: ZOOM_TO_FIT_DURATION_MS });
     pixelsPerUnit.value = withTiming(state.pixelsPerUnit, { duration: ZOOM_TO_FIT_DURATION_MS });
   }, [resetKey]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Scroll the web ScrollView to a jump target set by zoomToFit / minimap.
-  useEffect(() => {
-    if (webJumpScrollX === null) return;
-    const target = webJumpScrollX;
-    requestAnimationFrame(() => {
-      webScrollRef.current?.scrollTo({ x: target, animated: true });
-      setWebJumpScrollX(null);
-    });
-  }, [webJumpScrollX]);
 
   // On web, sync pixelsPerUnit and scroll to "Heute" on the first render with a
   // valid canvasWidth. contentOffset is only evaluated at mount (canvasWidth may
@@ -170,38 +184,74 @@ export function useTimelineViewport({
       pixelsPerUnit.value = ppu; // eslint-disable-line react-hooks/immutability
       setJsPixelsPerUnit(ppu);
       webScrollRef.current?.scrollTo({ x: targetX, animated: false });
+      commitScrollX(targetX);
     });
   }, [canvasWidth]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Animates the viewport to show [startYear, endYear] with padding each side.
-  // For point events (no endYear), the 1.0 T-unit minimum prevents over-zoom.
   const zoomToFit = useCallback(
     (startYear: number, endYear: number | null | undefined) => {
       const startT = yearToT(startYear);
       const rawEndT = yearToT(endYear ?? startYear);
-      const spanT = Math.max(Math.abs(rawEndT - startT), 1.0);
+      const rawSpanT = Math.abs(rawEndT - startT);
+      // Point events (no real range) get a 1.0 T-unit minimum so they don't zoom
+      // in infinitely. Real ranges use their actual span — even short-in-T modern
+      // eras (e.g. Neuzeit ≈ 0.13 T) must NOT be inflated to 1.0, or the huge PPU
+      // pushes the right-clamped viewport off to an unrelated earlier year.
+      const isPoint = endYear === null || endYear === undefined || rawSpanT < 1e-6;
+      const spanT = isPoint ? 1.0 : rawSpanT;
       const centerT = (startT + rawEndT) / 2;
       const newPPU = clampPixelsPerUnit(canvasWidth / (spanT / ZOOM_TO_FIT_FILL));
       if (Platform.OS === 'web') {
-        // Direct PPU assignment is intentional on web: there is no Skia canvas, so
-        // withTiming has no visual effect. The ScrollView scroll provides animation.
         const maxScrollX = Math.max(
           0,
           (TOTAL_T_MAX - TOTAL_T_MIN) * newPPU - canvasWidth * (1 - PRESENT_RIGHT_PAD_FRACTION),
         );
+        const targetX = Math.min(
+          Math.max(0, (centerT - TOTAL_T_MIN) * newPPU - canvasWidth / 2),
+          maxScrollX,
+        );
         pixelsPerUnit.value = newPPU;
         setJsPixelsPerUnit(newPPU);
-        setWebJumpScrollX(
-          Math.min(Math.max(0, (centerT - TOTAL_T_MIN) * newPPU - canvasWidth / 2), maxScrollX),
-        );
+        // PPU change must render (container resizes) before scrolling, so defer
+        // to the next frame. animated:false avoids a divergence window where the
+        // throttle ref (set to targetX) and the still-animating DOM disagree and
+        // swallow the next gesture.
+        requestAnimationFrame(() => {
+          webScrollRef.current?.scrollTo({ x: targetX, animated: false });
+          commitScrollX(targetX);
+        });
       } else {
         const newOffsetX = clampOffsetX(centerT - canvasWidth / (2 * newPPU), newPPU, canvasWidth);
         pixelsPerUnit.value = withTiming(newPPU, { duration: ZOOM_TO_FIT_DURATION_MS });
         offsetX.value = withTiming(newOffsetX, { duration: ZOOM_TO_FIT_DURATION_MS });
       }
     },
-    [canvasWidth, pixelsPerUnit, offsetX],
+    [canvasWidth, pixelsPerUnit, offsetX, commitScrollX],
   );
+
+  // Jump back to the default human-history view with "Heute" at the right edge.
+  // Works regardless of how deep the user has zoomed/panned (the explicit
+  // "to today" button). On web also resets PPU so the container is re-sized.
+  const jumpToToday = useCallback(() => {
+    const cw = canvasWidthRef.current;
+    if (!cw) return;
+    if (Platform.OS === 'web') {
+      const ppu = humanHistoryViewState(cw).pixelsPerUnit;
+      pixelsPerUnit.value = ppu;
+      setJsPixelsPerUnit(ppu);
+      const heuteX = (T_HEUTE - TOTAL_T_MIN) * ppu;
+      const targetX = Math.max(0, heuteX - cw);
+      requestAnimationFrame(() => {
+        webScrollRef.current?.scrollTo({ x: targetX, animated: true });
+        commitScrollX(targetX);
+      });
+    } else {
+      const state = humanHistoryViewState(cw);
+      offsetX.value = withTiming(state.offsetX, { duration: ZOOM_TO_FIT_DURATION_MS });
+      pixelsPerUnit.value = withTiming(state.pixelsPerUnit, { duration: ZOOM_TO_FIT_DURATION_MS });
+    }
+  }, [pixelsPerUnit, offsetX, commitScrollX]);
 
   // Zoom keeping the given focal x-coordinate fixed (tap-to-zoom). Native only;
   // web uses zoomIn/zoomOut centred on the viewport.
@@ -230,24 +280,40 @@ export function useTimelineViewport({
           0,
           Math.min((newOffsetX - TOTAL_T_MIN) * jsPixelsPerUnit, maxScrollX),
         );
-        setWebJumpScrollX(newScrollX);
+        // Scroll directly via the ref — avoids the fragile state round-trip that
+        // got stuck when the clamped target equalled the last value.
+        webScrollRef.current?.scrollTo({ x: newScrollX, animated: false });
+        commitScrollX(newScrollX);
       } else {
         offsetX.value = withTiming(newOffsetX, { duration: ZOOM_STEP_DURATION_MS });
       }
     },
-    [jsPixelsPerUnit, canvasWidth, offsetX],
+    [jsPixelsPerUnit, canvasWidth, offsetX, commitScrollX],
   );
 
   const zoomByStep = useCallback(
     (factor: number) => {
       if (Platform.OS === 'web') {
-        const centerT = TOTAL_T_MIN + (webScrollX + canvasWidth / 2) / jsPixelsPerUnit;
+        // Read the LIVE scroll position from the ref (always current via
+        // onScroll/commitScrollX); webScrollX state lags right after a jump and
+        // would otherwise recenter the zoom on a stale position.
+        const curScrollX = lastScrollXRef.current;
+        const centerT = TOTAL_T_MIN + (curScrollX + canvasWidth / 2) / jsPixelsPerUnit;
         const newPPU = clampPixelsPerUnit(jsPixelsPerUnit * factor);
+        if (newPPU === jsPixelsPerUnit) return;
         pixelsPerUnit.value = newPPU;
         setJsPixelsPerUnit(newPPU);
-        const newScrollX = Math.max(0, (centerT - TOTAL_T_MIN) * newPPU - canvasWidth / 2);
+        const maxScrollX = Math.max(
+          0,
+          (TOTAL_T_MAX - TOTAL_T_MIN) * newPPU - canvasWidth * (1 - PRESENT_RIGHT_PAD_FRACTION),
+        );
+        const newScrollX = Math.min(
+          Math.max(0, (centerT - TOTAL_T_MIN) * newPPU - canvasWidth / 2),
+          maxScrollX,
+        );
         requestAnimationFrame(() => {
           webScrollRef.current?.scrollTo({ x: newScrollX, animated: false });
+          commitScrollX(newScrollX);
         });
       } else {
         const center = offsetX.value + canvasWidth / (2 * pixelsPerUnit.value);
@@ -257,7 +323,7 @@ export function useTimelineViewport({
         offsetX.value = withTiming(nextOffset, { duration: ZOOM_STEP_DURATION_MS });
       }
     },
-    [webScrollX, jsPixelsPerUnit, canvasWidth, offsetX, pixelsPerUnit],
+    [jsPixelsPerUnit, canvasWidth, offsetX, pixelsPerUnit, commitScrollX],
   );
 
   const zoomIn = useCallback(() => zoomByStep(ZOOM_STEP_FACTOR), [zoomByStep]);
@@ -274,13 +340,13 @@ export function useTimelineViewport({
     setJsPixelsPerUnit,
     zoomLevel,
     webScrollX,
-    setWebScrollX,
+    commitScrollX,
     webScrollRef,
-    webJumpScrollX,
     zoomToFit,
     zoomAtPoint,
     zoomIn,
     zoomOut,
+    jumpToToday,
     handleMinimapJump,
   };
 }

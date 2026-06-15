@@ -66,12 +66,13 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
     jsPixelsPerUnit,
     zoomLevel,
     webScrollX,
-    setWebScrollX,
+    commitScrollX,
     webScrollRef,
     zoomToFit,
     zoomAtPoint,
     zoomIn,
     zoomOut,
+    jumpToToday,
     handleMinimapJump,
   } = useTimelineViewport({ canvasWidth, resetKey, onViewportMove: closePopover });
 
@@ -134,47 +135,6 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
   }, [canvasWidth, jsOffsetX, jsPixelsPerUnit, lanes, zoomLevel, continent]);
   const { visibleByLane, overflowCounts, tracksByLane } = laneData;
 
-  const laneTrackCounts = useMemo(() => {
-    const out = new Map<Category, number>();
-    for (const [cat, tm] of tracksByLane) {
-      const max = tm.size === 0 ? 0 : Math.max(...tm.values());
-      out.set(cat, max + 1);
-    }
-    return out;
-  }, [tracksByLane]);
-
-  const laneTops = useMemo(() => {
-    const tops: number[] = [];
-    let cursor = 0;
-    for (const cat of lanes) {
-      tops.push(cursor);
-      cursor += laneHeightForTracks(laneTrackCounts.get(cat) ?? 1) + LANE_GAP;
-    }
-    return tops;
-  }, [lanes, laneTrackCounts]);
-
-  const labelVisibleIds = useMemo(
-    () =>
-      computeLabelVisibleIds(visibleByLane, tracksByLane, jsOffsetX, jsPixelsPerUnit, canvasWidth),
-    [visibleByLane, tracksByLane, jsOffsetX, jsPixelsPerUnit, canvasWidth],
-  );
-
-  const viewportRange = useMemo(
-    () => viewportYearRange(canvasWidth, jsOffsetX, jsPixelsPerUnit),
-    [canvasWidth, jsOffsetX, jsPixelsPerUnit],
-  );
-
-  const epochLabel = useMemo(() => {
-    const centerYear = pixelToYear(canvasWidth / 2, jsOffsetX, jsPixelsPerUnit);
-    return dominantEpoch(centerYear)?.title ?? null;
-  }, [canvasWidth, jsOffsetX, jsPixelsPerUnit]);
-
-  const heutePx = useMemo(
-    () => (T_HEUTE - jsOffsetX) * jsPixelsPerUnit,
-    [jsOffsetX, jsPixelsPerUnit],
-  );
-  const heuteVisible = heutePx >= -1 && heutePx <= canvasWidth + 1;
-
   // Web-path lane data. Same computeLaneData() as native; only the visible year
   // range differs (derived from webScrollX). Empty on native (Platform.OS is a
   // compile-time constant, so the branch is dead-code-eliminated there).
@@ -197,6 +157,55 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
       maxEventsPerLane: MAX_EVENTS_PER_LANE,
     });
   }, [webScrollX, jsPixelsPerUnit, canvasWidth, lanes, zoomLevel, continent]);
+
+  // On web the canvas renders from webLaneData (scroll-driven), so lane heights/
+  // tops MUST come from the same track map — otherwise lanes overlap (e.g.
+  // Nationen drawn over Zivilisationen). Native uses laneData (jsOffsetX).
+  const effectiveTracksByLane = Platform.OS === 'web' ? webLaneData.tracksByLane : tracksByLane;
+
+  const laneTrackCounts = useMemo(() => {
+    const out = new Map<Category, number>();
+    for (const [cat, tm] of effectiveTracksByLane) {
+      const max = tm.size === 0 ? 0 : Math.max(...tm.values());
+      out.set(cat, max + 1);
+    }
+    return out;
+  }, [effectiveTracksByLane]);
+
+  const laneTops = useMemo(() => {
+    const tops: number[] = [];
+    let cursor = 0;
+    for (const cat of lanes) {
+      tops.push(cursor);
+      cursor += laneHeightForTracks(laneTrackCounts.get(cat) ?? 1) + LANE_GAP;
+    }
+    return tops;
+  }, [lanes, laneTrackCounts]);
+
+  const labelVisibleIds = useMemo(
+    () =>
+      computeLabelVisibleIds(visibleByLane, tracksByLane, jsOffsetX, jsPixelsPerUnit, canvasWidth),
+    [visibleByLane, tracksByLane, jsOffsetX, jsPixelsPerUnit, canvasWidth],
+  );
+
+  const viewportRange = useMemo(
+    () => viewportYearRange(canvasWidth, jsOffsetX, jsPixelsPerUnit),
+    [canvasWidth, jsOffsetX, jsPixelsPerUnit],
+  );
+
+  // Geological era label is only meaningful when the Erdzeitalter lane is shown.
+  const showEpochLabel = activeCategories.has('erdzeitalter');
+  const epochLabel = useMemo(() => {
+    if (!showEpochLabel) return null;
+    const centerYear = pixelToYear(canvasWidth / 2, jsOffsetX, jsPixelsPerUnit);
+    return dominantEpoch(centerYear)?.title ?? null;
+  }, [showEpochLabel, canvasWidth, jsOffsetX, jsPixelsPerUnit]);
+
+  const heutePx = useMemo(
+    () => (T_HEUTE - jsOffsetX) * jsPixelsPerUnit,
+    [jsOffsetX, jsPixelsPerUnit],
+  );
+  const heuteVisible = heutePx >= -1 && heutePx <= canvasWidth + 1;
 
   // Canvas-space hit-test (native). Enforces a minimum 44px hit-box per event.
   // If exactly one event is hit, selects it immediately.
@@ -323,13 +332,15 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
         jsPixelsPerUnit={jsPixelsPerUnit}
         zoomLevel={zoomLevel}
         webScrollX={webScrollX}
-        setWebScrollX={setWebScrollX}
+        commitScrollX={commitScrollX}
         webScrollRef={webScrollRef}
         onEventTap={handleEventTap}
         zoomToFit={zoomToFit}
         handleMinimapJump={handleMinimapJump}
         zoomIn={zoomIn}
         zoomOut={zoomOut}
+        jumpToToday={jumpToToday}
+        showEpochLabel={showEpochLabel}
       />
     );
   }
@@ -357,6 +368,7 @@ export function TimelineView({ activeCategories, continent, onSelectEvent, reset
       handleMinimapJump={handleMinimapJump}
       zoomIn={zoomIn}
       zoomOut={zoomOut}
+      jumpToToday={jumpToToday}
       popoverState={popoverState}
       onPopoverClose={closePopover}
       onPopoverSelect={handlePopoverSelect}

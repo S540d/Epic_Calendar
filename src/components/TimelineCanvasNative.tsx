@@ -71,6 +71,7 @@ type Props = {
   handleMinimapJump: (newOffsetX: number) => void;
   zoomIn: () => void;
   zoomOut: () => void;
+  jumpToToday: () => void;
   popoverState: PopoverState | null;
   onPopoverClose: () => void;
   onPopoverSelect: (event: TimelineEvent) => void;
@@ -103,6 +104,7 @@ export function TimelineCanvasNative({
   handleMinimapJump,
   zoomIn,
   zoomOut,
+  jumpToToday,
   popoverState,
   onPopoverClose,
   onPopoverSelect,
@@ -275,6 +277,13 @@ export function TimelineCanvasNative({
         </GestureDetector>
       </View>
       <View style={styles.zoomButtons} pointerEvents="box-none">
+        <TouchableOpacity
+          style={styles.zoomBtn}
+          onPress={jumpToToday}
+          accessibilityLabel={t('axis.today')}
+        >
+          <Text style={styles.zoomBtnText}>⌖</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.zoomBtn} onPress={zoomIn} accessibilityLabel="Zoom in">
           <Text style={styles.zoomBtnText}>+</Text>
         </TouchableOpacity>
