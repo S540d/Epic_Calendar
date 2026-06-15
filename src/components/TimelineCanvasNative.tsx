@@ -7,6 +7,7 @@ import {
 } from 'react-native-gesture-handler';
 import { useTranslation } from 'react-i18next';
 import { EpochBand } from './EpochBand';
+import { EpochChipBar } from './EpochChipBar';
 import { TimeAxis } from './TimeAxis';
 import { TimelineBreadcrumb } from './TimelineBreadcrumb';
 import { TimelineMinimap } from './TimelineMinimap';
@@ -151,6 +152,7 @@ export function TimelineCanvasNative({
           />
         </View>
       </View>
+      <EpochChipBar onJump={zoomToFit} />
 
       <View style={[styles.container, { height: canvasHeight }]}>
         <View style={styles.labels}>

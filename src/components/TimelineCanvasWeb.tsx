@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { EpochBand } from './EpochBand';
+import { EpochChipBar } from './EpochChipBar';
 import { TimeAxis } from './TimeAxis';
 import { TimelineBreadcrumb } from './TimelineBreadcrumb';
 import { TimelineMinimap } from './TimelineMinimap';
@@ -180,6 +181,7 @@ export function TimelineCanvasWeb({
           />
         </View>
       </View>
+      <EpochChipBar onJump={zoomToFit} />
       <View
         style={Platform.select({
           web: { flex: 1, overflowY: 'auto', overflowX: 'hidden' } as any,
