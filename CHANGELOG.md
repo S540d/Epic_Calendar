@@ -2,7 +2,31 @@
 
 ## [Unreleased]
 
+### Added
+
+- Farbiges, klickbares **Epochen-Band** direkt unter der Zeitachse (Erde, Dinos,
+  Frühmenschen, Antike, Mittelalter, Neuzeit) – ersetzt die separate Chip-Leiste;
+  Klick auf ein Segment zoomt zur Epoche. Scrollt mit der Zeitachse mit.
+- **„Zu heute"-Button (⌖)** neben den Zoom-Buttons – holt die Ansicht aus jeder
+  Position/Zoomstufe zuverlässig zur Gegenwart zurück.
+
 ### Fixed
+
+- Web: Timeline fror nach einem Epochen-Sprung ein (`useAnimatedReaction` lief
+  auch auf Web und überschrieb `jsOffsetX` mit einem veralteten Wert) – Reaction
+  jetzt nur nativ.
+- Web: Navigation blieb nach Pan in die Vergangenheit hängen – fragiler
+  `webJumpScrollX`-State-Roundtrip entfernt; Sprünge scrollen direkt.
+- Web: Zoom nach Klick auf „Neuzeit" sprang zu einem unverwandten früheren Jahr –
+  `zoomToFit` nutzt jetzt die echte (in der Log-Skala kurze) Spanne moderner
+  Epochen statt eines zu großen Minimums.
+- Web: Zoom-/Sprung-Buttons waren unsichtbar (`position:fixed` in einem
+  scrollenden Container) – nur noch der Lane-Bereich scrollt, Buttons fix.
+- Web: Lanes überlappten bei mehreren Kategorien (Nationen über Zivilisationen) –
+  Lane-Höhen werden auf Web aus den scroll-getriebenen Lane-Daten berechnet.
+- Performance: Scroll löst erst ab ~6 px Bewegung ein Re-Render aus.
+- Zeitstrahl beginnt jetzt bei −5 Mrd (Erdentstehung) statt beim Urknall; mehr
+  vertikaler Platz pro Spur (`TRACK_HEIGHT` 60→80).
 
 - i18n: Fehlende/abweichende Übersetzungs-Keys – UI zeigte Roh-Keys statt Texte
   (`app.title`, `app.subtitle`, `category.*`, `continent.europa` …, `zoom.level.*`,
