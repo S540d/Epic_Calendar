@@ -1,4 +1,8 @@
-export type Category = 'erdzeitalter' | 'natur' | 'zivilisation' | 'nation' | 'herrscher';
+import { CATEGORY_COLORS, CATEGORY_LANE_BG, CATEGORY_PALETTES, type Category } from './categories';
+
+// Category and its registry live in `categories.ts` (single source of truth).
+// Re-exported here so existing `@/theme/tokens` imports keep working.
+export type { Category };
 
 export const colors = {
   bg: '#0E1116',
@@ -9,20 +13,8 @@ export const colors = {
   textSecondary: '#A8B0BB',
   textMuted: '#6B7280',
   accent: '#7C9CFF',
-  category: {
-    erdzeitalter: '#4A8FA8',
-    natur: '#4FA86A',
-    zivilisation: '#C28B4A',
-    nation: '#7C9CFF',
-    herrscher: '#CF8A30',
-  } as Record<Category, string>,
-  laneBg: {
-    erdzeitalter: 'rgba(74, 143, 168, 0.10)',
-    natur: 'rgba(79, 168, 106, 0.10)',
-    zivilisation: 'rgba(194, 139, 74, 0.10)',
-    nation: 'rgba(124, 156, 255, 0.10)',
-    herrscher: 'rgba(207, 138, 48, 0.10)',
-  } as Record<Category, string>,
+  category: CATEGORY_COLORS,
+  laneBg: CATEGORY_LANE_BG,
 };
 
 export const spacing = {
@@ -98,16 +90,6 @@ export const LANE_LABEL_WIDTH = 96;
 export const TRACK_HEIGHT = 80;
 /** Vertical padding inside a lane (top + bottom combined). */
 export const LANE_PADDING_V = 14;
-
-// Per-category palettes: visually distinct hues that stay within each
-// category's tonal range so the lane color still reads as one group.
-const CATEGORY_PALETTES: Record<Category, string[]> = {
-  erdzeitalter: ['#3D7A90', '#4E8FA8', '#2E6A7A', '#5FA5C2', '#1E5568', '#6BBAD4', '#357088'],
-  natur: ['#3D9957', '#5ABF72', '#2E7A45', '#7AD68A', '#4FB06A', '#236634', '#8FD4A0'],
-  zivilisation: ['#B87C3A', '#D49A52', '#C86030', '#E8B468', '#A05C28', '#F0C878', '#7A4420'],
-  nation: ['#5A7AE8', '#8AACFF', '#3A5CC4', '#7090D8', '#A0C0FF', '#4468B0', '#C0D4FF'],
-  herrscher: ['#BF7020', '#D98C38', '#A05810', '#E8A050', '#8C4808', '#F0B868', '#704000'],
-};
 
 /** Deterministic hash of a string → integer 0..N-1 */
 function hashIndex(s: string, n: number): number {
