@@ -202,7 +202,7 @@ export function useTimelineViewport({
       const rawEndT = yearToT(endYear ?? startYear);
       const rawSpanT = Math.abs(rawEndT - startT);
       // Point events (no real range) get a 200-year minimum so they don't zoom
-      // in to a 1-year window. Real ranges use their actual span — even short
+      // in to a single year. Real ranges use their actual span — even short
       // modern eras must NOT be inflated, or the huge PPU pushes the right-clamped
       // viewport off to an unrelated earlier year.
       const isPoint = endYear === null || endYear === undefined || rawSpanT < 1e-6;
