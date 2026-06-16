@@ -76,7 +76,7 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 ### Datenhaltung
 
 - `src/data/` – statische Daten (Europa, Asien, Afrika, Amerika)
-- `src/data/schema.ts` – gemeinsames Event-Schema
+- `src/data/schema.ts` – gemeinsames Event-Schema (`TimelineEvent` mit optionalen Feldern: `importance`, `tags`, `lineageId`, `regions` seit Phase 1.2)
 - AsyncStorage: Kontinent-Auswahl + Kategorie-Filter persistent
 
 ### Build & Test
