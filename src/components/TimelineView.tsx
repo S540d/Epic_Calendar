@@ -3,6 +3,7 @@ import { Platform, useWindowDimensions } from 'react-native';
 
 import { ALL_EVENTS } from '@/data/events';
 import { computeLaneData, type TrackMap } from '@/timeline/culling';
+import { buildEventIndex } from '@/timeline/eventIndex';
 import { useTimelineViewport } from './useTimelineViewport';
 import { useTimelineGestures } from './useTimelineGestures';
 import { TimelineCanvasWeb } from './TimelineCanvasWeb';
@@ -41,6 +42,9 @@ type Props = {
   /** When set, the timeline animates to this epoch after mount. */
   epochRange?: { startYear: number; endYear: number };
 };
+
+// Built once at module load from the static event set — avoids O(n) full scans per frame.
+const eventIndex = buildEventIndex(ALL_EVENTS);
 
 /** Delay before opening the detail modal after a zoom-to-fit animation.
  *  On web there is no animated zoom (direct PPU assignment), so a shorter
@@ -142,6 +146,7 @@ export function TimelineView({
       lanes,
       continent,
       maxEventsPerLane: MAX_EVENTS_PER_LANE,
+      eventIndex,
     });
   }, [canvasWidth, jsOffsetX, jsPixelsPerUnit, lanes, zoomLevel, continent]);
   const { visibleByLane, overflowCounts, tracksByLane } = laneData;
@@ -166,6 +171,7 @@ export function TimelineView({
       lanes,
       continent,
       maxEventsPerLane: MAX_EVENTS_PER_LANE,
+      eventIndex,
     });
   }, [webScrollX, jsPixelsPerUnit, canvasWidth, lanes, zoomLevel, continent]);
 
