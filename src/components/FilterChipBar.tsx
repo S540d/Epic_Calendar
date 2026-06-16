@@ -3,14 +3,12 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import { useTranslation } from 'react-i18next';
 
 import { colors, radii, spacing, typography, type Category } from '@/theme/tokens';
+import { CHIP_CATEGORIES, DISABLED_CATEGORIES } from '@/theme/categories';
 
 type Props = {
   active: Set<Category>;
   onToggle: (cat: Category) => void;
 };
-
-const CHIPS: Category[] = ['erdzeitalter', 'zivilisation', 'nation', 'herrscher', 'natur'];
-const DISABLED: Category[] = ['natur'];
 
 export function FilterChipBar({ active, onToggle }: Props) {
   const { t } = useTranslation();
@@ -22,9 +20,9 @@ export function FilterChipBar({ active, onToggle }: Props) {
       style={styles.scrollView}
       contentContainerStyle={styles.row}
     >
-      {CHIPS.map((cat) => {
+      {CHIP_CATEGORIES.map((cat) => {
         const isActive = active.has(cat);
-        const isDisabled = DISABLED.includes(cat);
+        const isDisabled = DISABLED_CATEGORIES.includes(cat);
         const label = t(`category.${cat}`);
         return (
           <TouchableOpacity
