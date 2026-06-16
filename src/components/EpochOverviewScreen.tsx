@@ -46,11 +46,12 @@ function formatYearLabel(year: number, t: TFunction): string {
   if (year >= 2020) return t('event.present');
   const abs = Math.abs(year);
   const suffix = year < 0 ? ` ${t('event.bce')}` : ` ${t('event.ce')}`;
-  if (abs >= 1_000_000_000)
-    return `${(abs / 1_000_000_000).toFixed(1)} ${t('axis.billion')}${suffix}`;
+  if (abs >= 1_000_000_000) {
+    const n = (abs / 1_000_000_000).toFixed(1).replace(/\.0$/, '');
+    return `${n} ${t('axis.billion')}${suffix}`;
+  }
   if (abs >= 1_000_000) return `${Math.round(abs / 1_000_000)} ${t('event.million')}${suffix}`;
-  if (abs >= 10_000) return `${Math.round(abs / 1_000)} ${t('event.thousand')}${suffix}`;
-  return `${abs}${suffix}`;
+  return `${Math.round(abs).toLocaleString()}${suffix}`;
 }
 
 type EpochTileProps = {

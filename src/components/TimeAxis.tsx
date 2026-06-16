@@ -6,7 +6,7 @@ import { colors, typography } from '@/theme/tokens';
 import type { ZoomLevel } from '@/data/schema';
 
 export const TIME_AXIS_HEIGHT = 44;
-const TICK_LABEL_WIDTH = 72;
+const TICK_LABEL_WIDTH = 90;
 const HEUTE_LABEL_WIDTH = 38;
 const CURRENT_YEAR = 2026;
 const T_NOW = yearToT(CURRENT_YEAR);
@@ -25,20 +25,25 @@ const STEP_CANDIDATES = [
 const MIN_TICKS = 3;
 const MAX_TICKS = 9;
 /** Minimum pixel gap between two adjacent tick labels to avoid overlap. */
-const MIN_TICK_PX_GAP = 56;
+const MIN_TICK_PX_GAP = 90;
 
 function formatYear(year: number, t: (key: string) => string): string {
   const abs = Math.abs(year);
-  const neg = year < 0;
-  const p = neg ? '–' : '';
+  const bce = t('axis.bce');
+  const ce = t('axis.ce');
 
-  if (abs >= 1_000_000_000) return `${p}${Math.round(abs / 1e9)} ${t('axis.billion')}`;
-  if (abs >= 1_000_000) return `${p}${Math.round(abs / 1e6)} ${t('axis.million')}`;
-  if (abs >= 100_000) return `${p}${Math.round(abs / 1000)}${t('axis.thousand')}`;
-  if (abs >= 10_000) return `${p}${(abs / 1000).toFixed(0)}${t('axis.thousand')}`;
+  if (abs >= 1_000_000_000) {
+    const n = (abs / 1e9).toFixed(1).replace(/\.0$/, '');
+    return year < 0 ? `${n} ${t('axis.billion')} ${bce}` : `${n} ${t('axis.billion')}`;
+  }
+  if (abs >= 1_000_000) {
+    const n = Math.round(abs / 1e6);
+    return year < 0 ? `${n} ${t('axis.million')} ${bce}` : `${n} ${t('axis.million')}`;
+  }
   if (year === 0) return '0';
-  if (neg) return `${Math.round(abs)} ${t('axis.bce')}`;
-  return `${Math.round(abs)}`;
+  // For all human-scale years: show the full number with locale separator + era suffix.
+  const formatted = abs.toLocaleString();
+  return year < 0 ? `${formatted} ${bce}` : `${formatted} ${ce}`;
 }
 
 type Tick = { label: string; px: number; year: number };
