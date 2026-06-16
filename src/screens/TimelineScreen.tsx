@@ -11,15 +11,14 @@ import { EventDetailModal } from '@/screens/EventDetailModal';
 import { usePersistedState } from '@/hooks/usePersistedState';
 import type { Continent, TimelineEvent } from '@/data/schema';
 import { colors, spacing, typography, type Category } from '@/theme/tokens';
-
-const DEFAULT_CATEGORIES: Category[] = ['erdzeitalter', 'zivilisation'];
+import { DEFAULT_CATEGORIES } from '@/theme/categories';
 
 export function TimelineScreen() {
   const { t, i18n } = useTranslation();
 
   const [persistedCategories, setPersistedCategories] = usePersistedState<Category[]>(
     'activeCategories',
-    DEFAULT_CATEGORIES,
+    [...DEFAULT_CATEGORIES],
   );
   const activeCategories = new Set<Category>(persistedCategories);
 
