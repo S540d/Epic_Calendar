@@ -14,7 +14,7 @@ describe('timeline/lod', () => {
   describe('pixelsPerUnitToZoomLevel band boundaries', () => {
     // Bands (linear scale, pixels per year):
     // < 2e-6  → 0, < 5e-4 → 1, < 0.02 → 2, < 2 → 3, else → 4
-    const cases: Array<[number, 0 | 1 | 2 | 3 | 4]> = [
+    const cases: [number, 0 | 1 | 2 | 3 | 4][] = [
       [0, 0],
       [1.999e-6, 0],
       [2e-6, 1],
