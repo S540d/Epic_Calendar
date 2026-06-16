@@ -65,7 +65,8 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 - Logarithmische Zeitskala: `yearToT(year)` / `tToYear(t)` aus `@/timeline/scale`
 - LOD-Bänder steuern welche Events bei welchem Zoom sichtbar sind
   - Bandgrenzen: `< 12` → 0, `< 30` → 1, `< 100` → 2, `< 500` → 3, else → 4
-- `culling.ts`: filtert Events außerhalb des Viewports
+- `culling.ts`: filtert Events außerhalb des Viewports; `computeLaneData` akzeptiert optionales `eventIndex?` für O(hits+log n)-Queries
+- `eventIndex.ts`: `EventIndex`-Klasse — Kategorie-partitioniert, startYear-sortiert; `buildEventIndex(events)` + `queryVisible(query)` (Binärsuche); **noch in `TimelineView` verdrahten**
 - `formatYear.ts`: formatiert Jahreszahlen (v. Chr., Mio., Mrd.)
 - `lod.ts`: Level-of-Detail-Berechnung, exportiert `T_MIN`, `T_MAX`, `FULL_T_SPAN`
 - `scale.ts`: `yearToT`, `tToYear`, `pixelToYear`, `viewportYearRange`
@@ -77,12 +78,14 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 
 - `src/data/` – statische Daten (Europa, Asien, Afrika, Amerika)
 - `src/data/schema.ts` – gemeinsames Event-Schema (`TimelineEvent` mit optionalen Feldern: `importance`, `tags`, `lineageId`, `regions` seit Phase 1.2)
+- `src/data/regions.ts` – `RegionConfig`-Typ + `REGIONS`-Skelett für hierarchische Geo-Filter (Phase 1.4; kein UI bis Phase 3)
+- `docs/event-flags.md` – menschenlesbare Flag-Referenz: alle Event-Achsen mit Pflicht/optional, Werten, LOD-Tabelle (Phase 1.5)
 - AsyncStorage: Kontinent-Auswahl + Kategorie-Filter persistent
 
 ### Build & Test
 
 ```bash
-npm test          # Jest-Tests (140 Unit-Tests)
+npm test          # Jest-Tests (180 Unit-Tests)
 npm run lint      # ESLint (flat-config via eslint.config.cjs)
 npm run type-check # TypeScript
 npm run build:web  # Expo Web-Export (GitHub Pages)
@@ -118,12 +121,13 @@ src/
 │   ├── EventPickerPopover.tsx     # Disambiguierung bei überlappenden Events
 │   └── ui/                        # Shared UI-Primitives
 ├── data/
-│   ├── schema.ts              # Event-Typen
-│   ├── europe.ts              # Europa-Daten
-│   ├── asia.ts                # Asien-Daten
+│   ├── schema.ts              # Event-Typen (inkl. optionale Slots: importance, tags, lineageId, regions)
+│   ├── regions.ts             # RegionConfig + REGIONS-Skelett (Phase 1.4, kein UI)
+│   ├── events/                # Statische JSON-Daten (europa, asien, afrika, amerika, erdzeitalter)
 │   └── ...
 ├── timeline/
-│   ├── culling.ts             # Viewport-Culling + computeLaneData()
+│   ├── culling.ts             # Viewport-Culling + computeLaneData() (opt. eventIndex)
+│   ├── eventIndex.ts          # EventIndex: Kategorie-partitioniert, Binärsuche O(hits+log n)
 │   ├── lod.ts                 # Level of Detail + T_MIN/T_MAX/FULL_T_SPAN
 │   ├── scale.ts               # yearToT, tToYear, pixelToYear
 │   ├── epoch.ts               # Epoche-Mapping + NavigationEpoch + NAVIGATION_EPOCHS
