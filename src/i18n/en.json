@@ -70,6 +70,27 @@
     "middleAges": "Middle Ages",
     "modern": "Modern Era"
   },
+  "epochNav": {
+    "title": "Time Journey",
+    "subtitle": "Choose an epoch to explore",
+    "allTime": "Full Timeline",
+    "back": "← Back",
+    "durationBillion": "{{n}} Bn years",
+    "durationMillion": "{{n}} M years",
+    "durationThousand": "{{n}} k years",
+    "durationYears": "{{n}} years",
+    "cosmicDawn": "Cosmic Dawn",
+    "earlyEarth": "Early Earth & Life",
+    "paleozoic": "Paleozoic",
+    "mesozoic": "Mesozoic (Dinosaurs)",
+    "cenozoic": "Cenozoic (Mammals)",
+    "humanHistory": "Human History",
+    "stoneAge": "Stone Age",
+    "ancientCiv": "Early Civilizations",
+    "antiquity": "Antiquity",
+    "middleAges": "Middle Ages",
+    "modern": "Modern Era"
+  },
   "minimap": {
     "label": "Timeline overview",
     "scrollForward": "Scroll forward",
