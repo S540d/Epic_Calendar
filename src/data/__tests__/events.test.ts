@@ -1,15 +1,8 @@
 import { ALL_EVENTS } from '../events';
 import { validateEvent } from '../schema';
 import type { TimelineEvent } from '../schema';
-import type { Category } from '@/theme/tokens';
+import { VALID_CATEGORIES } from '@/theme/categories';
 
-const VALID_CATEGORIES: Category[] = [
-  'erdzeitalter',
-  'natur',
-  'zivilisation',
-  'nation',
-  'herrscher',
-];
 const VALID_CONTINENTS = ['europa', 'asien', 'afrika', 'amerika', 'ozeanien', 'global'] as const;
 
 describe('ALL_EVENTS data integrity', () => {
