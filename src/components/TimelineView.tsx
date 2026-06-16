@@ -317,14 +317,16 @@ export function TimelineView({
     endT: number;
   } | null>(null);
 
-  // Animate to the selected epoch after mount. Waits for a valid canvasWidth so
-  // zoomToFit computes correct PPU. The ref prevents re-firing on window resize.
-  const hasZoomedToEpochRef = useRef(false);
+  // Animate to the selected epoch when epochRange changes. Waits for a valid
+  // canvasWidth so zoomToFit computes correct PPU. The lastZoomedEpochRef guards
+  // against re-firing on window resize without blocking subsequent epoch changes.
+  const lastZoomedEpochRef = useRef<{ startYear: number; endYear: number } | null>(null);
   useEffect(() => {
     if (!epochRange) return;
     if (canvasWidth <= 0) return;
-    if (hasZoomedToEpochRef.current) return;
-    hasZoomedToEpochRef.current = true;
+    const last = lastZoomedEpochRef.current;
+    if (last?.startYear === epochRange.startYear && last?.endYear === epochRange.endYear) return;
+    lastZoomedEpochRef.current = epochRange;
     // Show minimap highlight immediately so the user sees the target before zoom.
     setMinimapHighlight({
       startT: yearToT(epochRange.startYear),

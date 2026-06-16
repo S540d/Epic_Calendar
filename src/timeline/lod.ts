@@ -77,12 +77,12 @@ export function clampPixelsPerUnit(v: number): number {
 }
 
 /**
- * Fraction of the viewport allowed to extend past "today" on the right, so the
- * user can pan/zoom far enough to *center* the present (the interesting, recent
- * part of history) instead of it being stuck against the right edge. The empty
- * space to the right of "Heute" carries no axis labels (see TimeAxis).
+ * Fraction of the viewport allowed to extend past "today" on the right.
+ * Kept small (0.15) so "Heute" stays visually near the right edge even after
+ * epoch-jump zooms that centre the viewport on the selected range.
+ * The empty strip to the right carries no axis labels (see TimeAxis).
  */
-export const PRESENT_RIGHT_PAD_FRACTION = 0.5;
+export const PRESENT_RIGHT_PAD_FRACTION = 0.15;
 
 /**
  * Clamps the pan offset so the viewport cannot scroll arbitrarily far past

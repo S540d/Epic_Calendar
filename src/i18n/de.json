@@ -31,6 +31,7 @@
     "category": "Kategorie",
     "continent": "Kontinent",
     "culture": "Kultur",
+    "billion": "Mrd.",
     "million": "Mio.",
     "thousand": "Tsd."
   },
@@ -48,11 +49,23 @@
       "4": "Jahre"
     }
   },
-  "epochChip": {
-    "bigBang": "Urknall",
-    "earth": "Erde",
-    "dinosaurs": "Dinosaurier",
-    "earlyHumans": "Frühmenschen",
+  "epochNav": {
+    "title": "Zeitreise",
+    "subtitle": "Wähle eine Epoche zum Erkunden",
+    "allTime": "Ganzen Zeitstrahl",
+    "back": "← Zurück",
+    "durationBillion": "{{n}} Mrd. Jahre",
+    "durationMillion": "{{n}} Mio. Jahre",
+    "durationThousand": "{{n}} Tsd. Jahre",
+    "durationYears": "{{n}} Jahre",
+    "cosmicDawn": "Kosmische Frühzeit",
+    "earlyEarth": "Frühe Erde & Leben",
+    "paleozoic": "Paläozoikum",
+    "mesozoic": "Mesozoikum (Dinos)",
+    "cenozoic": "Känozoikum (Säugetiere)",
+    "humanHistory": "Menschheitsgeschichte",
+    "stoneAge": "Steinzeit",
+    "ancientCiv": "Frühe Hochkulturen",
     "antiquity": "Antike",
     "middleAges": "Mittelalter",
     "modern": "Neuzeit"

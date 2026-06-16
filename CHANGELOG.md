@@ -30,9 +30,31 @@
   ~450 ms auf der Minimap – zeigt dem Nutzer vorab „wohin die Reise geht". (#81)
 - i18n: `epochNav.*`-Keys für Landing Page (DE/EN).
 
+### Added
+
+- **Frühmenschen-Spezies** im Zeitstrahl: Australopithecus, Homo erectus,
+  Homo heidelbergensis, Neandertaler, Homo sapiens, Out-of-Africa-Migration,
+  Höhlenmalerei, Letzte Eiszeit, Neolithikum – alle als globale Events in
+  der Zivilisations-Lane sichtbar.
+- **Epochen-Band** (EpochBand) jetzt konsistent mit der Chip-Navigation:
+  Segmente entsprechen 1:1 den `NAVIGATION_EPOCHS` (kosmische Frühzeit →
+  Steinzeit → Frühe Hochkulturen → … → Neuzeit) statt eines eigenständigen
+  Sets – gleiche Labels, gleiche Farben.
+- Titel und Untertitel im Zeitstrahl-Header sind jetzt klickbar und führen
+  zurück zur Epochen-Übersicht (Landing Page).
+
 ### Fixed
 
-- Web: Timeline fror nach einem Epochen-Sprung ein (`useAnimatedReaction` lief
+- Epoch-Chip-Leiste friert nach 2–3 Klicks ein: `hasZoomedToEpochRef`
+  wurde nie zurückgesetzt und blockierte alle Folge-Klicks – ersetzt durch
+  `lastZoomedEpochRef` mit Koordinatenvergleich. (#82)
+- Jahreszahlen auf der Zeitachse zeigten `–15k` statt `15.000 v. Chr.` –
+  k/Tsd-Suffix entfernt, alle menschlichen Jahreszahlen nun vollständig
+  mit Tausendertrenner und v./n. Chr.-Suffix.
+- „Heute" steht näher am rechten Rand: `PRESENT_RIGHT_PAD_FRACTION`
+  von 0.5 → 0.15 reduziert.
+
+### Fixed (older) (`useAnimatedReaction` lief
   auch auf Web und überschrieb `jsOffsetX` mit einem veralteten Wert) – Reaction
   jetzt nur nativ.
 - Web: Navigation blieb nach Pan in die Vergangenheit hängen – fragiler

@@ -37,14 +37,14 @@ export function EpochBand({ offsetAtZero, pixelsPerUnit, width, onJump }: Props)
             key={ep.key}
             onPress={() => onJump(ep.startYear, ep.endYear)}
             accessibilityRole="button"
-            accessibilityLabel={t(`epochChip.${ep.key}`)}
+            accessibilityLabel={t(`epochNav.${ep.key}`)}
             style={[
               styles.segment,
               { left: x, width: w, backgroundColor: ep.color + '44', borderColor: ep.color },
             ]}
           >
             <Text style={styles.label} numberOfLines={1}>
-              {t(`epochChip.${ep.key}`)}
+              {t(`epochNav.${ep.key}`)}
             </Text>
           </Pressable>
         );

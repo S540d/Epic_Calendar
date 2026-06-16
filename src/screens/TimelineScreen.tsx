@@ -72,10 +72,15 @@ export function TimelineScreen() {
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <View style={styles.headerText}>
+        <Pressable
+          style={styles.headerText}
+          onPress={handleHomePress}
+          accessibilityRole="button"
+          accessibilityLabel={t('app.title')}
+        >
           <Text style={styles.title}>{t('app.title')}</Text>
           <Text style={styles.subtitle}>{t('app.subtitle')}</Text>
-        </View>
+        </Pressable>
         <Pressable
           style={styles.langToggle}
           onPress={toggleLanguage}
