@@ -66,13 +66,13 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 - LOD-Bänder steuern welche Events bei welchem Zoom sichtbar sind
   - Bandgrenzen: `< 12` → 0, `< 30` → 1, `< 100` → 2, `< 500` → 3, else → 4
 - `culling.ts`: filtert Events außerhalb des Viewports; `computeLaneData` akzeptiert optionales `eventIndex?` für O(hits+log n)-Queries
-- `eventIndex.ts`: `EventIndex`-Klasse — Kategorie-partitioniert, startYear-sortiert; `buildEventIndex(events)` + `queryVisible(query)` (Binärsuche); **noch in `TimelineView` verdrahten**
+- `eventIndex.ts`: `EventIndex`-Klasse — Kategorie-partitioniert, startYear-sortiert; `buildEventIndex(events)` + `queryVisible(query)` (Binärsuche); in `TimelineView` verdrahtet via `computeLaneData`
 - `formatYear.ts`: formatiert Jahreszahlen (v. Chr., Mio., Mrd.)
 - `lod.ts`: Level-of-Detail-Berechnung, exportiert `T_MIN`, `T_MAX`, `FULL_T_SPAN`
 - `scale.ts`: `yearToT`, `tToYear`, `pixelToYear`, `viewportYearRange`
 - `epoch.ts`: Epoche-Mapping für Breadcrumb + `NavigationEpoch`-Typ + `NAVIGATION_EPOCHS`-Baum (kosmische Frühzeit → Neuzeit)
 - **MAX_EVENTS_PER_LANE = 40** (in `timelineRenderShared.ts`) – Skia-Loop, Hit-Test und Label-Overlay sind alle auf diesen Wert gecappt. Überschuss erscheint als Cluster-Badge.
-- **Geplanter Skalenwechsel (siehe #93):** Die Zeitachse soll von logarithmisch auf **viewport-lokal linear** (Modell B) umgestellt werden – Log-Wahrnehmung + Label-Probleme entfallen, der Gesamtüberblick wandert als schematischer Zeitstrahl auf die Landing Page. `scale.ts`/`lod.ts` sind die einzigen betroffenen Module (Renderer/Gesten sind maßstabs-agnostisch). Bis zur Umsetzung gilt weiterhin die Log-Skala unten.
+- **Lineare Skala (seit #93 Phase 2):** Die Zeitachse verwendet **viewport-lokal lineare** Abbildung (Modell B). `yearToT(year) = year` / `tToYear(t) = t` sind Identity-Funktionen; `pixelsPerUnit` = Pixel pro Jahr. LOD-Schwellen: 2e-6 / 5e-4 / 0.02 / 2 (ppu). Der Gesamtüberblick ist als `SchematicTimeline` auf der Landing Page verfügbar.
 
 ### Datenhaltung
 
@@ -216,9 +216,8 @@ const gesture = useMemo(() => Gesture.Simultaneous(pan, pinch, exclusive), [pan,
 | #32 | Mobile Usability Überblick                  | Tracker                      |
 | #46 | Listen-/Story-Modus                         | P3 / Diskussion              |
 | #51 | Triage-Plan (Tracking-Board)                | Referenz                     |
-| #77 | Epochen-Landing-Page + gezielter Zoom       | In Review (PR #80 → testing) |
 | #70 | Skalierbarkeit: mehr Events, Filter, Kategorien | Epic / Tracker |
-| #93 | Umsetzungsplan #70 (Fundament, lineare Skala, Flag-Referenz) | Aktiver Plan (gestuft) |
+| #93 | Umsetzungsplan #70 (Phase 3+: UI-Filter, Geo-Filter, Performance) | Nächste Phasen |
 
 ## Referenzen
 

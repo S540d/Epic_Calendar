@@ -13,8 +13,10 @@ import {
   typography,
 } from '@/theme/tokens';
 
-/** Minimum visible bar width to attempt rendering a (possibly truncated) label. */
-export const LABEL_MIN_BAR_PX = 22;
+/** Minimum visible bar width to attempt rendering a (possibly truncated) label.
+ *  stickyLabelMaxW > 4 acts as a secondary guard for bars that are too narrow
+ *  to actually fit any text. */
+export const LABEL_MIN_BAR_PX = 8;
 export const LABEL_MAX_WIDTH = 96;
 export const POPOVER_MAX_WIDTH = 220;
 export const POPOVER_MAX_HEIGHT = 200;
