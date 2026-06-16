@@ -1,5 +1,6 @@
 import type { TimelineEvent, ZoomLevel, Continent } from '@/data/schema';
 import type { Category } from '@/theme/tokens';
+import type { EventIndex } from './eventIndex';
 
 export type TrackMap = Map<string, number>; // eventId → trackIndex (0-based)
 
@@ -84,6 +85,8 @@ export type LaneDataInput = {
   continent: Continent;
   /** Cap on rendered events per lane; excess is counted into `overflowCounts`. */
   maxEventsPerLane: number;
+  /** Optional pre-built index for O(hits + log n) queries instead of O(n) full scan. */
+  eventIndex?: EventIndex;
 };
 
 /**
@@ -92,19 +95,23 @@ export type LaneDataInput = {
  * the visible year range is derived, which is passed in here.
  */
 export function computeLaneData(input: LaneDataInput): LaneData {
-  const { events, startYear, endYear, zoomLevel, lanes, continent, maxEventsPerLane } = input;
+  const { events, startYear, endYear, zoomLevel, lanes, continent, maxEventsPerLane, eventIndex } =
+    input;
   const visibleByLane = new Map<Category, TimelineEvent[]>();
   const overflowCounts = new Map<Category, number>();
   const tracksByLane = new Map<Category, TrackMap>();
 
   for (const cat of lanes) {
-    const visible = filterVisible(events, {
+    const query = {
       startYear,
       endYear,
       zoomLevel,
       categories: new Set<Category>([cat]),
       continent,
-    });
+    };
+    const visible = eventIndex
+      ? eventIndex.queryVisible(query)
+      : filterVisible(events, query);
     visibleByLane.set(cat, visible);
     if (visible.length > maxEventsPerLane) {
       overflowCounts.set(cat, visible.length - maxEventsPerLane);
