@@ -64,7 +64,6 @@ type SchematicTimelineProps = {
 
 function SchematicTimeline({ onSelectEpoch, activeEpochKey }: SchematicTimelineProps) {
   const { t } = useTranslation();
-  // Only top-level epochs in the schematic bar
   const topLevel = NAVIGATION_EPOCHS;
 
   return (

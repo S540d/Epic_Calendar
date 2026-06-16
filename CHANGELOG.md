@@ -14,14 +14,6 @@
   PPU-relativ umgestellt (5 px / 1 % Schwelle). Zoom-to-fit für Punkt-Events
   auf 200-Jahr-Minimum erhöht. (#93, Phase 2)
 
-### Added
-
-- **Schematischer Zeitstrahl (Phase 2.2, Issue #93):** Neue horizontale
-  `SchematicTimeline`-Leiste oben auf der Landing Page (EpochOverviewScreen).
-  Zeigt alle Top-Level-Epochen als gleich breite, farbige Segmente im
-  U-Bahn-Plan-Stil. Tippen auf ein Segment springt direkt zur Epoche.
-  Beschriftung via `t('epochNav.<key>')`, vollständig i18n-konform. (#93)
-
 - **Kategorie-Registry als Single Source of Truth** (`src/theme/categories.ts`):
   Farben, Lane-Hintergründe, Paletten, Chip-/Lane-Reihenfolge, Default- und
   Disabled-Auswahl sowie die abgeleiteten Arrays (`VALID_CATEGORIES`,
@@ -33,6 +25,11 @@
 
 ### Added
 
+- **Schematischer Zeitstrahl (Phase 2.2, Issue #93):** Neue horizontale
+  `SchematicTimeline`-Leiste oben auf der Landing Page (EpochOverviewScreen).
+  Zeigt alle Top-Level-Epochen als gleich breite, farbige Segmente im
+  U-Bahn-Plan-Stil. Tippen auf ein Segment springt direkt zur Epoche.
+  Beschriftung via `t('epochNav.<key>')`, vollständig i18n-konform. (#93)
 - Farbiges, klickbares **Epochen-Band** direkt unter der Zeitachse (Erde, Dinos,
   Frühmenschen, Antike, Mittelalter, Neuzeit) – ersetzt die separate Chip-Leiste;
   Klick auf ein Segment zoomt zur Epoche. Scrollt mit der Zeitachse mit.
