@@ -30,6 +30,7 @@ import {
   TRACK_HEIGHT,
   type Category,
 } from '@/theme/tokens';
+import { LANE_ORDER } from '@/theme/categories';
 
 type Props = {
   activeCategories: Set<Category>;
@@ -40,8 +41,6 @@ type Props = {
   /** When set, the timeline animates to this epoch after mount. */
   epochRange?: { startYear: number; endYear: number };
 };
-
-const LANE_ORDER: Category[] = ['erdzeitalter', 'zivilisation', 'natur', 'nation'];
 
 /** Delay before opening the detail modal after a zoom-to-fit animation.
  *  On web there is no animated zoom (direct PPU assignment), so a shorter

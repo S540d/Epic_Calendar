@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Kategorie-Registry als Single Source of Truth** (`src/theme/categories.ts`):
+  Farben, Lane-Hintergründe, Paletten, Chip-/Lane-Reihenfolge, Default- und
+  Disabled-Auswahl sowie die abgeleiteten Arrays (`VALID_CATEGORIES`,
+  `CHIP_CATEGORIES`, `LANE_ORDER`, `DEFAULT_CATEGORIES`, `DISABLED_CATEGORIES`)
+  stammen jetzt aus einer einzigen geordneten Config. Eine neue Kategorie = ein
+  Eintrag. `tokens.ts`, `FilterChipBar`, `TimelineView`, `TimelineScreen` und die
+  Daten-Tests konsumieren die Registry; Optik und Verhalten bleiben identisch.
+  (#93, Stufe 1.1)
+
 ### Added
 
 - Farbiges, klickbares **Epochen-Band** direkt unter der Zeitachse (Erde, Dinos,

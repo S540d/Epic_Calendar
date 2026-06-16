@@ -14,8 +14,33 @@ export type TimelineEvent = {
   endYear?: number;
   category: Category;
   continent: Continent;
-  /** Subgroup within a category, e.g. "römisch", "Phanerozoikum". */
+  /**
+   * Formal sub-category within a category, e.g. "römisch", "Phanerozoikum".
+   * Acts as the primary sub-classification axis; values are free-form strings
+   * that will be constrained via config in a later phase.
+   */
   culture?: string;
+  /**
+   * Relevance tier for progressive disclosure (e.g. Kids Mode).
+   * core     = always show (major milestones)
+   * extended = default detail level
+   * detail   = deepest zoom / specialist view
+   */
+  importance?: 'core' | 'extended' | 'detail';
+  /** Free-form keyword tags for cross-cutting search/filter. */
+  tags?: string[];
+  /**
+   * Links this event to a named lineage (e.g. "frankenreich").
+   * Events sharing a lineageId can be rendered in the same track
+   * and connected by a continuation line.
+   */
+  lineageId?: string;
+  /**
+   * Flexible region memberships beyond the top-level continent.
+   * References region IDs from src/data/regions.ts (Phase 1.4).
+   * An event may belong to multiple regions simultaneously.
+   */
+  regions?: string[];
   /**
    * Lowest zoom band at which this event becomes visible.
    * 0 = always visible (eons); 4 = only deepest zoom.
@@ -26,6 +51,10 @@ export type TimelineEvent = {
   /** Manual track override within a lane (0-indexed). If absent, computed by assignTracks(). */
   track?: number;
 };
+
+export type ImportanceLevel = 'core' | 'extended' | 'detail';
+
+export const VALID_IMPORTANCE_LEVELS: readonly ImportanceLevel[] = ['core', 'extended', 'detail'];
 
 export const VALID_CONTINENTS: readonly Continent[] = [
   'europa',
@@ -64,5 +93,27 @@ export function validateEvent(
     errors.push(`invalid continent: ${String(event.continent)}`);
   if (!VALID_ZOOM_LEVELS.includes(event.minZoomLevel as ZoomLevel))
     errors.push(`missing/invalid minZoomLevel: ${String(event.minZoomLevel)}`);
+  if (
+    event.importance !== undefined &&
+    !VALID_IMPORTANCE_LEVELS.includes(event.importance as ImportanceLevel)
+  )
+    errors.push(`invalid importance: ${String(event.importance)}`);
+  if (event.tags !== undefined && !Array.isArray(event.tags)) errors.push('tags must be an array');
+  if (
+    event.tags !== undefined &&
+    Array.isArray(event.tags) &&
+    event.tags.some((t) => typeof t !== 'string')
+  )
+    errors.push('tags must be an array of strings');
+  if (event.lineageId !== undefined && typeof event.lineageId !== 'string')
+    errors.push('lineageId must be a string');
+  if (event.regions !== undefined && !Array.isArray(event.regions))
+    errors.push('regions must be an array');
+  if (
+    event.regions !== undefined &&
+    Array.isArray(event.regions) &&
+    event.regions.some((r) => typeof r !== 'string')
+  )
+    errors.push('regions must be an array of strings');
   return errors;
 }

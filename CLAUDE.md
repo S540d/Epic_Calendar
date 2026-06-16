@@ -70,12 +70,13 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 - `lod.ts`: Level-of-Detail-Berechnung, exportiert `T_MIN`, `T_MAX`, `FULL_T_SPAN`
 - `scale.ts`: `yearToT`, `tToYear`, `pixelToYear`, `viewportYearRange`
 - `epoch.ts`: Epoche-Mapping für Breadcrumb + `NavigationEpoch`-Typ + `NAVIGATION_EPOCHS`-Baum (kosmische Frühzeit → Neuzeit)
-- **MAX_EVENTS_PER_LANE = 15** – Skia-Loop, Hit-Test und Label-Overlay sind alle auf diesen Wert gecappt. Überschuss erscheint als Cluster-Badge.
+- **MAX_EVENTS_PER_LANE = 40** (in `timelineRenderShared.ts`) – Skia-Loop, Hit-Test und Label-Overlay sind alle auf diesen Wert gecappt. Überschuss erscheint als Cluster-Badge.
+- **Geplanter Skalenwechsel (siehe #93):** Die Zeitachse soll von logarithmisch auf **viewport-lokal linear** (Modell B) umgestellt werden – Log-Wahrnehmung + Label-Probleme entfallen, der Gesamtüberblick wandert als schematischer Zeitstrahl auf die Landing Page. `scale.ts`/`lod.ts` sind die einzigen betroffenen Module (Renderer/Gesten sind maßstabs-agnostisch). Bis zur Umsetzung gilt weiterhin die Log-Skala unten.
 
 ### Datenhaltung
 
 - `src/data/` – statische Daten (Europa, Asien, Afrika, Amerika)
-- `src/data/schema.ts` – gemeinsames Event-Schema
+- `src/data/schema.ts` – gemeinsames Event-Schema (`TimelineEvent` mit optionalen Feldern: `importance`, `tags`, `lineageId`, `regions` seit Phase 1.2)
 - AsyncStorage: Kontinent-Auswahl + Kategorie-Filter persistent
 
 ### Build & Test
@@ -205,13 +206,15 @@ const gesture = useMemo(() => Gesture.Simultaneous(pan, pinch, exclusive), [pan,
 
 ## Offene Issues (legitim)
 
-| #   | Titel                                       | Priorität       |
-| --- | ------------------------------------------- | --------------- |
-| #5  | Performance-Optimierung (Skia + Reanimated) | ongoing         |
-| #32 | Mobile Usability Überblick                  | Tracker         |
-| #46 | Listen-/Story-Modus                         | P3 / Diskussion |
-| #51 | Triage-Plan (Tracking-Board)                | Referenz        |
+| #   | Titel                                       | Priorität                    |
+| --- | ------------------------------------------- | ---------------------------- |
+| #5  | Performance-Optimierung (Skia + Reanimated) | ongoing                      |
+| #32 | Mobile Usability Überblick                  | Tracker                      |
+| #46 | Listen-/Story-Modus                         | P3 / Diskussion              |
+| #51 | Triage-Plan (Tracking-Board)                | Referenz                     |
 | #77 | Epochen-Landing-Page + gezielter Zoom       | In Review (PR #80 → testing) |
+| #70 | Skalierbarkeit: mehr Events, Filter, Kategorien | Epic / Tracker |
+| #93 | Umsetzungsplan #70 (Fundament, lineare Skala, Flag-Referenz) | Aktiver Plan (gestuft) |
 
 ## Referenzen
 
