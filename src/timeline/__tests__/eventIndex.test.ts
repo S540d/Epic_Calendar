@@ -118,10 +118,7 @@ describe('EventIndex.queryVisible matches filterVisible', () => {
   });
 
   it('handles point events (no endYear)', () => {
-    const events = [
-      ev({ id: 'inside', startYear: 500 }),
-      ev({ id: 'outside', startYear: 5000 }),
-    ];
+    const events = [ev({ id: 'inside', startYear: 500 }), ev({ id: 'outside', startYear: 5000 })];
     const index = buildEventIndex(events);
     expect(sortedIds(index.queryVisible(baseFilter))).toEqual(
       sortedIds(filterVisible(events, baseFilter)),

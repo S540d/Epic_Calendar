@@ -109,9 +109,7 @@ export function computeLaneData(input: LaneDataInput): LaneData {
       categories: new Set<Category>([cat]),
       continent,
     };
-    const visible = eventIndex
-      ? eventIndex.queryVisible(query)
-      : filterVisible(events, query);
+    const visible = eventIndex ? eventIndex.queryVisible(query) : filterVisible(events, query);
     visibleByLane.set(cat, visible);
     if (visible.length > maxEventsPerLane) {
       overflowCounts.set(cat, visible.length - maxEventsPerLane);

@@ -205,12 +205,12 @@ const gesture = useMemo(() => Gesture.Simultaneous(pan, pinch, exclusive), [pan,
 
 ## Offene Issues (legitim)
 
-| #   | Titel                                       | Priorität       |
-| --- | ------------------------------------------- | --------------- |
-| #5  | Performance-Optimierung (Skia + Reanimated) | ongoing         |
-| #32 | Mobile Usability Überblick                  | Tracker         |
-| #46 | Listen-/Story-Modus                         | P3 / Diskussion |
-| #51 | Triage-Plan (Tracking-Board)                | Referenz        |
+| #   | Titel                                       | Priorität                    |
+| --- | ------------------------------------------- | ---------------------------- |
+| #5  | Performance-Optimierung (Skia + Reanimated) | ongoing                      |
+| #32 | Mobile Usability Überblick                  | Tracker                      |
+| #46 | Listen-/Story-Modus                         | P3 / Diskussion              |
+| #51 | Triage-Plan (Tracking-Board)                | Referenz                     |
 | #77 | Epochen-Landing-Page + gezielter Zoom       | In Review (PR #80 → testing) |
 
 ## Referenzen

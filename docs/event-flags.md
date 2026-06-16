@@ -23,11 +23,11 @@ TimelineEvent
 
 ### Identität
 
-| Feld          | Typ      | Pflicht | Beschreibung                                        |
-|---------------|----------|---------|-----------------------------------------------------|
-| `id`          | `string` | ✅       | Einzigartiger stabiler Bezeichner (Kebab-Case).     |
-| `title`       | `string` | ✅       | Kurzer Anzeigename (i18n-ready, derzeit direkt).    |
-| `description` | `string` | –       | Optionaler Fließtext für das Detail-Modal.          |
+| Feld          | Typ      | Pflicht | Beschreibung                                     |
+| ------------- | -------- | ------- | ------------------------------------------------ |
+| `id`          | `string` | ✅      | Einzigartiger stabiler Bezeichner (Kebab-Case).  |
+| `title`       | `string` | ✅      | Kurzer Anzeigename (i18n-ready, derzeit direkt). |
+| `description` | `string` | –       | Optionaler Fließtext für das Detail-Modal.       |
 
 **Konvention:** `id` folgt dem Muster `<kategorie>-<kurzname>`, z. B. `geo-hadaikum`, `eu-roemisches-reich`.
 
@@ -35,10 +35,10 @@ TimelineEvent
 
 ### Zeit
 
-| Feld        | Typ      | Pflicht | Beschreibung                                                    |
-|-------------|----------|---------|-----------------------------------------------------------------|
-| `startYear` | `number` | ✅       | Beginnjahr. Negativ = v. Chr. Bsp: `−753` = Römische Gründung. |
-| `endYear`   | `number` | –       | Endjahr. Fehlt → Punktereignis (Dauer = 0).                     |
+| Feld        | Typ      | Pflicht | Beschreibung                                                   |
+| ----------- | -------- | ------- | -------------------------------------------------------------- |
+| `startYear` | `number` | ✅      | Beginnjahr. Negativ = v. Chr. Bsp: `−753` = Römische Gründung. |
+| `endYear`   | `number` | –       | Endjahr. Fehlt → Punktereignis (Dauer = 0).                    |
 
 **Invariante:** `endYear >= startYear` (wird von `validateEvent` geprüft).
 
@@ -58,12 +58,12 @@ category  (Pflicht, Registry-gesteuert)
 #### `category`
 
 | Wert           | Farbe     | Lane | Aktiv per Default |
-|----------------|-----------|------|-------------------|
-| `erdzeitalter` | `#4A8FA8` | ✅    | ✅                 |
-| `zivilisation` | `#C28B4A` | ✅    | ✅                 |
-| `nation`       | `#7C9CFF` | ✅    | –                 |
-| `natur`        | `#4FA86A` | –    | –  (soon)         |
-| `herrscher`    | `#CF8A30` | –    | –  (kein Lane)    |
+| -------------- | --------- | ---- | ----------------- |
+| `erdzeitalter` | `#4A8FA8` | ✅   | ✅                |
+| `zivilisation` | `#C28B4A` | ✅   | ✅                |
+| `nation`       | `#7C9CFF` | ✅   | –                 |
+| `natur`        | `#4FA86A` | –    | – (soon)          |
+| `herrscher`    | `#CF8A30` | –    | – (kein Lane)     |
 
 Quelle: `src/theme/categories.ts` (Single Source of Truth, PR #95).
 
@@ -73,15 +73,15 @@ Freier String, der die Unterkategorie innerhalb einer Kategorie benennt.
 Bsp: `"Äon"`, `"Phanerozoikum"`, `"römisch"`, `"maya"`.
 Wird künftig per Config validierbar (Phase 1.4+).
 
-#### `importance` *(Schema-Slot, Phase 1.2, noch nicht verdrahtet)*
+#### `importance` _(Schema-Slot, Phase 1.2, noch nicht verdrahtet)_
 
-| Wert       | Bedeutung                                             |
-|------------|-------------------------------------------------------|
-| `core`     | Unverzichtbar – erscheint im Kindermodus (Phase 3).   |
-| `extended` | Standard-Sichtbarkeit.                                |
-| `detail`   | Nur bei hohem Zoom sinnvoll.                          |
+| Wert       | Bedeutung                                           |
+| ---------- | --------------------------------------------------- |
+| `core`     | Unverzichtbar – erscheint im Kindermodus (Phase 3). |
+| `extended` | Standard-Sichtbarkeit.                              |
+| `detail`   | Nur bei hohem Zoom sinnvoll.                        |
 
-#### `tags` *(Schema-Slot, Phase 1.2, noch nicht verdrahtet)*
+#### `tags` _(Schema-Slot, Phase 1.2, noch nicht verdrahtet)_
 
 Freie Schlüsselwörter für künftige Filter und Suche. Bsp: `["krieg", "religion"]`.
 
@@ -97,7 +97,7 @@ continent  (Pflicht)
 #### `continent`
 
 | Wert       | Bedeutung                                                    |
-|------------|--------------------------------------------------------------|
+| ---------- | ------------------------------------------------------------ |
 | `europa`   | Europa (inkl. Russland westlich d. Urals, nach Konvention).  |
 | `asien`    | Asien.                                                       |
 | `afrika`   | Afrika.                                                      |
@@ -107,7 +107,7 @@ continent  (Pflicht)
 
 **Filterlogik:** `global` ist immer sichtbar, unabhängig vom gewählten Kontinent.
 
-#### `regions` *(Schema-Slot, Phase 1.2 + 1.4, noch nicht verdrahtet)*
+#### `regions` _(Schema-Slot, Phase 1.2 + 1.4, noch nicht verdrahtet)_
 
 Array von Region-IDs aus `src/data/regions.ts`. Ermöglicht Mehrfachzugehörigkeit (z. B. ein Event gehört zu `westeuropa` und `mediterraneum`). Hierarchisch über `RegionConfig.parents`.
 
@@ -115,7 +115,7 @@ Array von Region-IDs aus `src/data/regions.ts`. Ermöglicht Mehrfachzugehörigke
 
 ### Beziehung
 
-#### `lineageId` *(Schema-Slot, Phase 1.2, noch nicht verdrahtet)*
+#### `lineageId` _(Schema-Slot, Phase 1.2, noch nicht verdrahtet)_
 
 Verbindet politische Nachfolger desselben Staatswesens in einer Lane.
 Bsp: `"frankreich"` verknüpft Merowingerreich → Karolingerreich → Königreich Frankreich.
@@ -125,22 +125,22 @@ Geplante Wirkung (Phase 3): `assignTracks` legt Events mit gleicher `lineageId` 
 
 ### Darstellung
 
-| Feld           | Typ                             | Pflicht | Beschreibung                                                                    |
-|----------------|---------------------------------|---------|---------------------------------------------------------------------------------|
-| `minZoomLevel` | `0 \| 1 \| 2 \| 3 \| 4`        | ✅       | Niedrigstes LOD-Band, bei dem dieses Event sichtbar wird.                       |
-| `color`        | `string` (CSS-Farbe)            | –       | Überschreibt die Kategorie-Farbe aus der Registry.                              |
-| `iconKey`      | `string`                        | –       | Schlüssel für ein Emoji/Icon-Set (noch kein globales Icon-Set definiert).       |
-| `track`        | `number` (0-basiert)            | –       | Manueller Track-Override. Fehlt → automatisch per `assignTracks()` vergeben.    |
+| Feld           | Typ                     | Pflicht | Beschreibung                                                                 |
+| -------------- | ----------------------- | ------- | ---------------------------------------------------------------------------- |
+| `minZoomLevel` | `0 \| 1 \| 2 \| 3 \| 4` | ✅      | Niedrigstes LOD-Band, bei dem dieses Event sichtbar wird.                    |
+| `color`        | `string` (CSS-Farbe)    | –       | Überschreibt die Kategorie-Farbe aus der Registry.                           |
+| `iconKey`      | `string`                | –       | Schlüssel für ein Emoji/Icon-Set (noch kein globales Icon-Set definiert).    |
+| `track`        | `number` (0-basiert)    | –       | Manueller Track-Override. Fehlt → automatisch per `assignTracks()` vergeben. |
 
 #### `minZoomLevel` — LOD-Bänder
 
-| Wert | Name           | Pixel/t-Einheit  | Typische Inhalte                          |
-|------|----------------|------------------|-------------------------------------------|
-| `0`  | Äonen          | < 12             | Geologische Äonen, Urknall.               |
-| `1`  | Ären           | 12 – 29          | Ären, Perioden, frühe Hochkulturen.       |
-| `2`  | Epochen        | 30 – 99          | Zivilisationen, Reiche (Default-Ansicht). |
-| `3`  | Jahrhunderte   | 100 – 499        | Dynastien, Kriege, Entdeckungen.          |
-| `4`  | Jahre          | ≥ 500            | Einzeljahr-Events, Schlachten, Personen.  |
+| Wert | Name         | Pixel/t-Einheit | Typische Inhalte                          |
+| ---- | ------------ | --------------- | ----------------------------------------- |
+| `0`  | Äonen        | < 12            | Geologische Äonen, Urknall.               |
+| `1`  | Ären         | 12 – 29         | Ären, Perioden, frühe Hochkulturen.       |
+| `2`  | Epochen      | 30 – 99         | Zivilisationen, Reiche (Default-Ansicht). |
+| `3`  | Jahrhunderte | 100 – 499       | Dynastien, Kriege, Entdeckungen.          |
+| `4`  | Jahre        | ≥ 500           | Einzeljahr-Events, Schlachten, Personen.  |
 
 Quelle: `src/timeline/lod.ts::pixelsPerUnitToZoomLevel`.
 
