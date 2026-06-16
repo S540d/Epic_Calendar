@@ -5,7 +5,7 @@ const t = (key: string) =>
   ({
     'event.bce': 'BCE',
     'event.ce': 'CE',
-    'event.thousand': 'k',
+    'event.billion': 'Bn',
     'event.million': 'Mio.',
   })[key] ?? key;
 
@@ -19,15 +19,19 @@ describe('formatEventYear', () => {
   });
 
   it('formats exact small years without a fractional part', () => {
-    expect(formatEventYear(1492, t)).toBe('1492 CE');
+    expect(formatEventYear(1492, t)).toBe('1,492 CE');
   });
 
-  it('formats thousands rounded', () => {
-    expect(formatEventYear(12_400, t)).toBe('12 k CE');
+  it('formats thousands with locale separator (no k-suffix)', () => {
+    expect(formatEventYear(12_400, t)).toBe('12,400 CE');
   });
 
   it('formats millions rounded', () => {
     expect(formatEventYear(65_400_000, t)).toBe('65 Mio. CE');
+  });
+
+  it('formats billions with one decimal', () => {
+    expect(formatEventYear(-4_500_000_000, t)).toBe('4.5 Bn BCE');
   });
 
   it('handles year zero', () => {

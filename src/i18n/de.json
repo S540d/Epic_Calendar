@@ -31,6 +31,7 @@
     "category": "Kategorie",
     "continent": "Kontinent",
     "culture": "Kultur",
+    "billion": "Mrd.",
     "million": "Mio.",
     "thousand": "Tsd."
   },
@@ -47,15 +48,6 @@
       "3": "Jahrhunderte",
       "4": "Jahre"
     }
-  },
-  "epochChip": {
-    "bigBang": "Urknall",
-    "earth": "Erde",
-    "dinosaurs": "Dinosaurier",
-    "earlyHumans": "Frühmenschen",
-    "antiquity": "Antike",
-    "middleAges": "Mittelalter",
-    "modern": "Neuzeit"
   },
   "epochNav": {
     "title": "Zeitreise",
