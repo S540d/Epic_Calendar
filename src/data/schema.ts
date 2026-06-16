@@ -98,8 +98,7 @@ export function validateEvent(
     !VALID_IMPORTANCE_LEVELS.includes(event.importance as ImportanceLevel)
   )
     errors.push(`invalid importance: ${String(event.importance)}`);
-  if (event.tags !== undefined && !Array.isArray(event.tags))
-    errors.push('tags must be an array');
+  if (event.tags !== undefined && !Array.isArray(event.tags)) errors.push('tags must be an array');
   if (
     event.tags !== undefined &&
     Array.isArray(event.tags) &&
