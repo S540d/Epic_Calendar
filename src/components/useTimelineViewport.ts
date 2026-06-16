@@ -134,7 +134,15 @@ export function useTimelineViewport({
     () => ({ o: offsetX.value, p: pixelsPerUnit.value }),
     (curr, prev) => {
       if (Platform.OS === 'web') return;
-      if (!prev || Math.abs(curr.o - prev.o) > 0.5 || Math.abs(curr.p - prev.p) > 0.5) {
+      if (!prev) {
+        runOnJS(setJsOffsetX)(curr.o);
+        runOnJS(setJsPixelsPerUnit)(curr.p);
+        if (onViewportMoveRef.current) runOnJS(onViewportMoveRef.current)();
+        return;
+      }
+      const pixelMoved = Math.abs(curr.o - prev.o) * curr.p;
+      const ppuRelChange = Math.abs(curr.p - prev.p) / (prev.p > 0 ? prev.p : 1);
+      if (pixelMoved > 5 || ppuRelChange > 0.01) {
         runOnJS(setJsOffsetX)(curr.o);
         runOnJS(setJsPixelsPerUnit)(curr.p);
         if (onViewportMoveRef.current) runOnJS(onViewportMoveRef.current)();
@@ -193,12 +201,12 @@ export function useTimelineViewport({
       const startT = yearToT(startYear);
       const rawEndT = yearToT(endYear ?? startYear);
       const rawSpanT = Math.abs(rawEndT - startT);
-      // Point events (no real range) get a 1.0 T-unit minimum so they don't zoom
-      // in infinitely. Real ranges use their actual span — even short-in-T modern
-      // eras (e.g. Neuzeit ≈ 0.13 T) must NOT be inflated to 1.0, or the huge PPU
-      // pushes the right-clamped viewport off to an unrelated earlier year.
+      // Point events (no real range) get a 200-year minimum so they don't zoom
+      // in to a 1-year window. Real ranges use their actual span — even short
+      // modern eras must NOT be inflated, or the huge PPU pushes the right-clamped
+      // viewport off to an unrelated earlier year.
       const isPoint = endYear === null || endYear === undefined || rawSpanT < 1e-6;
-      const spanT = isPoint ? 1.0 : rawSpanT;
+      const spanT = isPoint ? 200 : rawSpanT;
       const centerT = (startT + rawEndT) / 2;
       const newPPU = clampPixelsPerUnit(canvasWidth / (spanT / ZOOM_TO_FIT_FILL));
       if (Platform.OS === 'web') {
