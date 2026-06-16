@@ -4,6 +4,16 @@
 
 ### Changed
 
+- **Lineare Zeitskala (Phase 2, Issue #93):** Die Zeitachse verwendet jetzt
+  viewport-lokale lineare Abbildung (Modell B). `yearToT(year) = year` und
+  `tToYear(t) = t` sind Identity-Funktionen; `pixelsPerUnit` entspricht
+  Pixeln pro Jahr, `offsetX` direkt einem Jahreswert. Der volle 5-Mrd.-Span
+  wird im Hauptview bewusst nicht dargestellt – Einstieg über die Landing Page.
+  LOD-Grenzen neu kalibriert für lineare Skala (ppu-Schwellen: 2e-6 / 5e-4 /
+  0.02 / 2). Viewport-Reaktion in `useTimelineViewport` auf Pixel- bzw.
+  PPU-relativ umgestellt (5 px / 1 % Schwelle). Zoom-to-fit für Punkt-Events
+  auf 200-Jahr-Minimum erhöht. (#93, Phase 2)
+
 - **Kategorie-Registry als Single Source of Truth** (`src/theme/categories.ts`):
   Farben, Lane-Hintergründe, Paletten, Chip-/Lane-Reihenfolge, Default- und
   Disabled-Auswahl sowie die abgeleiteten Arrays (`VALID_CATEGORIES`,
@@ -15,6 +25,11 @@
 
 ### Added
 
+- **Schematischer Zeitstrahl (Phase 2.2, Issue #93):** Neue horizontale
+  `SchematicTimeline`-Leiste oben auf der Landing Page (EpochOverviewScreen).
+  Zeigt alle Top-Level-Epochen als gleich breite, farbige Segmente im
+  U-Bahn-Plan-Stil. Tippen auf ein Segment springt direkt zur Epoche.
+  Beschriftung via `t('epochNav.<key>')`, vollständig i18n-konform. (#93)
 - Farbiges, klickbares **Epochen-Band** direkt unter der Zeitachse (Erde, Dinos,
   Frühmenschen, Antike, Mittelalter, Neuzeit) – ersetzt die separate Chip-Leiste;
   Klick auf ein Segment zoomt zur Epoche. Scrollt mit der Zeitachse mit.

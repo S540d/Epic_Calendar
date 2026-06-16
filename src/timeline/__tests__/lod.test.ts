@@ -12,17 +12,18 @@ import {
 
 describe('timeline/lod', () => {
   describe('pixelsPerUnitToZoomLevel band boundaries', () => {
-    // Bands: < 12 → 0, < 30 → 1, < 100 → 2, < 500 → 3, else → 4
-    const cases: Array<[number, 0 | 1 | 2 | 3 | 4]> = [
+    // Bands (linear scale, pixels per year):
+    // < 2e-6  → 0, < 5e-4 → 1, < 0.02 → 2, < 2 → 3, else → 4
+    const cases: [number, 0 | 1 | 2 | 3 | 4][] = [
       [0, 0],
-      [11.999, 0],
-      [12, 1],
-      [29.999, 1],
-      [30, 2],
-      [99.999, 2],
-      [100, 3],
-      [499.999, 3],
-      [500, 4],
+      [1.999e-6, 0],
+      [2e-6, 1],
+      [4.999e-4, 1],
+      [5e-4, 2],
+      [0.01999, 2],
+      [0.02, 3],
+      [1.999, 3],
+      [2, 4],
       [10_000, 4],
     ];
     it.each(cases)('ppu=%s → zoomLevel=%s', (ppu, expected) => {
@@ -42,15 +43,15 @@ describe('timeline/lod', () => {
     it('returns value unchanged when within range', () => {
       expect(clampPixelsPerUnit(MIN_PIXELS_PER_UNIT)).toBe(MIN_PIXELS_PER_UNIT);
       expect(clampPixelsPerUnit(MAX_PIXELS_PER_UNIT)).toBe(MAX_PIXELS_PER_UNIT);
-      expect(clampPixelsPerUnit(1234)).toBe(1234);
+      expect(clampPixelsPerUnit(500)).toBe(500);
     });
   });
 });
 
 describe('humanHistoryViewState', () => {
-  it('falls back to ppu=30 for zero-width canvas', () => {
+  it('falls back to ppu=1e-3 for zero-width canvas', () => {
     const { pixelsPerUnit } = humanHistoryViewState(0);
-    expect(pixelsPerUnit).toBe(30);
+    expect(pixelsPerUnit).toBe(1e-3);
   });
 
   it('fills a 1000px canvas exactly with the human-history t-span', () => {

@@ -1,22 +1,14 @@
 /**
  * Time ↔ pixel mapping for the timeline.
  *
- * The timeline spans roughly the Big Bang to "now" (~13.8 Gyr). A purely
- * linear pixel mapping is unusable across this range. We therefore use a
- * symmetric log transform around `referenceYear = 0` (year 0 CE):
+ * Phase 2 (Issue #93): viewport-local linear mapping (Modell B).
  *
- *   t(year) = sign(year) * log10(1 + |year|)
+ *   t(year) = year  (identity)
  *
- * The viewport then maps a linear pixel offset onto this `t` space, with
- * `pixelsPerUnit` (the zoom level) controlling density.
- *
- * This means equal pixel distances near year 0 correspond to small
- * intervals (years), and equal distances far from 0 correspond to large
- * intervals (millions of years) — which matches human intuition about
- * the relative "importance" of recent vs. deep history.
+ * `pixelsPerUnit` is now pixels-per-year, and `offsetX` is directly a year
+ * value. The full 5 Gyr span is deliberately NOT displayed in the main view;
+ * users navigate deep time via the Landing Page epoch tiles.
  */
-
-export const REFERENCE_YEAR = 0;
 
 /**
  * Canonical timeline span endpoints. Single source of truth — do NOT redefine
@@ -41,15 +33,14 @@ export const T_PRESENT = T_MAX;
 /** Total length of the full timeline in `t`-units. */
 export const FULL_T_SPAN = T_MAX - T_MIN;
 
+/** Identity transform: t equals year directly (linear scale). */
 export function yearToT(year: number): number {
-  const delta = year - REFERENCE_YEAR;
-  const sign = delta >= 0 ? 1 : -1;
-  return sign * Math.log10(1 + Math.abs(delta));
+  return year;
 }
 
+/** Identity transform: year equals t directly (linear scale). */
 export function tToYear(t: number): number {
-  const sign = t >= 0 ? 1 : -1;
-  return REFERENCE_YEAR + sign * (Math.pow(10, Math.abs(t)) - 1);
+  return t;
 }
 
 export function yearToPixel(year: number, offsetX: number, pixelsPerUnit: number): number {

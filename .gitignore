@@ -34,3 +34,5 @@ docs/private/
 .claude/logs/
 # README.md der Commands-Übersicht ignorieren – Command-Definitionen (*.md) bleiben getrackt
 .claude/commands/README.md
+# Temporäre Agent-Worktrees (Claude Code isolation feature)
+.claude/worktrees/

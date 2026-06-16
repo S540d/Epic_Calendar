@@ -57,6 +57,49 @@ function formatYearLabel(year: number, t: TFunction): string {
   return `${formatted}${suffix}`;
 }
 
+type SchematicTimelineProps = {
+  onSelectEpoch: (startYear: number, endYear: number) => void;
+  activeEpochKey?: string;
+};
+
+function SchematicTimeline({ onSelectEpoch, activeEpochKey }: SchematicTimelineProps) {
+  const { t } = useTranslation();
+  const topLevel = NAVIGATION_EPOCHS;
+
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={styles.schematicContainer}
+      contentContainerStyle={styles.schematicContent}
+    >
+      {topLevel.map((epoch) => {
+        const color = EPOCH_COLORS[epoch.key] ?? colors.accent;
+        const isActive = epoch.key === activeEpochKey;
+        return (
+          <Pressable
+            key={epoch.key}
+            style={({ pressed }) => [
+              styles.schematicSegment,
+              { backgroundColor: color + 'CC' },
+              isActive && styles.schematicSegmentActive,
+              pressed && styles.schematicSegmentPressed,
+            ]}
+            onPress={() => onSelectEpoch(epoch.startYear, epoch.endYear)}
+            accessibilityRole="button"
+            accessibilityLabel={t(`epochNav.${epoch.key}`)}
+          >
+            {isActive && <View style={[styles.schematicIndicator, { backgroundColor: color }]} />}
+            <Text style={styles.schematicLabel} numberOfLines={2}>
+              {t(`epochNav.${epoch.key}`)}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </ScrollView>
+  );
+}
+
 type EpochTileProps = {
   epoch: NavigationEpoch;
   onPress: (startYear: number, endYear: number) => void;
@@ -128,6 +171,8 @@ export function EpochOverviewScreen({
         </Pressable>
       </View>
 
+      <SchematicTimeline onSelectEpoch={handleEpochPress} />
+
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -194,6 +239,45 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.textSecondary,
     fontWeight: '700',
+  },
+  schematicContainer: {
+    height: 56,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  schematicContent: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    height: 56,
+  },
+  schematicSegment: {
+    minWidth: 60,
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: spacing.xs,
+    position: 'relative',
+  },
+  schematicSegmentActive: {
+    borderBottomWidth: 3,
+    borderBottomColor: 'rgba(255,255,255,0.9)',
+  },
+  schematicSegmentPressed: {
+    opacity: 0.75,
+  },
+  schematicIndicator: {
+    position: 'absolute',
+    top: 4,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  schematicLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#fff',
+    textAlign: 'center',
+    lineHeight: 13,
   },
   scroll: {
     flex: 1,
