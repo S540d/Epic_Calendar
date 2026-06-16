@@ -49,15 +49,6 @@
       "4": "Jahre"
     }
   },
-  "epochChip": {
-    "bigBang": "Urknall",
-    "earth": "Erde",
-    "dinosaurs": "Dinosaurier",
-    "earlyHumans": "Frühmenschen",
-    "antiquity": "Antike",
-    "middleAges": "Mittelalter",
-    "modern": "Neuzeit"
-  },
   "epochNav": {
     "title": "Zeitreise",
     "subtitle": "Wähle eine Epoche zum Erkunden",

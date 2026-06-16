@@ -81,5 +81,126 @@
     "continent": "global",
     "culture": "Epoche",
     "minZoomLevel": 2
+  },
+  {
+    "id": "frueh-australopithecus",
+    "title": "Australopithecus",
+    "description": "Aufrechter Gang, aber noch kein Steinwerkzeug. Lebte in Ost- und Südafrika; Gehirnvolumen ca. 400–550 cm³.",
+    "startYear": -4200000,
+    "endYear": -1900000,
+    "category": "zivilisation",
+    "continent": "global",
+    "culture": "Frühmenschen",
+    "minZoomLevel": 1
+  },
+  {
+    "id": "frueh-werkzeuge-oldowan",
+    "title": "Erste Steinwerkzeuge (Oldowan)",
+    "description": "Älteste bekannte Werkzeugkultur. Einfache Schlagsteine aus Ostafrika (Lomekwi, Olduvai-Schlucht).",
+    "startYear": -3300000,
+    "endYear": -1700000,
+    "category": "zivilisation",
+    "continent": "global",
+    "culture": "Frühmenschen",
+    "minZoomLevel": 1
+  },
+  {
+    "id": "frueh-homo-erectus",
+    "title": "Homo erectus",
+    "description": "Erste Art, die Afrika verließ und Eurasien besiedelte. Nutzung von Feuer, Acheuléen-Werkzeuge (Faustkeile). Gehirnvolumen 900–1100 cm³.",
+    "startYear": -1900000,
+    "endYear": -140000,
+    "category": "zivilisation",
+    "continent": "global",
+    "culture": "Frühmenschen",
+    "minZoomLevel": 1
+  },
+  {
+    "id": "frueh-feuer",
+    "title": "Kontrollierter Feuergebrauch",
+    "description": "Älteste gesicherte Belege für kontrollierten Feuergebrauch durch Homo erectus (Wonderwerk Cave, Südafrika; Zhoukoudian, China).",
+    "startYear": -1000000,
+    "endYear": -400000,
+    "category": "zivilisation",
+    "continent": "global",
+    "culture": "Frühmenschen",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "frueh-heidelbergensis",
+    "title": "Homo heidelbergensis",
+    "description": "Gemeinsamer Vorfahre von Neandertaler und Homo sapiens. Lebte in Afrika und Europa; erste Holzspeere (Schöningen, Deutschland, ca. 400.000 Jahre alt). Gehirnvolumen bis 1.400 cm³.",
+    "startYear": -700000,
+    "endYear": -200000,
+    "category": "zivilisation",
+    "continent": "global",
+    "culture": "Frühmenschen",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "frueh-neandertaler",
+    "title": "Homo neanderthalensis",
+    "description": "Lebte in Europa und Westasien. Bestattete Tote, pflegte Kranke, nutzte Schmuck und Farbe. Hybridisierung mit H. sapiens belegt (bis 4 % Neandertaler-DNA in heutigen Nicht-Afrikanern). Aussterben ca. 40.000 v. Chr.",
+    "startYear": -400000,
+    "endYear": -40000,
+    "category": "zivilisation",
+    "continent": "global",
+    "culture": "Frühmenschen",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "frueh-homo-sapiens",
+    "title": "Homo sapiens",
+    "description": "Älteste Fossilien aus Jebel Irhoud (Marokko, ca. 315.000 v. Chr.) und Omo Kibish (Äthiopien, ca. 195.000 v. Chr.). Symbolisches Denken, Sprache, komplexe Sozialstrukturen.",
+    "startYear": -315000,
+    "endYear": 2026,
+    "category": "zivilisation",
+    "continent": "global",
+    "culture": "Frühmenschen",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "frueh-out-of-africa",
+    "title": "Ausbreitung aus Afrika (Out of Africa)",
+    "description": "Homo sapiens verlässt Afrika in mehreren Wellen. Besiedlung Australiens ca. 65.000 v. Chr., Europas ca. 45.000 v. Chr., Amerikas ca. 15.000 v. Chr.",
+    "startYear": -70000,
+    "endYear": -15000,
+    "category": "zivilisation",
+    "continent": "global",
+    "culture": "Frühmenschen",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "frueh-hoehlenmaler",
+    "title": "Höhlenmalerei & Symbolkunst",
+    "description": "Älteste figürliche Kunst: Höhle von Sulawesi (Indonesien, 45.500 v. Chr.), Chauvet-Höhle (Frankreich, 36.000 v. Chr.), Lascaux (17.000 v. Chr.). Belegt abstraktes Denken und Kommunikation.",
+    "startYear": -45000,
+    "endYear": -10000,
+    "category": "zivilisation",
+    "continent": "global",
+    "culture": "Frühmenschen",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "frueh-letzte-eiszeit",
+    "title": "Letzte Eiszeit (Weichsel-/Würm-Kaltzeit)",
+    "description": "Glaziales Maximum ca. 22.000 v. Chr.; Gletscher bedeckten Nordeuropa und Nordamerika. Meeresspiegel ca. 120 m tiefer als heute — Landbrücken ermöglichten Besiedlung Amerikas.",
+    "startYear": -115000,
+    "endYear": -11700,
+    "category": "erdzeitalter",
+    "continent": "global",
+    "culture": "Epoche",
+    "minZoomLevel": 2
+  },
+  {
+    "id": "frueh-neolithikum",
+    "title": "Jungsteinzeit (Neolithikum)",
+    "description": "Übergang von Jäger-Sammler-Lebensweise zu Ackerbau und Viehzucht (Neolithische Revolution). Beginn in der Levante ca. 10.000 v. Chr., später in China, Indien und Amerika.",
+    "startYear": -10000,
+    "endYear": -2200,
+    "category": "zivilisation",
+    "continent": "global",
+    "culture": "Frühmenschen",
+    "minZoomLevel": 2
   }
 ]

@@ -51,7 +51,10 @@ function formatYearLabel(year: number, t: TFunction): string {
     return `${n} ${t('axis.billion')}${suffix}`;
   }
   if (abs >= 1_000_000) return `${Math.round(abs / 1_000_000)} ${t('event.million')}${suffix}`;
-  return `${Math.round(abs).toLocaleString()}${suffix}`;
+  const formatted = Math.round(abs)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return `${formatted}${suffix}`;
 }
 
 type EpochTileProps = {

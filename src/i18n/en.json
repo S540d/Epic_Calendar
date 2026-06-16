@@ -49,15 +49,6 @@
       "4": "Years"
     }
   },
-  "epochChip": {
-    "bigBang": "Big Bang",
-    "earth": "Earth",
-    "dinosaurs": "Dinosaurs",
-    "earlyHumans": "Early Humans",
-    "antiquity": "Antiquity",
-    "middleAges": "Middle Ages",
-    "modern": "Modern Era"
-  },
   "epochNav": {
     "title": "Time Journey",
     "subtitle": "Choose an epoch to explore",
