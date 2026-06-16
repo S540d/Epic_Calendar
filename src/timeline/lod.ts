@@ -2,17 +2,25 @@ import type { ZoomLevel } from '@/data/schema';
 import { yearToT, T_MIN, T_MAX, FULL_T_SPAN } from './scale';
 
 /**
- * LOD bands (pixels per t-unit → discrete level).
- * Calibrated so the default "human history" view (-400 000 → today, ppu ≈ 33–40)
- * falls in band 2 "Epochen", showing both geological spans and major civilisations.
+ * LOD bands (pixels per year → discrete level).
+ * Calibrated for the linear scale (Modell B, Phase 2 of Issue #93).
  *
- * Band boundaries: < 12 → 0, < 30 → 1, < 100 → 2, < 500 → 3, else → 4
+ * Human history view (−400 000 → today) on a 375 px canvas gives
+ * ppu ≈ 9.33e-4, which falls in band 2 "Epochen" — showing both
+ * geological spans and major civilisations.
+ *
+ * Band boundaries:
+ *   < 2e-6  → 0 (Äonen)        — billions of years visible
+ *   < 5e-4  → 1 (Ären)         — millions of years visible
+ *   < 0.02  → 2 (Epochen)      — human prehistory scale (~400k yrs)
+ *   < 2     → 3 (Jahrhunderte) — millennia/centuries scale
+ *   else    → 4 (Jahre)        — decades/individual years
  */
 export function pixelsPerUnitToZoomLevel(pixelsPerUnit: number): ZoomLevel {
-  if (pixelsPerUnit < 12) return 0;
-  if (pixelsPerUnit < 30) return 1;
-  if (pixelsPerUnit < 100) return 2;
-  if (pixelsPerUnit < 500) return 3;
+  if (pixelsPerUnit < 2e-6) return 0;
+  if (pixelsPerUnit < 5e-4) return 1;
+  if (pixelsPerUnit < 0.02) return 2;
+  if (pixelsPerUnit < 2) return 3;
   return 4;
 }
 
@@ -38,7 +46,7 @@ export function humanHistoryViewState(canvasWidth: number): {
   offsetX: number;
   pixelsPerUnit: number;
 } {
-  if (canvasWidth <= 0) return { offsetX: T_HUMAN_START, pixelsPerUnit: 30 };
+  if (canvasWidth <= 0) return { offsetX: T_HUMAN_START, pixelsPerUnit: 1e-3 };
   return {
     offsetX: T_HUMAN_START,
     pixelsPerUnit: canvasWidth / HUMAN_T_SPAN,
@@ -69,8 +77,8 @@ export function eventLabelMaxLines(zoomLevel: ZoomLevel): number {
   return 3; // level 4
 }
 
-export const MIN_PIXELS_PER_UNIT = 12;
-export const MAX_PIXELS_PER_UNIT = 8000;
+export const MIN_PIXELS_PER_UNIT = 1e-9;
+export const MAX_PIXELS_PER_UNIT = 1000;
 
 export function clampPixelsPerUnit(v: number): number {
   return Math.max(MIN_PIXELS_PER_UNIT, Math.min(MAX_PIXELS_PER_UNIT, v));
