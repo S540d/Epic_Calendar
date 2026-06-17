@@ -1,0 +1,20 @@
+[
+  {
+    "id": "chicxulub-impact",
+    "title": "Chicxulub-Einschlag",
+    "description": "Komet/Asteroideneinschlag, der zum Aussterben der Nicht-Vogel-Dinosaurier führte",
+    "startYear": -66000000,
+    "category": "natur",
+    "continent": "global",
+    "culture": "Naturkatastrophe"
+  },
+  {
+    "id": "darwin-origin-species",
+    "title": "Darwin - On the Origin of Species",
+    "description": "Veröffentlichung der Evolutionstheorie durch Charles Darwin",
+    "startYear": 1859,
+    "category": "natur",
+    "continent": "global",
+    "culture": "Wissenschaftsgeschichte"
+  }
+]
