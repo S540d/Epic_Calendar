@@ -1,0 +1,18 @@
+[
+  {
+    "id": "natur-1",
+    "title": "Chicxulub-Einschlag",
+    "description": "Kometeneinschlag, der zum Massenaussterben der Nicht-Vogel-Dinosaurier führte",
+    "start": "-66000000",
+    "category": "natur",
+    "continent": "global"
+  },
+  {
+    "id": "natur-2",
+    "title": "Darwin - On the Origin of Species",
+    "description": "Veröffentlichung der Evolutionstheorie",
+    "start": "1859",
+    "category": "natur",
+    "continent": "global"
+  }
+]
