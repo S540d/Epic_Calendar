@@ -1,13 +1,18 @@
-import React from 'react';
+import React, { useEffect, useLayoutEffect, useRef } from 'react';
 import {
   StyleSheet,
   View,
   Text,
   Pressable,
   TouchableOpacity,
-  ScrollView,
   Platform,
 } from 'react-native';
+import {
+  GestureDetector,
+  type ComposedGesture,
+  type GestureType,
+} from 'react-native-gesture-handler';
+import { type SharedValue } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 import { EpochBand } from './EpochBand';
 import { EpochChipBar } from './EpochChipBar';
@@ -16,15 +21,9 @@ import { TimelineBreadcrumb } from './TimelineBreadcrumb';
 import { TimelineMinimap } from './TimelineMinimap';
 import { ZoomLevelIndicator } from './ZoomLevelIndicator';
 import { dominantEpoch } from '@/timeline/epoch';
-import { PRESENT_RIGHT_PAD_FRACTION } from '@/timeline/lod';
+import { clampOffsetX } from '@/timeline/lod';
 import { eventLabelFontSize, eventLabelMaxLines } from '@/timeline/lod';
-import {
-  tToYear,
-  yearToT,
-  T_MIN as TOTAL_T_MIN,
-  T_MAX as TOTAL_T_MAX,
-  T_PRESENT as T_HEUTE,
-} from '@/timeline/scale';
+import { yearToT, T_PRESENT as T_HEUTE } from '@/timeline/scale';
 import { type TimelineEvent, type ZoomLevel } from '@/data/schema';
 import {
   LANE_LABEL_WIDTH,
@@ -37,7 +36,6 @@ import {
 } from '@/theme/tokens';
 import type { TrackMap } from '@/timeline/culling';
 import {
-  LABEL_MIN_BAR_PX,
   MAX_EVENTS_PER_LANE,
   MIN_HIT_PX,
   laneHeightForTracks,
@@ -51,13 +49,16 @@ type Props = {
   visibleByLane: Map<Category, TimelineEvent[]>;
   tracksByLane: Map<Category, TrackMap>;
   overflowCounts: Map<Category, number>;
+  labelVisibleIds: Set<string>;
   canvasWidth: number;
   canvasHeight: number;
+  jsOffsetX: number;
   jsPixelsPerUnit: number;
+  offsetX: SharedValue<number>;
+  pixelsPerUnit: SharedValue<number>;
+  gesture: GestureType | ComposedGesture;
   zoomLevel: ZoomLevel;
-  webScrollX: number;
-  commitScrollX: (x: number) => void;
-  webScrollRef: React.RefObject<ScrollView>;
+  zoomAtPoint: (focalX: number, factor: number) => void;
   onEventTap: (event: TimelineEvent) => void;
   zoomToFit: (startYear: number, endYear: number | null | undefined) => void;
   handleMinimapJump: (newOffsetX: number) => void;
@@ -70,9 +71,9 @@ type Props = {
 };
 
 /**
- * Web timeline renderer. Lays bars out absolutely inside a horizontal
- * ScrollView (no Skia canvas on web). Pure presentation — all viewport state
- * and commands come in via props from useTimelineViewport / TimelineView.
+ * Web timeline renderer. Renders event bars viewport-relatively inside a fixed-
+ * width View (same model as the native Skia renderer). Pan is driven by RNGH
+ * gestures; mouse wheel is handled via a useEffect shim.
  */
 export function TimelineCanvasWeb({
   lanes,
@@ -81,13 +82,16 @@ export function TimelineCanvasWeb({
   visibleByLane,
   tracksByLane,
   overflowCounts,
+  labelVisibleIds,
   canvasWidth,
   canvasHeight,
+  jsOffsetX,
   jsPixelsPerUnit,
+  offsetX,
+  pixelsPerUnit,
+  gesture,
   zoomLevel,
-  webScrollX,
-  commitScrollX,
-  webScrollRef,
+  zoomAtPoint,
   onEventTap,
   zoomToFit,
   handleMinimapJump,
@@ -99,44 +103,61 @@ export function TimelineCanvasWeb({
 }: Props) {
   const { t } = useTranslation();
   const WEB_PPU = jsPixelsPerUnit;
-  // Extra right padding so "Heute" can be scrolled to the canvas center
-  // (centering the recent past); this empty strip carries no axis labels.
-  const webRightPad = canvasWidth * PRESENT_RIGHT_PAD_FRACTION;
-  const webCanvasWidth = Math.ceil((TOTAL_T_MAX - TOTAL_T_MIN) * WEB_PPU + webRightPad);
-  const webOffsetAtZero = TOTAL_T_MIN;
-  const webOffsetX = webOffsetAtZero + webScrollX / WEB_PPU;
 
-  const heuteWebX = (T_HEUTE - TOTAL_T_MIN) * WEB_PPU;
-  const initWebScrollX = Math.max(0, heuteWebX - canvasWidth);
+  // Viewport-relative coordinates (identity transform: t = year).
+  const visibleStartYear = jsOffsetX;
+  const visibleEndYear = jsOffsetX + canvasWidth / WEB_PPU;
+  const centerYear = jsOffsetX + canvasWidth / (2 * WEB_PPU);
+  const webEpochLabel = showEpochLabel ? (dominantEpoch(centerYear)?.title ?? null) : null;
 
-  const visibleStartYear = tToYear(webOffsetX);
-  const visibleEndYear = tToYear(webOffsetX + canvasWidth / WEB_PPU);
-  const webCenterYear = tToYear(webOffsetX + canvasWidth / (2 * WEB_PPU));
-  const webEpochLabel = showEpochLabel ? (dominantEpoch(webCenterYear)?.title ?? null) : null;
+  const heutePx = (T_HEUTE - jsOffsetX) * WEB_PPU;
+  const heuteVisible = heutePx >= -1 && heutePx <= canvasWidth + 1;
 
-  // Throttle: only re-render when the viewport moved enough to change which
-  // events are visible (~6px). onScrollEndDrag/onMomentumScrollEnd always commit
-  // the exact final position so the throttle ref never lags the real DOM scroll.
-  const SCROLL_RERENDER_THRESHOLD = 6;
-  const lastScrollXRef = React.useRef(webScrollX);
-  const handleWebScroll = (e: { nativeEvent: { contentOffset: { x: number } } }) => {
-    const x = e.nativeEvent.contentOffset.x;
-    if (Math.abs(x - lastScrollXRef.current) < SCROLL_RERENDER_THRESHOLD) return;
-    lastScrollXRef.current = x;
-    commitScrollX(x);
-  };
-  const commitFinalScroll = (e: { nativeEvent: { contentOffset: { x: number } } }) => {
-    lastScrollXRef.current = e.nativeEvent.contentOffset.x;
-    commitScrollX(e.nativeEvent.contentOffset.x);
-  };
+  // Stable ref for the wheel handler. SharedValues are stable objects; only
+  // WEB_PPU, canvasWidth and zoomAtPoint change between renders.
+  const wheelStateRef = useRef({ offsetX, pixelsPerUnit, WEB_PPU, canvasWidth, zoomAtPoint });
+  useLayoutEffect(() => {
+    wheelStateRef.current.WEB_PPU = WEB_PPU;
+    wheelStateRef.current.canvasWidth = canvasWidth;
+    wheelStateRef.current.zoomAtPoint = zoomAtPoint;
+  });
+
+  const containerRef = useRef<View>(null);
+
+  // Mouse-wheel shim: horizontal pan (wheel/trackpad) + ctrl/⌘+wheel zoom.
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    const el = containerRef.current as unknown as HTMLElement;
+    if (!el) return;
+    const handler = (e: WheelEvent) => {
+      e.preventDefault();
+      const {
+        offsetX: oX,
+        pixelsPerUnit: ppu,
+        WEB_PPU: wpp,
+        canvasWidth: cw,
+        zoomAtPoint: zap,
+      } = wheelStateRef.current;
+      if (e.ctrlKey || e.metaKey) {
+        // Pinch-to-zoom emulation (browser reports ctrl+wheel for trackpad pinch).
+        const factor = e.deltaY > 0 ? 1 / 1.15 : 1.15;
+        zap(e.offsetX, factor);
+      } else {
+        // Horizontal pan: prefer deltaX (trackpad swipe), fall back to deltaY (mouse wheel).
+        const delta = Math.abs(e.deltaX) >= 1 ? e.deltaX : e.deltaY;
+        oX.value = clampOffsetX(oX.value + delta / wpp, ppu.value, cw); // eslint-disable-line react-hooks/immutability
+      }
+    };
+    el.addEventListener('wheel', handler, { passive: false });
+    return () => el.removeEventListener('wheel', handler);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <View
+      ref={containerRef}
       style={Platform.select({
         // Root does NOT scroll: header rows (axis/minimap/band) and the floating
         // zoom buttons stay fixed; only the lane area scrolls vertically.
-        // position:fixed children break inside a scrolling parent, which made the
-        // zoom buttons invisible before.
         web: { display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' } as any,
         default: { flex: 1 },
       })}
@@ -149,7 +170,7 @@ export function TimelineCanvasWeb({
       >
         <View style={{ width: LANE_LABEL_WIDTH }} />
         <TimeAxis
-          offsetX={webOffsetX}
+          offsetX={jsOffsetX}
           pixelsPerUnit={WEB_PPU}
           canvasWidth={canvasWidth}
           zoomLevel={zoomLevel}
@@ -164,7 +185,7 @@ export function TimelineCanvasWeb({
         </View>
       </View>
       <TimelineMinimap
-        offsetX={webOffsetX}
+        offsetX={jsOffsetX}
         pixelsPerUnit={WEB_PPU}
         canvasWidth={canvasWidth}
         onJump={handleMinimapJump}
@@ -174,7 +195,7 @@ export function TimelineCanvasWeb({
         <View style={{ width: LANE_LABEL_WIDTH }} />
         <View style={{ width: canvasWidth, overflow: 'hidden' }}>
           <EpochBand
-            offsetAtZero={webOffsetX}
+            offsetAtZero={jsOffsetX}
             pixelsPerUnit={WEB_PPU}
             width={canvasWidth}
             onJump={zoomToFit}
@@ -215,27 +236,21 @@ export function TimelineCanvasWeb({
               );
             })}
           </View>
-          <ScrollView
-            ref={webScrollRef}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={Platform.select({
-              web: { flex: 1, backgroundColor: colors.bg, overflowX: 'scroll' } as any,
-              default: { flex: 1, backgroundColor: colors.bg },
-            })}
-            scrollEventThrottle={16}
-            onScroll={handleWebScroll}
-            onScrollEndDrag={commitFinalScroll}
-            onMomentumScrollEnd={commitFinalScroll}
-            contentOffset={{ x: initWebScrollX, y: 0 }}
-          >
-            <View style={{ width: webCanvasWidth, height: canvasHeight }}>
+          <GestureDetector gesture={gesture}>
+            <View
+              style={{
+                width: canvasWidth,
+                height: canvasHeight,
+                overflow: 'hidden',
+                backgroundColor: colors.bg,
+              }}
+            >
               {lanes.map((cat, idx) => {
                 const laneTop = laneTops[idx] ?? 0;
                 const laneH = laneHeightForTracks(laneTrackCounts.get(cat) ?? 1);
                 // Clip to MAX_EVENTS_PER_LANE; excess is shown as badge in lane label.
                 const events = (visibleByLane.get(cat) ?? []).slice(0, MAX_EVENTS_PER_LANE);
-                const webTrackMap = tracksByLane.get(cat);
+                const trackMap = tracksByLane.get(cat);
                 const lblSize = eventLabelFontSize(zoomLevel);
                 const maxLines = eventLabelMaxLines(zoomLevel);
                 return (
@@ -245,7 +260,7 @@ export function TimelineCanvasWeb({
                         position: 'absolute',
                         left: 0,
                         top: laneTop,
-                        width: webCanvasWidth,
+                        width: canvasWidth,
                         height: laneH,
                         backgroundColor: colors.laneBg[cat],
                       }}
@@ -253,19 +268,23 @@ export function TimelineCanvasWeb({
                     {events.map((ev) => {
                       const startT = yearToT(ev.startYear);
                       const endT = yearToT(ev.endYear ?? ev.startYear);
-                      const x = (startT - webOffsetAtZero) * WEB_PPU;
+                      // Viewport-relative: bar at 0 = left edge of the visible area.
+                      const x = (startT - jsOffsetX) * WEB_PPU;
                       const w = Math.max(2, (endT - startT) * WEB_PPU);
-                      const trackIdx = webTrackMap?.get(ev.id) ?? 0;
+                      const trackIdx = trackMap?.get(ev.id) ?? 0;
                       const barTop = laneTop + LANE_PADDING_V + trackIdx * TRACK_HEIGHT + 4;
                       const barHeight = TRACK_HEIGHT - 8;
-                      const stickyLabelLeft =
-                        w >= LABEL_MIN_BAR_PX ? Math.max(x + 3, webScrollX + 3) : null;
-                      const stickyLabelMaxW =
-                        stickyLabelLeft !== null ? Math.max(0, x + w - stickyLabelLeft - 3) : 0;
+
+                      // Label: show if selected by collision-aware pass, visible portion wide enough.
+                      const showLabel = labelVisibleIds.has(ev.id) && lblSize > 0;
+                      const visibleLeft = Math.max(x, 0);
+                      const visibleRight = Math.min(x + w, canvasWidth);
+                      const labelLeft = visibleLeft + 3;
+                      const labelMaxW = Math.max(0, visibleRight - visibleLeft - 6);
                       const labelTopPos =
                         maxLines === 1 ? barTop + barHeight / 2 - lblSize / 2 : barTop + 4;
-                      // Expand thin bars to a >=44px touch target via hitSlop,
-                      // without changing the visual bar width.
+
+                      // Expand thin bars to >=44px touch target without changing visual width.
                       const hSlop = Math.max(0, (MIN_HIT_PX - w) / 2);
                       return (
                         <React.Fragment key={ev.id}>
@@ -287,14 +306,14 @@ export function TimelineCanvasWeb({
                               } as any
                             }
                           />
-                          {stickyLabelLeft !== null && stickyLabelMaxW > 4 && lblSize > 0 && (
+                          {showLabel && labelMaxW > 4 && (
                             <View
                               pointerEvents="none"
                               style={{
                                 position: 'absolute',
-                                left: stickyLabelLeft,
+                                left: labelLeft,
                                 top: labelTopPos,
-                                maxWidth: stickyLabelMaxW,
+                                maxWidth: labelMaxW,
                               }}
                             >
                               <Text
@@ -316,19 +335,21 @@ export function TimelineCanvasWeb({
                   </View>
                 );
               })}
-              <View
-                style={{
-                  position: 'absolute',
-                  left: heuteWebX - 0.75,
-                  top: 0,
-                  width: 1.5,
-                  height: canvasHeight,
-                  backgroundColor: '#FF5050',
-                  pointerEvents: 'none',
-                }}
-              />
+              {heuteVisible && (
+                <View
+                  pointerEvents="none"
+                  style={{
+                    position: 'absolute',
+                    left: heutePx - 0.75,
+                    top: 0,
+                    width: 1.5,
+                    height: canvasHeight,
+                    backgroundColor: '#FF5050',
+                  }}
+                />
+              )}
             </View>
-          </ScrollView>
+          </GestureDetector>
         </View>
       </View>
       <View
