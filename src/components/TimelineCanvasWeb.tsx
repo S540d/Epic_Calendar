@@ -268,7 +268,7 @@ export function TimelineCanvasWeb({
                     {events.map((ev) => {
                       const startT = yearToT(ev.startYear);
                       const endT = yearToT(ev.endYear ?? ev.startYear);
-                      // Viewport-relative: bar at 0 = left edge of visible window.
+                      // Viewport-relative: bar at 0 = left edge of the visible area.
                       const x = (startT - jsOffsetX) * WEB_PPU;
                       const w = Math.max(2, (endT - startT) * WEB_PPU);
                       const trackIdx = trackMap?.get(ev.id) ?? 0;
