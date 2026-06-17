@@ -17,9 +17,7 @@ import {
 import {
   viewportYearRange,
   yearToT,
-  tToYear,
   pixelToYear,
-  T_MIN as TOTAL_T_MIN,
   T_PRESENT as T_HEUTE,
 } from '@/timeline/scale';
 import { dominantEpoch } from '@/timeline/epoch';
@@ -46,10 +44,8 @@ type Props = {
 // Built once at module load from the static event set — avoids O(n) full scans per frame.
 const eventIndex = buildEventIndex(ALL_EVENTS);
 
-/** Delay before opening the detail modal after a zoom-to-fit animation.
- *  On web there is no animated zoom (direct PPU assignment), so a shorter
- *  delay covers the scroll animation only. */
-const ZOOM_MODAL_DELAY_MS = Platform.OS === 'web' ? 350 : 650;
+/** Delay before opening the detail modal after the zoom-to-fit animation (600 ms). */
+const ZOOM_MODAL_DELAY_MS = 650;
 
 export function TimelineView({
   activeCategories,
@@ -76,9 +72,6 @@ export function TimelineView({
     jsOffsetX,
     jsPixelsPerUnit,
     zoomLevel,
-    webScrollX,
-    commitScrollX,
-    webScrollRef,
     zoomToFit,
     zoomAtPoint,
     zoomIn,
@@ -134,8 +127,7 @@ export function TimelineView({
     [activeCategories],
   );
 
-  // Native-path lane data. Shared computation in computeLaneData(); only the
-  // visible year range differs from the web path (driven by jsOffsetX here).
+  // Lane data for both web and native — driven by jsOffsetX (viewport-relative).
   const laneData = useMemo(() => {
     const range = viewportYearRange(canvasWidth, jsOffsetX, jsPixelsPerUnit);
     return computeLaneData({
@@ -151,43 +143,14 @@ export function TimelineView({
   }, [canvasWidth, jsOffsetX, jsPixelsPerUnit, lanes, zoomLevel, continent]);
   const { visibleByLane, overflowCounts, tracksByLane } = laneData;
 
-  // Web-path lane data. Same computeLaneData() as native; only the visible year
-  // range differs (derived from webScrollX). Empty on native (Platform.OS is a
-  // compile-time constant, so the branch is dead-code-eliminated there).
-  const webLaneData = useMemo(() => {
-    if (Platform.OS !== 'web') {
-      return {
-        visibleByLane: new Map<Category, TimelineEvent[]>(),
-        overflowCounts: new Map<Category, number>(),
-        tracksByLane: new Map<Category, TrackMap>(),
-      };
-    }
-    const webOffsetX = TOTAL_T_MIN + webScrollX / jsPixelsPerUnit;
-    return computeLaneData({
-      events: ALL_EVENTS,
-      startYear: tToYear(webOffsetX),
-      endYear: tToYear(webOffsetX + canvasWidth / jsPixelsPerUnit),
-      zoomLevel,
-      lanes,
-      continent,
-      maxEventsPerLane: MAX_EVENTS_PER_LANE,
-      eventIndex,
-    });
-  }, [webScrollX, jsPixelsPerUnit, canvasWidth, lanes, zoomLevel, continent]);
-
-  // On web the canvas renders from webLaneData (scroll-driven), so lane heights/
-  // tops MUST come from the same track map — otherwise lanes overlap (e.g.
-  // Nationen drawn over Zivilisationen). Native uses laneData (jsOffsetX).
-  const effectiveTracksByLane = Platform.OS === 'web' ? webLaneData.tracksByLane : tracksByLane;
-
   const laneTrackCounts = useMemo(() => {
     const out = new Map<Category, number>();
-    for (const [cat, tm] of effectiveTracksByLane) {
+    for (const [cat, tm] of tracksByLane) {
       const max = tm.size === 0 ? 0 : Math.max(...tm.values());
       out.set(cat, max + 1);
     }
     return out;
-  }, [effectiveTracksByLane]);
+  }, [tracksByLane]);
 
   const laneTops = useMemo(() => {
     const tops: number[] = [];
@@ -372,16 +335,19 @@ export function TimelineView({
         lanes={lanes}
         laneTops={laneTops}
         laneTrackCounts={laneTrackCounts}
-        visibleByLane={webLaneData.visibleByLane}
-        tracksByLane={webLaneData.tracksByLane}
-        overflowCounts={webLaneData.overflowCounts}
+        visibleByLane={visibleByLane}
+        tracksByLane={tracksByLane}
+        overflowCounts={overflowCounts}
+        labelVisibleIds={labelVisibleIds}
         canvasWidth={canvasWidth}
         canvasHeight={canvasHeight}
+        jsOffsetX={jsOffsetX}
         jsPixelsPerUnit={jsPixelsPerUnit}
+        offsetX={offsetX}
+        pixelsPerUnit={pixelsPerUnit}
+        gesture={gesture}
         zoomLevel={zoomLevel}
-        webScrollX={webScrollX}
-        commitScrollX={commitScrollX}
-        webScrollRef={webScrollRef}
+        zoomAtPoint={zoomAtPoint}
         onEventTap={handleEventTap}
         zoomToFit={zoomToFit}
         handleMinimapJump={handleMinimapJump}
