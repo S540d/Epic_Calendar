@@ -73,6 +73,7 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 - `epoch.ts`: Epoche-Mapping für Breadcrumb + `NavigationEpoch`-Typ + `NAVIGATION_EPOCHS`-Baum (kosmische Frühzeit → Neuzeit)
 - **MAX_EVENTS_PER_LANE = 40** (in `timelineRenderShared.ts`) – Skia-Loop, Hit-Test und Label-Overlay sind alle auf diesen Wert gecappt. Überschuss erscheint als Cluster-Badge.
 - **Lineare Skala (seit #93 Phase 2):** Die Zeitachse verwendet **viewport-lokal lineare** Abbildung (Modell B). `yearToT(year) = year` / `tToYear(t) = t` sind Identity-Funktionen; `pixelsPerUnit` = Pixel pro Jahr. LOD-Schwellen: 2e-6 / 5e-4 / 0.02 / 2 (ppu). Der Gesamtüberblick ist als `SchematicTimeline` auf der Landing Page verfügbar.
+- **Web-Renderer viewport-relativ (seit #115):** `TimelineCanvasWeb` rendert Balken wie Native: `x = (startYear − jsOffsetX) × ppu`. Kein `webCanvasWidth` (wäre Milliarden Pixel breit). Pan via RNGH `GestureDetector` + `wheel`-Event-Shim (Ctrl/⌘+Wheel = Zoom). `useTimelineViewport` hat keine Platform-Branches mehr — `withTiming` gilt für web und native gleich.
 
 ### Datenhaltung
 
@@ -105,10 +106,10 @@ App.tsx
 src/
 ├── components/
 │   ├── TimelineView.tsx           # Komposition: Logik + Routing Web/Native
-│   ├── TimelineCanvasWeb.tsx      # Web-Renderer (ScrollView-basiert)
+│   ├── TimelineCanvasWeb.tsx      # Web-Renderer (viewport-relativ, GestureDetector + Mausrad-Shim)
 │   ├── TimelineCanvasNative.tsx   # Native-Renderer (Skia + Reanimated)
 │   ├── timelineRenderShared.ts    # Geteilte Konstanten/Helfer (beide Renderer)
-│   ├── useTimelineViewport.ts     # Viewport-State + Zoom/Pan/Jump-Commands
+│   ├── useTimelineViewport.ts     # Viewport-State + Zoom/Pan/Jump-Commands (unified web+native)
 │   ├── useTimelineGestures.ts     # RNGH Pan/Pinch/Tap-Gesten
 │   ├── TimeAxis.tsx               # Zeitachse
 │   ├── TimelineBreadcrumb.tsx     # Zoom-Breadcrumb mit Epochen-Kontext
