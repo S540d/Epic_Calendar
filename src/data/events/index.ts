@@ -3,6 +3,7 @@ import erdzeitalter from './erdzeitalter.json';
 import asien from './asien.json';
 import afrika from './afrika.json';
 import amerika from './amerika.json';
+import ozeanien from './ozeanien.json';
 import type { TimelineEvent } from '@/data/schema';
 
 export const ALL_EVENTS: TimelineEvent[] = [
@@ -11,4 +12,5 @@ export const ALL_EVENTS: TimelineEvent[] = [
   ...(asien as TimelineEvent[]),
   ...(afrika as TimelineEvent[]),
   ...(amerika as TimelineEvent[]),
+  ...(ozeanien as TimelineEvent[]),
 ];
