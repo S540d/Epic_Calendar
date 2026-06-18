@@ -47,13 +47,19 @@ export function EpochNavArrows({ visibleStartYear, visibleEndYear, onJump }: Pro
     <View style={styles.container} pointerEvents="box-none">
       {leftEpoch && (
         <Pressable
-          style={({ pressed }: { pressed: boolean }) => [styles.arrow, styles.arrowLeft, pressed && styles.pressed]}
+          style={({ pressed }: { pressed: boolean }) => [
+            styles.arrow,
+            styles.arrowLeft,
+            pressed && styles.pressed,
+          ]}
           onPress={() => onJump(leftEpoch.startYear, leftEpoch.endYear)}
           accessibilityRole="button"
           accessibilityLabel={t(`epochNav.${leftEpoch.key}`)}
         >
           <Text style={styles.arrowIcon}>◀</Text>
-          <View style={[styles.dot, { backgroundColor: EPOCH_COLORS[leftEpoch.key] ?? colors.accent }]} />
+          <View
+            style={[styles.dot, { backgroundColor: EPOCH_COLORS[leftEpoch.key] ?? colors.accent }]}
+          />
           <Text style={styles.arrowLabel} numberOfLines={2}>
             {t(`epochNav.${leftEpoch.key}`)}
           </Text>
@@ -61,7 +67,11 @@ export function EpochNavArrows({ visibleStartYear, visibleEndYear, onJump }: Pro
       )}
       {rightEpoch && (
         <Pressable
-          style={({ pressed }: { pressed: boolean }) => [styles.arrow, styles.arrowRight, pressed && styles.pressed]}
+          style={({ pressed }: { pressed: boolean }) => [
+            styles.arrow,
+            styles.arrowRight,
+            pressed && styles.pressed,
+          ]}
           onPress={() => onJump(rightEpoch.startYear, rightEpoch.endYear)}
           accessibilityRole="button"
           accessibilityLabel={t(`epochNav.${rightEpoch.key}`)}
@@ -69,7 +79,9 @@ export function EpochNavArrows({ visibleStartYear, visibleEndYear, onJump }: Pro
           <Text style={styles.arrowLabel} numberOfLines={2}>
             {t(`epochNav.${rightEpoch.key}`)}
           </Text>
-          <View style={[styles.dot, { backgroundColor: EPOCH_COLORS[rightEpoch.key] ?? colors.accent }]} />
+          <View
+            style={[styles.dot, { backgroundColor: EPOCH_COLORS[rightEpoch.key] ?? colors.accent }]}
+          />
           <Text style={styles.arrowIcon}>▶</Text>
         </Pressable>
       )}

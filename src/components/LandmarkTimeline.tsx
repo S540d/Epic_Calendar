@@ -13,11 +13,42 @@ type Landmark = {
 };
 
 const LANDMARKS: Landmark[] = [
-  { key: 'bigBang', year: -13_800_000_000, navStart: -13_800_000_000, navEnd: -4_600_000_000, color: '#6B4BB8' },
-  { key: 'earthFormation', year: -4_600_000_000, navStart: -4_600_000_000, navEnd: -541_000_000, color: '#4A8FA8' },
-  { key: 'moonFormation', year: -4_500_000_000, navStart: -4_600_000_000, navEnd: -541_000_000, color: '#7BAAC8' },
-  { key: 'firstLife', year: -3_800_000_000, navStart: -4_600_000_000, navEnd: -541_000_000, color: '#4FA86A' },
-  { key: 'dinosaurs', year: -252_000_000, endYear: -66_000_000, navStart: -252_000_000, navEnd: -66_000_000, color: '#B87C3A' },
+  {
+    key: 'bigBang',
+    year: -13_800_000_000,
+    navStart: -13_800_000_000,
+    navEnd: -4_600_000_000,
+    color: '#6B4BB8',
+  },
+  {
+    key: 'earthFormation',
+    year: -4_600_000_000,
+    navStart: -4_600_000_000,
+    navEnd: -541_000_000,
+    color: '#4A8FA8',
+  },
+  {
+    key: 'moonFormation',
+    year: -4_500_000_000,
+    navStart: -4_600_000_000,
+    navEnd: -541_000_000,
+    color: '#7BAAC8',
+  },
+  {
+    key: 'firstLife',
+    year: -3_800_000_000,
+    navStart: -4_600_000_000,
+    navEnd: -541_000_000,
+    color: '#4FA86A',
+  },
+  {
+    key: 'dinosaurs',
+    year: -252_000_000,
+    endYear: -66_000_000,
+    navStart: -252_000_000,
+    navEnd: -66_000_000,
+    color: '#B87C3A',
+  },
   { key: 'firstHominids', year: -2_500_000, navStart: -2_580_000, navEnd: 2026, color: '#C28B4A' },
 ];
 
