@@ -2,7 +2,7 @@
   {
     "id": "chicxulub-impact",
     "title": "Chicxulub-Einschlag",
-    "description": "Komet/Asteroideneinschlag, der zum Aussterben der Nicht-Vogel-Dinosaurier führte",
+    "description": "Komet/Asteroideneinschlag, der zum Massenaussterben der Dinosaurier führte",
     "startYear": -66000000,
     "category": "natur",
     "continent": "global",
@@ -10,9 +10,45 @@
   },
   {
     "id": "darwin-origin-species",
-    "title": "Darwin - On the Origin of Species",
-    "description": "Veröffentlichung der Evolutionstheorie durch Charles Darwin",
+    "title": "On the Origin of Species",
+    "description": "Charles Darwin veröffentlicht sein Werk zur Evolutionstheorie durch natürliche Selektion",
     "startYear": 1859,
+    "category": "natur",
+    "continent": "global",
+    "culture": "Wissenschaftsgeschichte"
+  },
+  {
+    "id": "einstein-annus-mirabilis",
+    "title": "Annus Mirabilis",
+    "description": "Albert Einstein veröffentlicht vier bahnbrechende Arbeiten zur Relativitätstheorie und Quantenphysik",
+    "startYear": 1905,
+    "category": "natur",
+    "continent": "global",
+    "culture": "Wissenschaftsgeschichte"
+  },
+  {
+    "id": "sputnik-1",
+    "title": "Sputnik 1",
+    "description": "Erster künstlicher Satellit der Menschheit, Beginn des Weltraumzeitalters",
+    "startYear": 1957,
+    "category": "natur",
+    "continent": "global",
+    "culture": "Wissenschaftsgeschichte"
+  },
+  {
+    "id": "gagarin-first-human-space",
+    "title": "Juri Gagarin im All",
+    "description": "Erster Mensch im Weltraum",
+    "startYear": 1961,
+    "category": "natur",
+    "continent": "global",
+    "culture": "Wissenschaftsgeschichte"
+  },
+  {
+    "id": "apollo-11-moon-landing",
+    "title": "Apollo 11 Mondlandung",
+    "description": "Neil Armstrong und Buzz Aldrin betreten als erste Menschen den Mond",
+    "startYear": 1969,
     "category": "natur",
     "continent": "global",
     "culture": "Wissenschaftsgeschichte"
