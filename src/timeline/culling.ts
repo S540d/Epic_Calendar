@@ -7,21 +7,72 @@ export type TrackMap = Map<string, number>; // eventId → trackIndex (0-based)
 /**
  * Assigns each event to the lowest-numbered track where no previously
  * assigned event overlaps it (greedy interval packing).
- * Respects manual event.track overrides.
+ *
+ * Three-phase algorithm:
+ *   Phase 0 – manual event.track overrides (highest priority)
+ *   Phase 1 – lineage groups: all events sharing a lineageId go to the same
+ *             track; the full span (first→last event) is reserved so that
+ *             unrelated events cannot displace successors mid-lineage.
+ *   Phase 2 – remaining singletons (greedy, same as before)
  */
 export function assignTracks(events: TimelineEvent[]): TrackMap {
-  const sorted = [...events].sort((a, b) => a.startYear - b.startYear);
-  const trackEndYears: number[] = [];
   const result = new Map<string, number>();
+  const trackEndYears: number[] = [];
 
-  for (const ev of sorted) {
+  const manualEvents: TimelineEvent[] = [];
+  const lineageMap = new Map<string, TimelineEvent[]>();
+  const singletons: TimelineEvent[] = [];
+
+  for (const ev of events) {
     if (ev.track !== undefined) {
-      result.set(ev.id, ev.track);
-      while (trackEndYears.length <= ev.track) trackEndYears.push(-Infinity);
-      const evEnd = ev.endYear ?? ev.startYear;
-      if (evEnd > (trackEndYears[ev.track] ?? -Infinity)) trackEndYears[ev.track] = evEnd;
-      continue;
+      manualEvents.push(ev);
+    } else if (ev.lineageId) {
+      const group = lineageMap.get(ev.lineageId) ?? [];
+      group.push(ev);
+      lineageMap.set(ev.lineageId, group);
+    } else {
+      singletons.push(ev);
     }
+  }
+
+  // Phase 0: manual overrides
+  for (const ev of manualEvents) {
+    result.set(ev.id, ev.track!);
+    while (trackEndYears.length <= ev.track!) trackEndYears.push(-Infinity);
+    const evEnd = ev.endYear ?? ev.startYear;
+    if (evEnd > (trackEndYears[ev.track!] ?? -Infinity)) trackEndYears[ev.track!] = evEnd;
+  }
+
+  // Phase 1: lineage groups – reserve the full span of the group on one track
+  const sortedGroups = [...lineageMap.values()]
+    .map((g) => g.slice().sort((a, b) => a.startYear - b.startYear))
+    .sort((a, b) => a[0]!.startYear - b[0]!.startYear);
+
+  for (const group of sortedGroups) {
+    const firstStart = group[0]!.startYear;
+    const lastEnd = group.reduce((max, ev) => Math.max(max, ev.endYear ?? ev.startYear), -Infinity);
+
+    let assigned = -1;
+    for (let t = 0; t < trackEndYears.length; t++) {
+      if ((trackEndYears[t] ?? -Infinity) <= firstStart) {
+        assigned = t;
+        break;
+      }
+    }
+    if (assigned === -1) {
+      assigned = trackEndYears.length;
+      trackEndYears.push(-Infinity);
+    }
+    // Reserve the full lineage span so singletons cannot displace successors
+    trackEndYears[assigned] = lastEnd;
+    for (const ev of group) {
+      result.set(ev.id, assigned);
+    }
+  }
+
+  // Phase 2: singletons – greedy interval packing
+  singletons.sort((a, b) => a.startYear - b.startYear);
+  for (const ev of singletons) {
     const evEnd = ev.endYear ?? ev.startYear;
     let placed = false;
     for (let t = 0; t < trackEndYears.length; t++) {
@@ -37,6 +88,7 @@ export function assignTracks(events: TimelineEvent[]): TrackMap {
       trackEndYears.push(evEnd);
     }
   }
+
   return result;
 }
 
