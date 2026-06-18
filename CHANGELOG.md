@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Ozeanien-Daten (Issue #121):** Neue Datei `src/data/events/ozeanien.json` mit 30 Events: australische Aborigines (65.000 v. Chr.), Lapita-Kultur, polynesische Expansion (Samoa/Tonga → Marquesas → Hawaii → Osterinsel → Maori-Neuseeland) mit `lineageId: "polynesische-expansion"`, Nan Madol, Europäische Entdeckung & Kolonisierung.
+- **P2-Content-Lücken geschlossen (Issue #121):**
+  - `asien.json` +17: Südostasien (Srivijaya, Pagan, Sukhothai, Ayutthaya, Majapahit, Đại Việt, Malakka-Sultanat); P3: Chinesischer Bürgerkrieg, Koreakrieg, Teilung Koreas, Timuridenreich.
+  - `erdzeitalter.json` +9: Regionale Steinzeit-Events (Lascaux, Altamira, Göbekli Tepe, Jōmon-Kultur, San-Kulturen Afrikas, Mal'ta-Buret' Sibirien).
+  - `afrika.json` +11: Ishango-Knochen, Bantu-Expansion (`lineageId: "bantu-expansion"`), Nok-Kultur, Garamanten, D'mt-Reich, Kanem-Reich, Kilwa-Sultanat, Mutapa-Reich.
+  - `amerika.json` +7: Poverty Point, Pueblo/Anasazi, Cahokia, Tairona-Kultur.
+- `lineageId` konsequent in neuen Daten eingesetzt: `"polynesische-expansion"`, `"bantu-expansion"`, `"java-reiche"`, `"srivijaya"` — bereit für spätere Rendering-Implementierung.
+
+
 ### Changed
 
 - **Lineare Zeitskala (Phase 2, Issue #93):** Die Zeitachse verwendet jetzt
