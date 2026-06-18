@@ -46,10 +46,10 @@ export function assignTracks(events: TimelineEvent[]): TrackMap {
   // Phase 1: lineage groups – reserve the full span of the group on one track
   const sortedGroups = [...lineageMap.values()]
     .map((g) => g.slice().sort((a, b) => a.startYear - b.startYear))
-    .sort((a, b) => a[0].startYear - b[0].startYear);
+    .sort((a, b) => a[0]!.startYear - b[0]!.startYear);
 
   for (const group of sortedGroups) {
-    const firstStart = group[0].startYear;
+    const firstStart = group[0]!.startYear;
     const lastEnd = group.reduce((max, ev) => Math.max(max, ev.endYear ?? ev.startYear), -Infinity);
 
     let assigned = -1;
