@@ -50,10 +50,7 @@ export function assignTracks(events: TimelineEvent[]): TrackMap {
 
   for (const group of sortedGroups) {
     const firstStart = group[0].startYear;
-    const lastEnd = group.reduce(
-      (max, ev) => Math.max(max, ev.endYear ?? ev.startYear),
-      -Infinity,
-    );
+    const lastEnd = group.reduce((max, ev) => Math.max(max, ev.endYear ?? ev.startYear), -Infinity);
 
     let assigned = -1;
     for (let t = 0; t < trackEndYears.length; t++) {

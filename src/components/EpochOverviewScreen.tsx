@@ -82,11 +82,7 @@ function EpochTile({ epoch, onPress, level = 0 }: EpochTileProps) {
 
   return (
     <Pressable
-      style={({ pressed }) => [
-        styles.tile,
-        indentStyle,
-        pressed && styles.tilePressed,
-      ]}
+      style={({ pressed }) => [styles.tile, indentStyle, pressed && styles.tilePressed]}
       onPress={handlePress}
       accessibilityRole="button"
       accessibilityLabel={t(`epochNav.${epoch.key}`)}

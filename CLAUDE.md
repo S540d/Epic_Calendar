@@ -210,14 +210,14 @@ const gesture = useMemo(() => Gesture.Simultaneous(pan, pinch, exclusive), [pan,
 
 ## Offene Issues (legitim)
 
-| #   | Titel                                       | Priorität                    |
-| --- | ------------------------------------------- | ---------------------------- |
-| #5  | Performance-Optimierung (Skia + Reanimated) | ongoing                      |
-| #32 | Mobile Usability Überblick                  | Tracker                      |
-| #46 | Listen-/Story-Modus                         | P3 / Diskussion              |
-| #51 | Triage-Plan (Tracking-Board)                | Referenz                     |
-| #70 | Skalierbarkeit: mehr Events, Filter, Kategorien | Epic / Tracker |
-| #93 | Umsetzungsplan #70 (Phase 3+: UI-Filter, Geo-Filter, Performance) | Nächste Phasen |
+| #   | Titel                                                             | Priorität       |
+| --- | ----------------------------------------------------------------- | --------------- |
+| #5  | Performance-Optimierung (Skia + Reanimated)                       | ongoing         |
+| #32 | Mobile Usability Überblick                                        | Tracker         |
+| #46 | Listen-/Story-Modus                                               | P3 / Diskussion |
+| #51 | Triage-Plan (Tracking-Board)                                      | Referenz        |
+| #70 | Skalierbarkeit: mehr Events, Filter, Kategorien                   | Epic / Tracker  |
+| #93 | Umsetzungsplan #70 (Phase 3+: UI-Filter, Geo-Filter, Performance) | Nächste Phasen  |
 
 ## Referenzen
 
