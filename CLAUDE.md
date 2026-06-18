@@ -63,12 +63,11 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 ### Besonderheiten der Zeitachse
 
 - Logarithmische Zeitskala: `yearToT(year)` / `tToYear(t)` aus `@/timeline/scale`
-- LOD-Bänder steuern welche Events bei welchem Zoom sichtbar sind
-  - Bandgrenzen: `< 12` → 0, `< 30` → 1, `< 100` → 2, `< 500` → 3, else → 4
+- LOD-Bänder steuern welche Events bei welchem Zoom sichtbar sind (ppu-Schwellen: `2e-6` / `5e-4` / `0.02` / `2` → Level 0–4)
 - `culling.ts`: filtert Events außerhalb des Viewports; `computeLaneData` akzeptiert optionales `eventIndex?` für O(hits+log n)-Queries
 - `eventIndex.ts`: `EventIndex`-Klasse — Kategorie-partitioniert, startYear-sortiert; `buildEventIndex(events)` + `queryVisible(query)` (Binärsuche); in `TimelineView` verdrahtet via `computeLaneData`
 - `formatYear.ts`: formatiert Jahreszahlen (v. Chr., Mio., Mrd.)
-- `lod.ts`: Level-of-Detail-Berechnung, exportiert `T_MIN`, `T_MAX`, `FULL_T_SPAN`
+- `lod.ts`: Level-of-Detail-Berechnung, exportiert `T_MIN`, `T_MAX`, `FULL_T_SPAN`; `PRESENT_RIGHT_BUFFER_YEARS = 200` + `clampOffsetX()` begrenzen Scroll nach rechts
 - `scale.ts`: `yearToT`, `tToYear`, `pixelToYear`, `viewportYearRange`
 - `epoch.ts`: Epoche-Mapping für Breadcrumb + `NavigationEpoch`-Typ + `NAVIGATION_EPOCHS`-Baum (kosmische Frühzeit → Neuzeit)
 - **MAX_EVENTS_PER_LANE = 40** (in `timelineRenderShared.ts`) – Skia-Loop, Hit-Test und Label-Overlay sind alle auf diesen Wert gecappt. Überschuss erscheint als Cluster-Badge.
@@ -77,7 +76,7 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 
 ### Datenhaltung
 
-- `src/data/` – statische Daten (Europa, Asien, Afrika, Amerika)
+- `src/data/` – statische Daten (Europa, Asien, Afrika, Amerika, Ozeanien, Natur/Wissenschaft)
 - `src/data/schema.ts` – gemeinsames Event-Schema (`TimelineEvent` mit optionalen Feldern: `importance`, `tags`, `lineageId`, `regions` seit Phase 1.2)
 - `src/data/regions.ts` – `RegionConfig`-Typ + `REGIONS`-Skelett für hierarchische Geo-Filter (Phase 1.4; kein UI bis Phase 3)
 - `docs/event-flags.md` – menschenlesbare Flag-Referenz: alle Event-Achsen mit Pflicht/optional, Werten, LOD-Tabelle (Phase 1.5)
