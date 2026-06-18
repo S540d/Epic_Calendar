@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **Lane-Labels hochkant (PR #124):** `LANE_LABEL_WIDTH` 96 → 28 px. Labels werden mit einem inneren View (width=laneHeight, height=28) um –90° gedreht – spart 68 px Canvas-Breite auf Web und Native.
+- **Zukunfts-Padding behoben (PR #124):** `PRESENT_RIGHT_PAD_FRACTION` (skalierte mit Viewport-Spanne: 15 % von 5 Mrd. Jahren = 750 Mio. Jahre Zukunfts-Scroll) ersetzt durch `PRESENT_RIGHT_BUFFER_YEARS = 200` – fester Puffer unabhängig vom Zoom-Level.
+- **Achsen-Anker am linken Viewport-Rand (PR #124):** `generateTicks` prependet jetzt ein Anker-Label bei px=0 mit dem formatierten Viewport-Startjahr, wenn der erste reguläre Tick mehr als `TICK_LABEL_WIDTH` (90 px) vom linken Rand entfernt ist. Der sichtbare Bereich hat immer eine Datumsbeschriftung am Anfang.
+
+### Added
+
+- **Wissenschaft-Events gerettet (#122):** 4 Events aus `feature/natur-wissenschaft-highlights-v3` wurden wiederhergestellt, die beim Merge von v5 verloren gingen: Einstein Annus Mirabilis (1905), Sputnik 1 (1957), Juri Gagarin (1961), Apollo 11 (1969). `natur-wissenschaft.json` enthält jetzt 6 statt 2 Events.
+- **CLAUDE.md: Web-Renderer-Doku (#115):** Architekturnotiz zum viewport-relativen Web-Renderer (`TimelineCanvasWeb`, GestureDetector + Mausrad-Shim, unified viewport-Hook) nachgezogen.
+- **Ozeanien-Daten (Issue #121):** Neue Datei `src/data/events/ozeanien.json` mit 30 Events: australische Aborigines (65.000 v. Chr.), Lapita-Kultur, polynesische Expansion (Samoa/Tonga → Marquesas → Hawaii → Osterinsel → Maori-Neuseeland) mit `lineageId: "polynesische-expansion"`, Nan Madol, Europäische Entdeckung & Kolonisierung.
+- **P2-Content-Lücken geschlossen (Issue #121):**
+  - `asien.json` +17: Südostasien (Srivijaya, Pagan, Sukhothai, Ayutthaya, Majapahit, Đại Việt, Malakka-Sultanat); P3: Chinesischer Bürgerkrieg, Koreakrieg, Teilung Koreas, Timuridenreich.
+  - `erdzeitalter.json` +9: Regionale Steinzeit-Events (Lascaux, Altamira, Göbekli Tepe, Jōmon-Kultur, San-Kulturen Afrikas, Mal'ta-Buret' Sibirien).
+  - `afrika.json` +11: Ishango-Knochen, Bantu-Expansion (`lineageId: "bantu-expansion"`), Nok-Kultur, Garamanten, D'mt-Reich, Kanem-Reich, Kilwa-Sultanat, Mutapa-Reich.
+  - `amerika.json` +7: Poverty Point, Pueblo/Anasazi, Cahokia, Tairona-Kultur.
+- `lineageId` konsequent in neuen Daten eingesetzt: `"polynesische-expansion"`, `"bantu-expansion"`, `"java-reiche"`, `"srivijaya"` — bereit für spätere Rendering-Implementierung.
+
 ### Changed
 
 - **Lineare Zeitskala (Phase 2, Issue #93):** Die Zeitachse verwendet jetzt

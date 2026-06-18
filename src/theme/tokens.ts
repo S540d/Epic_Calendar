@@ -85,7 +85,7 @@ export const iconSize = {
 
 export const LANE_HEIGHT = 84;
 export const LANE_GAP = 8;
-export const LANE_LABEL_WIDTH = 96;
+export const LANE_LABEL_WIDTH = 28;
 /** Height of a single track row within a multi-track lane. */
 export const TRACK_HEIGHT = 80;
 /** Vertical padding inside a lane (top + bottom combined). */
