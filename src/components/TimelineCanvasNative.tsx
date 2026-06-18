@@ -158,6 +158,7 @@ export function TimelineCanvasNative({
         <View style={styles.labels}>
           {lanes.map((cat, idx) => {
             const overflow = overflowCounts.get(cat) ?? 0;
+            const laneH = laneHeightForTracks(laneTrackCounts.get(cat) ?? 1);
             return (
               <View
                 key={cat}
@@ -165,12 +166,24 @@ export function TimelineCanvasNative({
                   styles.label,
                   {
                     top: laneTops[idx],
-                    height: laneHeightForTracks(laneTrackCounts.get(cat) ?? 1),
+                    height: laneH,
                     borderLeftColor: colors.category[cat],
                   },
                 ]}
               >
-                <Text style={styles.labelText}>{t(`category.${cat}`)}</Text>
+                <View
+                  style={{
+                    width: laneH,
+                    height: LANE_LABEL_WIDTH,
+                    transform: [{ rotate: '-90deg' }],
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Text style={styles.labelText} numberOfLines={1}>
+                    {t(`category.${cat}`)}
+                  </Text>
+                </View>
                 {overflow > 0 && <Text style={styles.clusterBadge}>+{overflow}</Text>}
               </View>
             );

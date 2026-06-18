@@ -86,22 +86,22 @@ export function clampPixelsPerUnit(v: number): number {
 }
 
 /**
- * Fraction of the viewport allowed to extend past "today" on the right.
- * Kept small (0.15) so "Heute" stays visually near the right edge even after
- * epoch-jump zooms that centre the viewport on the selected range.
- * The empty strip to the right carries no axis labels (see TimeAxis).
+ * Fixed-year buffer beyond "today" the viewport may show on the right.
+ * A fraction-based approach scales badly at geological zoom levels
+ * (15 % of 5 billion years = 750 million years of empty future).
+ * 200 years is imperceptible at geological scale yet large enough that
+ * the "Heute" marker is never clipped at human-history zoom.
  */
-export const PRESENT_RIGHT_PAD_FRACTION = 0.15;
+export const PRESENT_RIGHT_BUFFER_YEARS = 200;
 
 /**
- * Clamps the pan offset so the viewport cannot scroll arbitrarily far past
- * "today". The right limit lets "Heute" reach the horizontal center of the
- * canvas (PRESENT_RIGHT_PAD_FRACTION = 0.5) so the present can be centered.
+ * Clamps the pan offset so the viewport cannot scroll more than
+ * PRESENT_RIGHT_BUFFER_YEARS past "today".
  * Guard against negative maxOffsetX (fully zoomed out) with Math.max(0, ...).
  */
 export function clampOffsetX(offsetX: number, pixelsPerUnit: number, canvasWidth: number): number {
   'worklet';
   const viewportT = canvasWidth / pixelsPerUnit;
-  const maxOffsetX = Math.max(0, T_MAX - viewportT * (1 - PRESENT_RIGHT_PAD_FRACTION));
+  const maxOffsetX = Math.max(0, T_MAX + PRESENT_RIGHT_BUFFER_YEARS - viewportT);
   return Math.min(offsetX, maxOffsetX);
 }
