@@ -86,6 +86,7 @@ export function clampPixelsPerUnit(v: number): number {
 }
 
 /**
+/**
  * Fixed-year buffer beyond "today" the viewport may show on the right.
  * A fraction-based approach scales badly at geological zoom levels
  * (15 % of 5 billion years = 750 million years of empty future).
