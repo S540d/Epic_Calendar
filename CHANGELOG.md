@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Wissenschaft-Events gerettet (#122):** 4 Events aus `feature/natur-wissenschaft-highlights-v3` wurden wiederhergestellt, die beim Merge von v5 verloren gingen: Einstein Annus Mirabilis (1905), Sputnik 1 (1957), Juri Gagarin (1961), Apollo 11 (1969). `natur-wissenschaft.json` enthält jetzt 6 statt 2 Events.
+- **CLAUDE.md: Web-Renderer-Doku (#115):** Architekturnotiz zum viewport-relativen Web-Renderer (`TimelineCanvasWeb`, GestureDetector + Mausrad-Shim, unified viewport-Hook) nachgezogen.
+
 ### Changed
 
 - **Lineare Zeitskala (Phase 2, Issue #93):** Die Zeitachse verwendet jetzt
