@@ -86,6 +86,17 @@ function generateTicks(
     if (px < 0 || px > canvasWidth) continue;
     ticks.push({ label: formatYear(year, t), px, year });
   }
+
+  // Anchor: if the first regular tick is too far from the left edge, prepend
+  // a label pinned to px=0 showing the viewport start year. Also drop any
+  // regular ticks that would overlap with the anchor label (within the first
+  // TICK_LABEL_WIDTH pixels) to avoid visual collisions.
+  const firstTickPx = ticks[0]?.px ?? canvasWidth;
+  if (firstTickPx > TICK_LABEL_WIDTH) {
+    const regularTicks = ticks.filter((tk) => tk.px >= TICK_LABEL_WIDTH);
+    return [{ label: formatYear(startYear, t), px: 0, year: startYear }, ...regularTicks];
+  }
+
   return ticks;
 }
 
