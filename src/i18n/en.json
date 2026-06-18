@@ -12,12 +12,12 @@
   },
   "continent": {
     "all": "All",
+    "global": "Global",
     "europa": "Europe",
     "asien": "Asia",
     "afrika": "Africa",
     "amerika": "Americas",
-    "ozeanien": "Oceania",
-    "global": "Global"
+    "ozeanien": "Oceania"
   },
   "chip": {
     "soon": "soon"
@@ -67,8 +67,17 @@
     "stoneAge": "Stone Age",
     "ancientCiv": "Early Civilizations",
     "antiquity": "Antiquity",
+    "earlyAntiquity": "Early Antiquity",
+    "hellenism": "Hellenism",
+    "lateAntiquity": "Late Antiquity",
     "middleAges": "Middle Ages",
-    "modern": "Modern Era"
+    "earlyMiddleAges": "Early Middle Ages",
+    "highMiddleAges": "High Middle Ages",
+    "lateMiddleAges": "Late Middle Ages",
+    "modern": "Modern Era",
+    "earlyModern": "Early Modern",
+    "industrial": "Industrial Age",
+    "contemporary": "Contemporary"
   },
   "landmark": {
     "bigBang": "Big Bang",
