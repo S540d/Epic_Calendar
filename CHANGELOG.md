@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **Lane-Labels hochkant (PR #124):** `LANE_LABEL_WIDTH` 96 → 28 px. Labels werden mit einem inneren View (width=laneHeight, height=28) um –90° gedreht – spart 68 px Canvas-Breite auf Web und Native.
+- **Zukunfts-Padding behoben (PR #124):** `PRESENT_RIGHT_PAD_FRACTION` (skalierte mit Viewport-Spanne: 15 % von 5 Mrd. Jahren = 750 Mio. Jahre Zukunfts-Scroll) ersetzt durch `PRESENT_RIGHT_BUFFER_YEARS = 200` – fester Puffer unabhängig vom Zoom-Level.
+- **Achsen-Anker am linken Viewport-Rand (PR #124):** `generateTicks` prependet jetzt ein Anker-Label bei px=0 mit dem formatierten Viewport-Startjahr, wenn der erste reguläre Tick mehr als `TICK_LABEL_WIDTH` (90 px) vom linken Rand entfernt ist. Der sichtbare Bereich hat immer eine Datumsbeschriftung am Anfang.
+
 ### Changed
 
 - **Lineare Zeitskala (Phase 2, Issue #93):** Die Zeitachse verwendet jetzt
