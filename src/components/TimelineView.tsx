@@ -14,12 +14,7 @@ import {
   MAX_EVENTS_PER_LANE,
   MIN_HIT_PX,
 } from './timelineRenderShared';
-import {
-  viewportYearRange,
-  yearToT,
-  pixelToYear,
-  T_PRESENT as T_HEUTE,
-} from '@/timeline/scale';
+import { viewportYearRange, yearToT, pixelToYear, T_PRESENT as T_HEUTE } from '@/timeline/scale';
 import { dominantEpoch } from '@/timeline/epoch';
 import { type Continent, type TimelineEvent } from '@/data/schema';
 import {

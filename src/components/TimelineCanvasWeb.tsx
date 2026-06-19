@@ -1,12 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  Pressable,
-  TouchableOpacity,
-  Platform,
-} from 'react-native';
+import { StyleSheet, View, Text, Pressable, TouchableOpacity, Platform } from 'react-native';
 import {
   GestureDetector,
   type ComposedGesture,
