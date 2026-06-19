@@ -40,12 +40,12 @@ describe('category registry — derived arrays match the previous hardcoded valu
     expect(LANE_ORDER).toEqual(['erdzeitalter', 'zivilisation', 'natur', 'nation']);
   });
 
-  it('DEFAULT_CATEGORIES is erdzeitalter + zivilisation', () => {
-    expect(DEFAULT_CATEGORIES).toEqual(['erdzeitalter', 'zivilisation']);
+  it('DEFAULT_CATEGORIES includes erdzeitalter, natur, and zivilisation', () => {
+    expect(DEFAULT_CATEGORIES).toEqual(['erdzeitalter', 'natur', 'zivilisation']);
   });
 
-  it('DISABLED_CATEGORIES is just natur ("soon")', () => {
-    expect(DISABLED_CATEGORIES).toEqual(['natur']);
+  it('DISABLED_CATEGORIES is empty (natur is now enabled)', () => {
+    expect(DISABLED_CATEGORIES).toEqual([]);
   });
 });
 
