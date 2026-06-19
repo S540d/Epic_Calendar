@@ -76,7 +76,7 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 
 ### Datenhaltung
 
-- `src/data/` – statische Daten (Europa, Asien, Afrika, Amerika, Ozeanien, Natur/Wissenschaft)
+- `src/data/` – statische Daten: 7 JSON-Dateien, 543 Events gesamt (europa, asien, afrika, amerika, ozeanien, erdzeitalter, natur-wissenschaft)
 - `src/data/schema.ts` – gemeinsames Event-Schema (`TimelineEvent` mit optionalen Feldern: `importance`, `tags`, `lineageId`, `regions` seit Phase 1.2)
 - `src/data/regions.ts` – `RegionConfig`-Typ + `REGIONS`-Skelett für hierarchische Geo-Filter (Phase 1.4; kein UI bis Phase 3)
 - `docs/event-flags.md` – menschenlesbare Flag-Referenz: alle Event-Achsen mit Pflicht/optional, Werten, LOD-Tabelle (Phase 1.5)
@@ -85,7 +85,7 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 ### Build & Test
 
 ```bash
-npm test          # Jest-Tests (180 Unit-Tests)
+npm test          # Jest-Tests
 npm run lint      # ESLint (flat-config via eslint.config.cjs)
 npm run type-check # TypeScript
 npm run build:web  # Expo Web-Export (GitHub Pages)
@@ -114,16 +114,18 @@ src/
 │   ├── TimelineBreadcrumb.tsx     # Zoom-Breadcrumb mit Epochen-Kontext
 │   ├── TimelineMinimap.tsx        # Übersichtsleiste (Tap + a11y-Actions)
 │   ├── EpochBand.tsx              # Visuelles Epochen-Band (ersetzt EpochJumpBar)
+│   ├── EpochChipBar.tsx           # Zweistufige Chip-Leiste für schnelle Epochen-Navigation
+│   ├── EpochNavArrows.tsx         # Quick-Jump-Pfeile (← Epoche / Epoche →) im Timeline-Header
 │   ├── EpochOverviewScreen.tsx    # Landing Page: Epochen-Kacheln als Einstieg
 │   ├── FilterChipBar.tsx          # Kategorie-/Kontinent-Filter
+│   ├── LandmarkTimeline.tsx       # Landmark-Zeitstrahl auf der Landing Page (schematisch)
 │   ├── ContinentTabBar.tsx        # Kontinent-Auswahl
 │   ├── ZoomLevelIndicator.tsx     # Persistenter LOD-Indikator
-│   ├── EventPickerPopover.tsx     # Disambiguierung bei überlappenden Events
 │   └── ui/                        # Shared UI-Primitives
 ├── data/
 │   ├── schema.ts              # Event-Typen (inkl. optionale Slots: importance, tags, lineageId, regions)
 │   ├── regions.ts             # RegionConfig + REGIONS-Skelett (Phase 1.4, kein UI)
-│   ├── events/                # Statische JSON-Daten (europa, asien, afrika, amerika, erdzeitalter)
+│   ├── events/                # Statische JSON-Daten: europa (186), asien (90), afrika (65), amerika (70), ozeanien (40), erdzeitalter (28), natur-wissenschaft (64) → 543 Events gesamt
 │   └── ...
 ├── timeline/
 │   ├── culling.ts             # Viewport-Culling + computeLaneData() (opt. eventIndex)
