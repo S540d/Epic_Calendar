@@ -47,7 +47,10 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 - Target: **immer `testing`** (nicht main)
 - CI muss grün sein vor Merge
 - Merge Feature→testing: `gh pr merge <nr> --squash --delete-branch`
-- Merge testing→main: `gh pr merge <nr> --squash` (kein `--delete-branch`!) + `--admin`
+  - **Squash nur hier** (Feature-Branch wird verworfen → kompakte Historie).
+- Merge testing→main: `gh pr merge <nr> --merge` (echter Merge-Commit, **kein Squash**, kein `--delete-branch`) + `--admin`
+  - **Kein Squash zwischen zwei langlebigen Branches:** Squash erzeugt auf `main` einen neuen Commit ohne `testing` als Vorfahr → die Branches teilen keine Historie mehr und jeder Folge-Sync produziert dieselben Konflikte (Divergenz). Ein Merge-Commit hält `testing`-Commits als Vorfahren von `main`.
+  - Danach: `main` → `testing` zurückführen (`gh pr merge --merge` oder Fast-Forward), damit `testing` ≥ `main` bleibt.
 
 ---
 
