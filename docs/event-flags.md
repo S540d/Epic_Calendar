@@ -73,13 +73,20 @@ Freier String, der die Unterkategorie innerhalb einer Kategorie benennt.
 Bsp: `"Äon"`, `"Phanerozoikum"`, `"römisch"`, `"maya"`.
 Wird künftig per Config validierbar (Phase 1.4+).
 
-#### `importance` _(Schema-Slot, Phase 1.2, noch nicht verdrahtet)_
+#### `importance` _(verdrahtet: Detailgrad-Filter)_
 
-| Wert       | Bedeutung                                           |
-| ---------- | --------------------------------------------------- |
-| `core`     | Unverzichtbar – erscheint im Kindermodus (Phase 3). |
-| `extended` | Standard-Sichtbarkeit.                              |
-| `detail`   | Nur bei hohem Zoom sinnvoll.                        |
+| Wert       | Rang | Bedeutung                                           |
+| ---------- | ---- | --------------------------------------------------- |
+| `core`     | 0    | Unverzichtbar – erscheint auf jedem Detailgrad.     |
+| `extended` | 1    | Standard-Sichtbarkeit (Default für Events ohne Feld). |
+| `detail`   | 2    | Nur auf höchstem Detailgrad.                         |
+
+Der **Detailgrad-Filter** (`DetailLevelSelector`) wirkt als kumulativer
+Schwellwert: Stufe „Wesentliches" zeigt nur `core`, „Standard" zusätzlich
+`extended`, „Alles" auch `detail`. Events **ohne** `importance` werden wie
+`extended` behandelt. Default-Stufe ist „Alles" (`detail`) → keine
+Verhaltensänderung ohne Nutzeraktion. Ergänzt den automatischen Zoom-LOD
+(`minZoomLevel`) um eine manuelle Steuerung.
 
 #### `tags` _(Schema-Slot, Phase 1.2, noch nicht verdrahtet)_
 
@@ -115,11 +122,14 @@ Array von Region-IDs aus `src/data/regions.ts`. Ermöglicht Mehrfachzugehörigke
 
 ### Beziehung
 
-#### `lineageId` _(Schema-Slot, Phase 1.2, noch nicht verdrahtet)_
+#### `lineageId` _(verdrahtet)_
 
 Verbindet politische Nachfolger desselben Staatswesens in einer Lane.
 Bsp: `"frankreich"` verknüpft Merowingerreich → Karolingerreich → Königreich Frankreich.
-Geplante Wirkung (Phase 3): `assignTracks` legt Events mit gleicher `lineageId` bevorzugt in dieselbe Zeile; optionale Verbindungslinie im Renderer.
+Wirkung: `assignTracks` legt Events mit gleicher `lineageId` bevorzugt in dieselbe
+Zeile (sofern überlappungsfrei); `computeLineageConnectors` erzeugt zwischen
+aufeinanderfolgenden Lineage-Events auf derselben Zeile eine Verbindungslinie, die
+beide Renderer (Skia/Web) unter den Balken zeichnen.
 
 ---
 

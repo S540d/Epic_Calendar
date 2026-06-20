@@ -1,4 +1,4 @@
-import type { TimelineEvent, ZoomLevel, Continent } from '@/data/schema';
+import { passesImportance, type TimelineEvent, type ZoomLevel, type Continent } from '@/data/schema';
 import type { Category } from '@/theme/tokens';
 
 export type IndexQuery = {
@@ -7,6 +7,8 @@ export type IndexQuery = {
   zoomLevel: ZoomLevel;
   categories: Set<Category>;
   continent: Continent;
+  /** Highest importance rank to show (cumulative). Default 2 (= show all). */
+  maxImportanceRank?: number;
 };
 
 /**
@@ -34,6 +36,7 @@ export class EventIndex {
 
   queryVisible(query: IndexQuery): TimelineEvent[] {
     const { startYear, endYear, zoomLevel, categories, continent } = query;
+    const maxImportanceRank = query.maxImportanceRank ?? 2;
     const result: TimelineEvent[] = [];
 
     for (const cat of categories) {
@@ -51,6 +54,7 @@ export class EventIndex {
         if (evEnd < startYear) continue;
         if (ev.continent !== 'global' && ev.continent !== continent) continue;
         if (ev.minZoomLevel > zoomLevel) continue;
+        if (!passesImportance(ev, maxImportanceRank)) continue;
         result.push(ev);
       }
     }

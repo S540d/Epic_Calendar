@@ -10,6 +10,8 @@
 
 ### Added
 
+- **Lineage-Verbindungslinien (lineageId verdrahtet):** `assignTracks` legt Events mit gleicher `lineageId` bevorzugt in dieselbe Zeile (sofern überlappungsfrei); neue `computeLineageConnectors`-Funktion erzeugt Verbindungslinien zwischen aufeinanderfolgenden Lineage-Events, die beide Renderer (Skia/Web) unter den Balken zeichnen. Macht politische Nachfolge (z. B. polynesische/Bantu-Expansion, Java-Reiche) sichtbar.
+- **Detailgrad-Filter (`importance` verdrahtet):** Neuer `DetailLevelSelector` (Wesentliches/Standard/Alles) als kumulativer Schwellwert über das `importance`-Feld — manuelle Ergänzung zum automatischen Zoom-LOD. Persistiert via AsyncStorage (`detailLevel`), Default „Alles" (abwärtskompatibel). Events ohne `importance` zählen als `extended`.
 - **Wissenschaft-Events gerettet (#122):** 4 Events aus `feature/natur-wissenschaft-highlights-v3` wurden wiederhergestellt, die beim Merge von v5 verloren gingen: Einstein Annus Mirabilis (1905), Sputnik 1 (1957), Juri Gagarin (1961), Apollo 11 (1969). `natur-wissenschaft.json` enthält jetzt 6 statt 2 Events.
 - **CLAUDE.md: Web-Renderer-Doku (#115):** Architekturnotiz zum viewport-relativen Web-Renderer (`TimelineCanvasWeb`, GestureDetector + Mausrad-Shim, unified viewport-Hook) nachgezogen.
 - **Ozeanien-Daten (Issue #121):** Neue Datei `src/data/events/ozeanien.json` mit 30 Events: australische Aborigines (65.000 v. Chr.), Lapita-Kultur, polynesische Expansion (Samoa/Tonga → Marquesas → Hawaii → Osterinsel → Maori-Neuseeland) mit `lineageId: "polynesische-expansion"`, Nan Madol, Europäische Entdeckung & Kolonisierung.
@@ -18,7 +20,7 @@
   - `erdzeitalter.json` +9: Regionale Steinzeit-Events (Lascaux, Altamira, Göbekli Tepe, Jōmon-Kultur, San-Kulturen Afrikas, Mal'ta-Buret' Sibirien).
   - `afrika.json` +11: Ishango-Knochen, Bantu-Expansion (`lineageId: "bantu-expansion"`), Nok-Kultur, Garamanten, D'mt-Reich, Kanem-Reich, Kilwa-Sultanat, Mutapa-Reich.
   - `amerika.json` +7: Poverty Point, Pueblo/Anasazi, Cahokia, Tairona-Kultur.
-- `lineageId` konsequent in neuen Daten eingesetzt: `"polynesische-expansion"`, `"bantu-expansion"`, `"java-reiche"`, `"srivijaya"` — bereit für spätere Rendering-Implementierung.
+- `lineageId` konsequent in neuen Daten eingesetzt: `"polynesische-expansion"`, `"bantu-expansion"`, `"java-reiche"`, `"srivijaya"` — wird jetzt als Verbindungslinie gerendert (siehe oben).
 
 ### Changed
 

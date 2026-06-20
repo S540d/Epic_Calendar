@@ -34,7 +34,7 @@ import {
   typography,
   type Category,
 } from '@/theme/tokens';
-import type { TrackMap } from '@/timeline/culling';
+import type { LineageConnector, TrackMap } from '@/timeline/culling';
 import {
   MAX_EVENTS_PER_LANE,
   MIN_HIT_PX,
@@ -48,6 +48,7 @@ type Props = {
   laneTrackCounts: Map<Category, number>;
   visibleByLane: Map<Category, TimelineEvent[]>;
   tracksByLane: Map<Category, TrackMap>;
+  connectorsByLane: Map<Category, LineageConnector[]>;
   overflowCounts: Map<Category, number>;
   labelVisibleIds: Set<string>;
   canvasWidth: number;
@@ -81,6 +82,7 @@ export function TimelineCanvasWeb({
   laneTrackCounts,
   visibleByLane,
   tracksByLane,
+  connectorsByLane,
   overflowCounts,
   labelVisibleIds,
   canvasWidth,
@@ -264,6 +266,7 @@ export function TimelineCanvasWeb({
                 // Clip to MAX_EVENTS_PER_LANE; excess is shown as badge in lane label.
                 const events = (visibleByLane.get(cat) ?? []).slice(0, MAX_EVENTS_PER_LANE);
                 const trackMap = tracksByLane.get(cat);
+                const connectors = connectorsByLane.get(cat) ?? [];
                 const lblSize = eventLabelFontSize(zoomLevel);
                 const maxLines = eventLabelMaxLines(zoomLevel);
                 return (
@@ -278,6 +281,29 @@ export function TimelineCanvasWeb({
                         backgroundColor: colors.laneBg[cat],
                       }}
                     />
+                    {/* Lineage continuation lines — drawn under the bars. */}
+                    {connectors.map((c, ci) => {
+                      const x1 = (yearToT(c.fromYear) - jsOffsetX) * WEB_PPU;
+                      const x2 = (yearToT(c.toYear) - jsOffsetX) * WEB_PPU;
+                      if (x2 < 0 || x1 > canvasWidth) return null;
+                      const barTop = laneTop + LANE_PADDING_V + c.track * TRACK_HEIGHT + 4;
+                      const cy = barTop + (TRACK_HEIGHT - 8) / 2 - 1;
+                      return (
+                        <View
+                          key={`conn-${cat}-${ci}`}
+                          pointerEvents="none"
+                          style={{
+                            position: 'absolute',
+                            left: x1,
+                            top: cy,
+                            width: Math.max(1, x2 - x1),
+                            height: 2,
+                            backgroundColor: colors.category[cat],
+                            opacity: 0.45,
+                          }}
+                        />
+                      );
+                    })}
                     {events.map((ev) => {
                       const startT = yearToT(ev.startYear);
                       const endT = yearToT(ev.endYear ?? ev.startYear);

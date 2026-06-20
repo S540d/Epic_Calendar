@@ -1,4 +1,10 @@
-import { assignTracks, computeLaneData, filterVisible, type VisibilityFilter } from '../culling';
+import {
+  assignTracks,
+  computeLaneData,
+  computeLineageConnectors,
+  filterVisible,
+  type VisibilityFilter,
+} from '../culling';
 import type { TimelineEvent } from '@/data/schema';
 import type { Category } from '@/theme/tokens';
 
@@ -76,6 +82,28 @@ describe('timeline/culling.filterVisible', () => {
     const f = { ...base, zoomLevel: 1 as const };
     expect(filterVisible([e], f)).toEqual([]);
   });
+
+  it('shows all importance tiers by default (no threshold)', () => {
+    const core = ev({ id: 'core', startYear: 100, importance: 'core' });
+    const detail = ev({ id: 'detail', startYear: 200, importance: 'detail' });
+    expect(filterVisible([core, detail], base)).toEqual([core, detail]);
+  });
+
+  it('maxImportanceRank=core hides extended and detail tiers', () => {
+    const core = ev({ id: 'core', startYear: 100, importance: 'core' });
+    const extended = ev({ id: 'extended', startYear: 200, importance: 'extended' });
+    const detail = ev({ id: 'detail', startYear: 300, importance: 'detail' });
+    const f = { ...base, maxImportanceRank: 0 };
+    expect(filterVisible([core, extended, detail], f)).toEqual([core]);
+  });
+
+  it('treats events without importance as the extended tier', () => {
+    const undef = ev({ id: 'undef', startYear: 100 });
+    // core threshold (rank 0) excludes the implicit extended (rank 1).
+    expect(filterVisible([undef], { ...base, maxImportanceRank: 0 })).toEqual([]);
+    // extended threshold (rank 1) includes it.
+    expect(filterVisible([undef], { ...base, maxImportanceRank: 1 })).toEqual([undef]);
+  });
 });
 
 describe('timeline/culling.assignTracks', () => {
@@ -128,6 +156,49 @@ describe('timeline/culling.assignTracks', () => {
     const result = assignTracks([a, b]);
     expect(result.get('a')).toBe(0);
     expect(result.get('b')).toBe(0);
+  });
+
+  it('keeps non-overlapping lineage successors on the same track', () => {
+    // A long-running other event would push a greedy successor to track 1,
+    // but the shared lineage keeps the successor on track 0.
+    const a = ev({ id: 'a', startYear: 0, endYear: 100, lineageId: 'L' });
+    const other = ev({ id: 'other', startYear: 50, endYear: 400 }); // forces track 1
+    const b = ev({ id: 'b', startYear: 150, endYear: 250, lineageId: 'L' });
+    const result = assignTracks([a, other, b]);
+    expect(result.get('a')).toBe(0);
+    expect(result.get('other')).toBe(1);
+    expect(result.get('b')).toBe(0); // follows its lineage, not the free track 1
+  });
+});
+
+describe('timeline/culling.computeLineageConnectors', () => {
+  it('connects consecutive same-lineage events on the same track', () => {
+    const a = ev({ id: 'a', startYear: 0, endYear: 100, lineageId: 'L' });
+    const b = ev({ id: 'b', startYear: 150, endYear: 250, lineageId: 'L' });
+    const tracks = assignTracks([a, b]);
+    const connectors = computeLineageConnectors([a, b], tracks);
+    expect(connectors).toEqual([{ lineageId: 'L', fromYear: 100, toYear: 150, track: 0 }]);
+  });
+
+  it('emits no connector when there is no gap (overlap/back-to-back)', () => {
+    const a = ev({ id: 'a', startYear: 0, endYear: 150, lineageId: 'L' });
+    const b = ev({ id: 'b', startYear: 150, endYear: 250, lineageId: 'L' });
+    const tracks = assignTracks([a, b]);
+    expect(computeLineageConnectors([a, b], tracks)).toEqual([]);
+  });
+
+  it('ignores events without a lineageId', () => {
+    const a = ev({ id: 'a', startYear: 0, endYear: 100 });
+    const b = ev({ id: 'b', startYear: 200, endYear: 300 });
+    const tracks = assignTracks([a, b]);
+    expect(computeLineageConnectors([a, b], tracks)).toEqual([]);
+  });
+
+  it('skips events that have no rendered track (beyond the cap)', () => {
+    const a = ev({ id: 'a', startYear: 0, endYear: 100, lineageId: 'L' });
+    const b = ev({ id: 'b', startYear: 150, endYear: 250, lineageId: 'L' });
+    const tracks = assignTracks([a]); // b has no track entry
+    expect(computeLineageConnectors([a, b], tracks)).toEqual([]);
   });
 });
 
