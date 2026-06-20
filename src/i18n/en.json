@@ -88,10 +88,11 @@
   "landmark": {
     "bigBang": "Big Bang",
     "earthFormation": "Earth forms",
-    "moonFormation": "Moon forms",
     "firstLife": "First Life",
+    "firstMammals": "First mammals",
     "dinosaurs": "Dinosaurs",
-    "firstHominids": "First Hominids"
+    "firstHominids": "First Hominids",
+    "quietEon": "Billions of years: just microbes"
   },
   "minimap": {
     "label": "Timeline overview",

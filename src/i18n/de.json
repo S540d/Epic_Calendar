@@ -88,10 +88,11 @@
   "landmark": {
     "bigBang": "Urknall",
     "earthFormation": "Erde entsteht",
-    "moonFormation": "Mond entsteht",
     "firstLife": "Erstes Leben",
+    "firstMammals": "Erste Säugetiere",
     "dinosaurs": "Dinos",
-    "firstHominids": "Erste Hominide"
+    "firstHominids": "Erste Hominide",
+    "quietEon": "Milliarden Jahre nur Mikroben"
   },
   "minimap": {
     "label": "Zeitstrahl-Übersicht",

@@ -29,18 +29,18 @@ const LANDMARKS: Landmark[] = [
     color: '#4A8FA8',
   },
   {
-    key: 'moonFormation',
-    year: -4_500_000_000,
-    navStart: -4_600_000_000,
-    navEnd: -541_000_000,
-    color: '#7BAAC8',
-  },
-  {
     key: 'firstLife',
     year: -3_800_000_000,
     navStart: -4_600_000_000,
     navEnd: -541_000_000,
     color: '#4FA86A',
+  },
+  {
+    key: 'firstMammals',
+    year: -225_000_000,
+    navStart: -252_000_000,
+    navEnd: -66_000_000,
+    color: '#C9A23A',
   },
   {
     key: 'dinosaurs',
@@ -175,6 +175,26 @@ export function LandmarkTimeline({ onSelectEpoch }: Props) {
           );
         })}
 
+      {/* Annotation für die lange "leere" Phase: Milliarden Jahre nur Mikroben */}
+      {width > 0 &&
+        (() => {
+          const life = LANDMARKS.find((l) => l.key === 'firstLife');
+          const mammals = LANDMARKS.find((l) => l.key === 'firstMammals');
+          if (!life || !mammals) return null;
+          const xLife = linearPos(life.year) * width;
+          const xMammals = linearPos(mammals.year) * width;
+          const gap = xMammals - xLife;
+          if (gap < 80) return null;
+          return (
+            <Text
+              style={[styles.quietEon, { top: LINE_Y + 8, left: xLife, width: gap }]}
+              numberOfLines={1}
+            >
+              {t('landmark.quietEon')}
+            </Text>
+          );
+        })()}
+
       {width > 0 &&
         (() => {
           const dinos = LANDMARKS.find((l) => l.key === 'dinosaurs');
@@ -265,6 +285,14 @@ const styles = StyleSheet.create({
     ...typography.caption,
     fontSize: 8,
     lineHeight: 11,
+    textAlign: 'center',
+    color: colors.textMuted,
+  },
+  quietEon: {
+    ...typography.caption,
+    position: 'absolute',
+    fontSize: 9,
+    fontStyle: 'italic',
     textAlign: 'center',
     color: colors.textMuted,
   },
