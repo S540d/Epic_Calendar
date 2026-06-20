@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { LandmarkTimeline } from './LandmarkTimeline';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
@@ -24,8 +25,17 @@ const EPOCH_COLORS: Record<string, string> = {
   stoneAge: '#8E9E6A',
   ancientCiv: '#B88B4A',
   antiquity: '#C28B4A',
+  earlyAntiquity: '#D4A055',
+  hellenism: '#C8955A',
+  lateAntiquity: '#B87848',
   middleAges: '#A07040',
+  earlyMiddleAges: '#9A7A50',
+  highMiddleAges: '#907060',
+  lateMiddleAges: '#806050',
   modern: '#CF8A30',
+  earlyModern: '#D4943A',
+  industrial: '#C48030',
+  contemporary: '#BA7020',
 };
 
 function formatDuration(startYear: number, endYear: number, t: TFunction): string {
@@ -57,67 +67,22 @@ function formatYearLabel(year: number, t: TFunction): string {
   return `${formatted}${suffix}`;
 }
 
-type SchematicTimelineProps = {
-  onSelectEpoch: (startYear: number, endYear: number) => void;
-  activeEpochKey?: string;
-};
-
-function SchematicTimeline({ onSelectEpoch, activeEpochKey }: SchematicTimelineProps) {
-  const { t } = useTranslation();
-  const topLevel = NAVIGATION_EPOCHS;
-
-  return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      style={styles.schematicContainer}
-      contentContainerStyle={styles.schematicContent}
-    >
-      {topLevel.map((epoch) => {
-        const color = EPOCH_COLORS[epoch.key] ?? colors.accent;
-        const isActive = epoch.key === activeEpochKey;
-        return (
-          <Pressable
-            key={epoch.key}
-            style={({ pressed }) => [
-              styles.schematicSegment,
-              { backgroundColor: color + 'CC' },
-              isActive && styles.schematicSegmentActive,
-              pressed && styles.schematicSegmentPressed,
-            ]}
-            onPress={() => onSelectEpoch(epoch.startYear, epoch.endYear)}
-            accessibilityRole="button"
-            accessibilityLabel={t(`epochNav.${epoch.key}`)}
-          >
-            {isActive && <View style={[styles.schematicIndicator, { backgroundColor: color }]} />}
-            <Text style={styles.schematicLabel} numberOfLines={2}>
-              {t(`epochNav.${epoch.key}`)}
-            </Text>
-          </Pressable>
-        );
-      })}
-    </ScrollView>
-  );
-}
-
 type EpochTileProps = {
   epoch: NavigationEpoch;
   onPress: (startYear: number, endYear: number) => void;
-  indent?: boolean;
+  level?: 0 | 1 | 2;
 };
 
-function EpochTile({ epoch, onPress, indent = false }: EpochTileProps) {
+function EpochTile({ epoch, onPress, level = 0 }: EpochTileProps) {
   const { t } = useTranslation();
   const color = EPOCH_COLORS[epoch.key] ?? colors.accent;
   const handlePress = useCallback(() => onPress(epoch.startYear, epoch.endYear), [onPress, epoch]);
+  const indentStyle =
+    level === 1 ? styles.tileIndent : level === 2 ? styles.tileIndent2 : undefined;
 
   return (
     <Pressable
-      style={({ pressed }) => [
-        styles.tile,
-        indent && styles.tileIndent,
-        pressed && styles.tilePressed,
-      ]}
+      style={({ pressed }) => [styles.tile, indentStyle, pressed && styles.tilePressed]}
       onPress={handlePress}
       accessibilityRole="button"
       accessibilityLabel={t(`epochNav.${epoch.key}`)}
@@ -171,7 +136,7 @@ export function EpochOverviewScreen({
         </Pressable>
       </View>
 
-      <SchematicTimeline onSelectEpoch={handleEpochPress} />
+      <LandmarkTimeline onSelectEpoch={handleEpochPress} />
 
       <ScrollView
         style={styles.scroll}
@@ -180,9 +145,19 @@ export function EpochOverviewScreen({
       >
         {NAVIGATION_EPOCHS.map((epoch) => (
           <View key={epoch.key}>
-            <EpochTile epoch={epoch} onPress={handleEpochPress} />
+            <EpochTile epoch={epoch} onPress={handleEpochPress} level={0} />
             {epoch.children?.map((child) => (
-              <EpochTile key={child.key} epoch={child} onPress={handleEpochPress} indent />
+              <View key={child.key}>
+                <EpochTile epoch={child} onPress={handleEpochPress} level={1} />
+                {child.children?.map((grandchild) => (
+                  <EpochTile
+                    key={grandchild.key}
+                    epoch={grandchild}
+                    onPress={handleEpochPress}
+                    level={2}
+                  />
+                ))}
+              </View>
             ))}
           </View>
         ))}
@@ -240,51 +215,13 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontWeight: '700',
   },
-  schematicContainer: {
-    height: 56,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  schematicContent: {
-    flexDirection: 'row',
-    alignItems: 'stretch',
-    height: 56,
-  },
-  schematicSegment: {
-    minWidth: 60,
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: spacing.xs,
-    position: 'relative',
-  },
-  schematicSegmentActive: {
-    borderBottomWidth: 3,
-    borderBottomColor: 'rgba(255,255,255,0.9)',
-  },
-  schematicSegmentPressed: {
-    opacity: 0.75,
-  },
-  schematicIndicator: {
-    position: 'absolute',
-    top: 4,
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  schematicLabel: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#fff',
-    textAlign: 'center',
-    lineHeight: 13,
-  },
   scroll: {
     flex: 1,
   },
   scrollContent: {
-    padding: spacing.md,
-    gap: spacing.xs,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.md,
   },
   tile: {
     flexDirection: 'row',
@@ -298,6 +235,10 @@ const styles = StyleSheet.create({
   },
   tileIndent: {
     marginLeft: spacing.md,
+    borderRadius: radii.sm - 2,
+  },
+  tileIndent2: {
+    marginLeft: spacing.md * 2,
     borderRadius: radii.sm - 2,
   },
   tilePressed: {

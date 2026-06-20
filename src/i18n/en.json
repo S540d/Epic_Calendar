@@ -12,12 +12,12 @@
   },
   "continent": {
     "all": "All",
+    "global": "Global",
     "europa": "Europe",
     "asien": "Asia",
     "afrika": "Africa",
     "amerika": "Americas",
-    "ozeanien": "Oceania",
-    "global": "Global"
+    "ozeanien": "Oceania"
   },
   "chip": {
     "soon": "soon"
@@ -73,29 +73,25 @@
     "stoneAge": "Stone Age",
     "ancientCiv": "Early Civilizations",
     "antiquity": "Antiquity",
+    "earlyAntiquity": "Early Antiquity",
+    "hellenism": "Hellenism",
+    "lateAntiquity": "Late Antiquity",
     "middleAges": "Middle Ages",
-    "modern": "Modern Era"
+    "earlyMiddleAges": "Early Middle Ages",
+    "highMiddleAges": "High Middle Ages",
+    "lateMiddleAges": "Late Middle Ages",
+    "modern": "Modern Era",
+    "earlyModern": "Early Modern",
+    "industrial": "Industrial Age",
+    "contemporary": "Contemporary"
   },
-  "epochNav": {
-    "title": "Time Journey",
-    "subtitle": "Choose an epoch to explore",
-    "allTime": "Full Timeline",
-    "back": "← Back",
-    "durationBillion": "{{n}} Bn years",
-    "durationMillion": "{{n}} M years",
-    "durationThousand": "{{n}} k years",
-    "durationYears": "{{n}} years",
-    "cosmicDawn": "Cosmic Dawn",
-    "earlyEarth": "Early Earth & Life",
-    "paleozoic": "Paleozoic",
-    "mesozoic": "Mesozoic (Dinosaurs)",
-    "cenozoic": "Cenozoic (Mammals)",
-    "humanHistory": "Human History",
-    "stoneAge": "Stone Age",
-    "ancientCiv": "Early Civilizations",
-    "antiquity": "Antiquity",
-    "middleAges": "Middle Ages",
-    "modern": "Modern Era"
+  "landmark": {
+    "bigBang": "Big Bang",
+    "earthFormation": "Earth forms",
+    "moonFormation": "Moon forms",
+    "firstLife": "First Life",
+    "dinosaurs": "Dinosaurs",
+    "firstHominids": "First Hominids"
   },
   "minimap": {
     "label": "Timeline overview",

@@ -10,8 +10,8 @@ type Props = {
   onChange: (c: Continent) => void;
 };
 
-const TABS: Continent[] = ['europa', 'asien', 'afrika', 'amerika', 'ozeanien'];
-const ENABLED: Continent[] = ['europa', 'asien', 'afrika', 'amerika'];
+const TABS: Continent[] = ['global', 'europa', 'asien', 'afrika', 'amerika', 'ozeanien'];
+const ENABLED: Continent[] = ['global', 'europa', 'asien', 'afrika', 'amerika'];
 
 export function ContinentTabBar({ active, onChange }: Props) {
   const { t } = useTranslation();

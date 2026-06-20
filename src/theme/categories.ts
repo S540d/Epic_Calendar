@@ -53,7 +53,8 @@ const CATEGORY_LIST = [
     labelKey: 'category.natur',
     chipOrder: 4,
     laneOrder: 2,
-    enabled: false,
+    enabled: true,
+    defaultActive: true,
   },
   {
     id: 'zivilisation',

@@ -9,6 +9,7 @@ import { type SharedValue } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 import { EpochBand } from './EpochBand';
 import { EpochChipBar } from './EpochChipBar';
+import { EpochNavArrows } from './EpochNavArrows';
 import { TimeAxis } from './TimeAxis';
 import { TimelineBreadcrumb } from './TimelineBreadcrumb';
 import { TimelineMinimap } from './TimelineMinimap';
@@ -383,6 +384,13 @@ export function TimelineCanvasWeb({
             </View>
           </GestureDetector>
         </View>
+      </View>
+      <View style={[StyleSheet.absoluteFill, { left: LANE_LABEL_WIDTH }]} pointerEvents="box-none">
+        <EpochNavArrows
+          visibleStartYear={visibleStartYear}
+          visibleEndYear={visibleEndYear}
+          onJump={zoomToFit}
+        />
       </View>
       <View
         style={[

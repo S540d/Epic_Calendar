@@ -20,10 +20,37 @@ export const NAVIGATION_EPOCHS: readonly NavigationEpoch[] = [
     endYear: 2026,
     children: [
       { key: 'stoneAge', startYear: -2_580_000, endYear: -10_000 },
-      { key: 'ancientCiv', startYear: -10_000, endYear: -500 },
-      { key: 'antiquity', startYear: -500, endYear: 500 },
-      { key: 'middleAges', startYear: 500, endYear: 1500 },
-      { key: 'modern', startYear: 1500, endYear: 2026 },
+      { key: 'ancientCiv', startYear: -10_000, endYear: -800 },
+      {
+        key: 'antiquity',
+        startYear: -800,
+        endYear: 600,
+        children: [
+          { key: 'earlyAntiquity', startYear: -800, endYear: -323 },
+          { key: 'hellenism', startYear: -323, endYear: -27 },
+          { key: 'lateAntiquity', startYear: -27, endYear: 600 },
+        ],
+      },
+      {
+        key: 'middleAges',
+        startYear: 600,
+        endYear: 1500,
+        children: [
+          { key: 'earlyMiddleAges', startYear: 600, endYear: 1000 },
+          { key: 'highMiddleAges', startYear: 1000, endYear: 1250 },
+          { key: 'lateMiddleAges', startYear: 1250, endYear: 1500 },
+        ],
+      },
+      {
+        key: 'modern',
+        startYear: 1500,
+        endYear: 2026,
+        children: [
+          { key: 'earlyModern', startYear: 1500, endYear: 1800 },
+          { key: 'industrial', startYear: 1800, endYear: 1950 },
+          { key: 'contemporary', startYear: 1950, endYear: 2026 },
+        ],
+      },
     ],
   },
 ];

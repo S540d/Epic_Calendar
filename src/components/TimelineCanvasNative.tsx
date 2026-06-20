@@ -8,6 +8,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { EpochBand } from './EpochBand';
 import { EpochChipBar } from './EpochChipBar';
+import { EpochNavArrows } from './EpochNavArrows';
 import { TimeAxis } from './TimeAxis';
 import { TimelineBreadcrumb } from './TimelineBreadcrumb';
 import { TimelineMinimap } from './TimelineMinimap';
@@ -315,6 +316,16 @@ export function TimelineCanvasNative({
             </View>
           </View>
         </GestureDetector>
+        <View
+          style={[StyleSheet.absoluteFill, { left: LANE_LABEL_WIDTH }]}
+          pointerEvents="box-none"
+        >
+          <EpochNavArrows
+            visibleStartYear={viewportRange.startYear}
+            visibleEndYear={viewportRange.endYear}
+            onJump={zoomToFit}
+          />
+        </View>
       </View>
       <View style={styles.zoomButtons} pointerEvents="box-none">
         <TouchableOpacity

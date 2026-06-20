@@ -63,12 +63,11 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 ### Besonderheiten der Zeitachse
 
 - Logarithmische Zeitskala: `yearToT(year)` / `tToYear(t)` aus `@/timeline/scale`
-- LOD-Bänder steuern welche Events bei welchem Zoom sichtbar sind
-  - Bandgrenzen: `< 12` → 0, `< 30` → 1, `< 100` → 2, `< 500` → 3, else → 4
+- LOD-Bänder steuern welche Events bei welchem Zoom sichtbar sind (ppu-Schwellen: `2e-6` / `5e-4` / `0.02` / `2` → Level 0–4)
 - `culling.ts`: filtert Events außerhalb des Viewports; `computeLaneData` akzeptiert optionales `eventIndex?` für O(hits+log n)-Queries sowie `maxImportanceRank?` (Detailgrad-Filter) und liefert zusätzlich `connectorsByLane`. `assignTracks` ist lineage-aware (gleiche `lineageId` bevorzugt dieselbe Zeile); `computeLineageConnectors(events, trackMap)` baut die Verbindungslinien zwischen aufeinanderfolgenden Lineage-Events.
 - `eventIndex.ts`: `EventIndex`-Klasse — Kategorie-partitioniert, startYear-sortiert; `buildEventIndex(events)` + `queryVisible(query)` (Binärsuche); in `TimelineView` verdrahtet via `computeLaneData`
 - `formatYear.ts`: formatiert Jahreszahlen (v. Chr., Mio., Mrd.)
-- `lod.ts`: Level-of-Detail-Berechnung, exportiert `T_MIN`, `T_MAX`, `FULL_T_SPAN`
+- `lod.ts`: Level-of-Detail-Berechnung, exportiert `T_MIN`, `T_MAX`, `FULL_T_SPAN`; `PRESENT_RIGHT_BUFFER_YEARS = 200` + `clampOffsetX()` begrenzen Scroll nach rechts
 - `scale.ts`: `yearToT`, `tToYear`, `pixelToYear`, `viewportYearRange`
 - `epoch.ts`: Epoche-Mapping für Breadcrumb + `NavigationEpoch`-Typ + `NAVIGATION_EPOCHS`-Baum (kosmische Frühzeit → Neuzeit)
 - **MAX_EVENTS_PER_LANE = 40** (in `timelineRenderShared.ts`) – Skia-Loop, Hit-Test und Label-Overlay sind alle auf diesen Wert gecappt. Überschuss erscheint als Cluster-Badge.
@@ -79,7 +78,7 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 
 ### Datenhaltung
 
-- `src/data/` – statische Daten (Europa, Asien, Afrika, Amerika)
+- `src/data/` – statische Daten: 7 JSON-Dateien, 543 Events gesamt (europa, asien, afrika, amerika, ozeanien, erdzeitalter, natur-wissenschaft)
 - `src/data/schema.ts` – gemeinsames Event-Schema (`TimelineEvent` mit optionalen Feldern: `importance`, `tags`, `lineageId`, `regions` seit Phase 1.2). `importance`/`lineageId` sind verdrahtet: `importanceRank`/`passesImportance`-Helfer + `IMPORTANCE_RANK` speisen den Detailgrad-Filter; `lineageId` steuert Track-Zuordnung + Verbindungslinien. `tags`/`regions` bleiben Slots.
 - `src/data/regions.ts` – `RegionConfig`-Typ + `REGIONS`-Skelett für hierarchische Geo-Filter (Phase 1.4; kein UI bis Phase 3)
 - `docs/event-flags.md` – menschenlesbare Flag-Referenz: alle Event-Achsen mit Pflicht/optional, Werten, LOD-Tabelle (Phase 1.5)
@@ -88,7 +87,7 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 ### Build & Test
 
 ```bash
-npm test          # Jest-Tests (180 Unit-Tests)
+npm test          # Jest-Tests
 npm run lint      # ESLint (flat-config via eslint.config.cjs)
 npm run type-check # TypeScript
 npm run build:web  # Expo Web-Export (GitHub Pages)
@@ -117,17 +116,19 @@ src/
 │   ├── TimelineBreadcrumb.tsx     # Zoom-Breadcrumb mit Epochen-Kontext
 │   ├── TimelineMinimap.tsx        # Übersichtsleiste (Tap + a11y-Actions)
 │   ├── EpochBand.tsx              # Visuelles Epochen-Band (ersetzt EpochJumpBar)
+│   ├── EpochChipBar.tsx           # Zweistufige Chip-Leiste für schnelle Epochen-Navigation
+│   ├── EpochNavArrows.tsx         # Quick-Jump-Pfeile (← Epoche / Epoche →) im Timeline-Header
 │   ├── EpochOverviewScreen.tsx    # Landing Page: Epochen-Kacheln als Einstieg
 │   ├── FilterChipBar.tsx          # Kategorie-/Kontinent-Filter
 │   ├── DetailLevelSelector.tsx    # Detailgrad-Filter (importance: Wesentliches/Standard/Alles)
+│   ├── LandmarkTimeline.tsx       # Landmark-Zeitstrahl auf der Landing Page (schematisch)
 │   ├── ContinentTabBar.tsx        # Kontinent-Auswahl
 │   ├── ZoomLevelIndicator.tsx     # Persistenter LOD-Indikator
-│   ├── EventPickerPopover.tsx     # Disambiguierung bei überlappenden Events
 │   └── ui/                        # Shared UI-Primitives
 ├── data/
 │   ├── schema.ts              # Event-Typen (inkl. optionale Slots: importance, tags, lineageId, regions)
 │   ├── regions.ts             # RegionConfig + REGIONS-Skelett (Phase 1.4, kein UI)
-│   ├── events/                # Statische JSON-Daten (europa, asien, afrika, amerika, erdzeitalter)
+│   ├── events/                # Statische JSON-Daten: europa (186), asien (90), afrika (65), amerika (70), ozeanien (40), erdzeitalter (28), natur-wissenschaft (64) → 543 Events gesamt
 │   └── ...
 ├── timeline/
 │   ├── culling.ts             # Viewport-Culling + computeLaneData() (opt. eventIndex, maxImportanceRank) + lineage-aware assignTracks + computeLineageConnectors
