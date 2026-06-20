@@ -47,7 +47,10 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 - Target: **immer `testing`** (nicht main)
 - CI muss grün sein vor Merge
 - Merge Feature→testing: `gh pr merge <nr> --squash --delete-branch`
-- Merge testing→main: `gh pr merge <nr> --squash` (kein `--delete-branch`!) + `--admin`
+  - **Squash nur hier** (Feature-Branch wird verworfen → kompakte Historie).
+- Merge testing→main: `gh pr merge <nr> --merge` (echter Merge-Commit, **kein Squash**, kein `--delete-branch`) + `--admin`
+  - **Kein Squash zwischen zwei langlebigen Branches:** Squash erzeugt auf `main` einen neuen Commit ohne `testing` als Vorfahr → die Branches teilen keine Historie mehr und jeder Folge-Sync produziert dieselben Konflikte (Divergenz). Ein Merge-Commit hält `testing`-Commits als Vorfahren von `main`.
+  - Danach: `main` → `testing` zurückführen (`gh pr merge --merge` oder Fast-Forward), damit `testing` ≥ `main` bleibt.
 
 ---
 
@@ -71,7 +74,8 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 - `scale.ts`: `yearToT`, `tToYear`, `pixelToYear`, `viewportYearRange`
 - `epoch.ts`: Epoche-Mapping für Breadcrumb + `NavigationEpoch`-Typ + `NAVIGATION_EPOCHS`-Baum (kosmische Frühzeit → Neuzeit)
 - **MAX_EVENTS_PER_LANE = 40** (in `timelineRenderShared.ts`) – Skia-Loop, Hit-Test und Label-Overlay sind alle auf diesen Wert gecappt. Überschuss erscheint als Cluster-Badge.
-- **Lineare Skala (seit #93 Phase 2):** Die Zeitachse verwendet **viewport-lokal lineare** Abbildung (Modell B). `yearToT(year) = year` / `tToYear(t) = t` sind Identity-Funktionen; `pixelsPerUnit` = Pixel pro Jahr. LOD-Schwellen: 2e-6 / 5e-4 / 0.02 / 2 (ppu). Der Gesamtüberblick ist als `SchematicTimeline` auf der Landing Page verfügbar.
+- **Lineare Skala (seit #93 Phase 2):** Die Zeitachse verwendet **viewport-lokal lineare** Abbildung (Modell B). `yearToT(year) = year` / `tToYear(t) = t` sind Identity-Funktionen; `pixelsPerUnit` = Pixel pro Jahr. LOD-Schwellen: 2e-6 / 5e-4 / 0.02 / 2 (ppu). Der Gesamtüberblick ist als `LandmarkTimeline` auf der Landing Page verfügbar.
+- **Landing-Page-Zeitstrahl linear (`LandmarkTimeline`):** Die **Erdgeschichte ist linear** skaliert (`linearPos()`, konsistent zu Modell B der interaktiven Timeline) — von der Erdentstehung (`EARTH_FORMATION_YEAR = -4.6 Mrd.`) bis heute (`PRESENT_YEAR = 2026`). Der **Urknall** liegt außerhalb dieser Skala (würde die Erdgeschichte sonst zu einem Punkt stauchen) und wird als fixer Marker links neben der Erdentstehung platziert (`BIG_BANG_FRAC = 0.05`, Achsenbeginn `AXIS_START_FRAC = 0.2`). Urknall **und** Erdentstehung zeigen ihren **Zeitpunkt** (`formatEventYear`, via `SHOW_YEAR`-Set) und sind durch einen Achsenbruch (gestrichelte Prelude-Linie + `//`-Glyph) getrennt. **Nicht mehr logarithmisch** (kein `logPos`/`Math.log10` mehr). Kuratierte Landmarks (von links nach rechts): Urknall (außerhalb) → Erde entsteht → Erstes Leben (-3,8 Mrd.) → [Annotation: „Milliarden Jahre nur Mikroben"] → Erste Säugetiere (-225 Mio.) → Dinos (-252–66 Mio., als Balken) → Erste Hominide (-2,5 Mio.). Mondentstehung entfernt (auf linearer Skala redundant zur Erdentstehung).
 - **Web-Renderer viewport-relativ (seit #115):** `TimelineCanvasWeb` rendert Balken wie Native: `x = (startYear − jsOffsetX) × ppu`. Kein `webCanvasWidth` (wäre Milliarden Pixel breit). Pan via RNGH `GestureDetector` + `wheel`-Event-Shim (Ctrl/⌘+Wheel = Zoom). `useTimelineViewport` hat keine Platform-Branches mehr — `withTiming` gilt für web und native gleich.
 - **Lineage-Verbindungslinien (`lineageId` verdrahtet):** `assignTracks` hält nicht-überlappende Nachfolger derselben `lineageId` in einer Zeile; `computeLineageConnectors` erzeugt die Linien (`connectorsByLane`), die beide Renderer **unter** den Balken zeichnen (gedämpfte Kategoriefarbe, ~2 px).
 - **Detailgrad-Filter (`importance` verdrahtet):** `DetailLevelSelector` (Wesentliches/Standard/Alles) setzt `maxImportanceRank` als kumulativen Schwellwert in `filterVisible`/`queryVisible`. Default „Alles" (= alles sichtbar, abwärtskompatibel); Events ohne `importance` zählen als `extended`. Ergänzt den automatischen Zoom-LOD um eine manuelle Achse; persistiert als `detailLevel`.
@@ -121,7 +125,7 @@ src/
 │   ├── EpochOverviewScreen.tsx    # Landing Page: Epochen-Kacheln als Einstieg
 │   ├── FilterChipBar.tsx          # Kategorie-/Kontinent-Filter
 │   ├── DetailLevelSelector.tsx    # Detailgrad-Filter (importance: Wesentliches/Standard/Alles)
-│   ├── LandmarkTimeline.tsx       # Landmark-Zeitstrahl auf der Landing Page (schematisch)
+│   ├── LandmarkTimeline.tsx       # Landmark-Zeitstrahl auf der Landing Page (linear; Urknall außerhalb der Skala)
 │   ├── ContinentTabBar.tsx        # Kontinent-Auswahl
 │   ├── ZoomLevelIndicator.tsx     # Persistenter LOD-Indikator
 │   └── ui/                        # Shared UI-Primitives
