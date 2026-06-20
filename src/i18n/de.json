@@ -3,6 +3,14 @@
     "title": "Epic Calendar",
     "subtitle": "Logarithmischer Zeitstrahl – vom Urknall bis heute"
   },
+  "settings": {
+    "title": "Einstellungen",
+    "close": "Schließen",
+    "appearance": "Erscheinungsbild",
+    "darkMode": "Dunkelmodus",
+    "display": "Darstellung",
+    "language": "Sprache"
+  },
   "category": {
     "erdzeitalter": "Erdzeitalter",
     "zivilisation": "Zivilisationen",

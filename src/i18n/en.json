@@ -3,6 +3,14 @@
     "title": "Epic Calendar",
     "subtitle": "Logarithmic timeline – from the Big Bang to today"
   },
+  "settings": {
+    "title": "Settings",
+    "close": "Close",
+    "appearance": "Appearance",
+    "darkMode": "Dark mode",
+    "display": "Display",
+    "language": "Language"
+  },
   "category": {
     "erdzeitalter": "Geological Eras",
     "zivilisation": "Civilizations",

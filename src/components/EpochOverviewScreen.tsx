@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LandmarkTimeline } from './LandmarkTimeline';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,13 +6,13 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import type { NavigationEpoch } from '@/timeline/epoch';
 import { NAVIGATION_EPOCHS } from '@/timeline/epoch';
-import { colors, radii, spacing, typography } from '@/theme/tokens';
+import { radii, spacing, typography } from '@/theme/tokens';
+import { useTheme, type ThemeColors } from '@/theme/ThemeContext';
 
 type Props = {
   onSelectEpoch: (startYear: number, endYear: number) => void;
   onShowFullTimeline: () => void;
-  onToggleLanguage: () => void;
-  currentLanguage: string;
+  onOpenSettings: () => void;
 };
 
 const EPOCH_COLORS: Record<string, string> = {
@@ -71,12 +71,14 @@ type EpochTileProps = {
   epoch: NavigationEpoch;
   onPress: (startYear: number, endYear: number) => void;
   level?: 0 | 1 | 2;
+  colors: ThemeColors;
 };
 
-function EpochTile({ epoch, onPress, level = 0 }: EpochTileProps) {
+function EpochTile({ epoch, onPress, level = 0, colors }: EpochTileProps) {
   const { t } = useTranslation();
   const color = EPOCH_COLORS[epoch.key] ?? colors.accent;
   const handlePress = useCallback(() => onPress(epoch.startYear, epoch.endYear), [onPress, epoch]);
+  const styles = useMemo(() => makeTileStyles(colors), [colors]);
   const indentStyle =
     level === 1 ? styles.tileIndent : level === 2 ? styles.tileIndent2 : undefined;
 
@@ -104,13 +106,10 @@ function EpochTile({ epoch, onPress, level = 0 }: EpochTileProps) {
   );
 }
 
-export function EpochOverviewScreen({
-  onSelectEpoch,
-  onShowFullTimeline,
-  onToggleLanguage,
-  currentLanguage,
-}: Props) {
+export function EpochOverviewScreen({ onSelectEpoch, onShowFullTimeline, onOpenSettings }: Props) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const handleEpochPress = useCallback(
     (startYear: number, endYear: number) => {
@@ -127,12 +126,12 @@ export function EpochOverviewScreen({
           <Text style={styles.subtitle}>{t('epochNav.subtitle')}</Text>
         </View>
         <Pressable
-          style={styles.langToggle}
-          onPress={onToggleLanguage}
-          accessibilityLabel="Sprache wechseln"
+          style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
+          onPress={onOpenSettings}
+          accessibilityLabel={t('settings.title')}
           accessibilityRole="button"
         >
-          <Text style={styles.langToggleText}>{currentLanguage === 'de' ? 'EN' : 'DE'}</Text>
+          <Text style={styles.iconButtonText}>⚙</Text>
         </Pressable>
       </View>
 
@@ -145,16 +144,17 @@ export function EpochOverviewScreen({
       >
         {NAVIGATION_EPOCHS.map((epoch) => (
           <View key={epoch.key}>
-            <EpochTile epoch={epoch} onPress={handleEpochPress} level={0} />
+            <EpochTile epoch={epoch} onPress={handleEpochPress} level={0} colors={colors} />
             {epoch.children?.map((child) => (
               <View key={child.key}>
-                <EpochTile epoch={child} onPress={handleEpochPress} level={1} />
+                <EpochTile epoch={child} onPress={handleEpochPress} level={1} colors={colors} />
                 {child.children?.map((grandchild) => (
                   <EpochTile
                     key={grandchild.key}
                     epoch={grandchild}
                     onPress={handleEpochPress}
                     level={2}
+                    colors={colors}
                   />
                 ))}
               </View>
@@ -177,124 +177,136 @@ export function EpochOverviewScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerText: {
-    flex: 1,
-  },
-  title: {
-    ...typography.title,
-    color: colors.textPrimary,
-  },
-  subtitle: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  langToggle: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  langToggleText: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    fontWeight: '700',
-  },
-  scroll: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
-  },
-  tile: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.bgElevated,
-    borderRadius: radii.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing.xs,
-    overflow: 'hidden',
-  },
-  tileIndent: {
-    marginLeft: spacing.md,
-    borderRadius: radii.sm - 2,
-  },
-  tileIndent2: {
-    marginLeft: spacing.md * 2,
-    borderRadius: radii.sm - 2,
-  },
-  tilePressed: {
-    opacity: 0.75,
-  },
-  tileAccent: {
-    width: 4,
-    alignSelf: 'stretch',
-  },
-  tileContent: {
-    flex: 1,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.sm,
-  },
-  tileName: {
-    ...typography.subtitle,
-    color: colors.textPrimary,
-    fontSize: 15,
-  },
-  tileRange: {
-    ...typography.caption,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  durationBadge: {
-    alignSelf: 'flex-start',
-    marginTop: spacing.xs,
-    paddingHorizontal: spacing.xs,
-    paddingVertical: 2,
-    borderRadius: radii.pill,
-    borderWidth: 1,
-  },
-  durationText: {
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  tileArrow: {
-    fontSize: 20,
-    color: colors.textMuted,
-    paddingRight: spacing.sm,
-  },
-  fullTimelineButton: {
-    marginTop: spacing.md,
-    padding: spacing.md,
-    borderRadius: radii.sm,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.accent,
-    alignItems: 'center',
-  },
-  fullTimelinePressed: {
-    opacity: 0.75,
-  },
-  fullTimelineText: {
-    ...typography.body,
-    color: colors.accent,
-    fontWeight: '600',
-  },
-});
+function makeTileStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    tile: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.bgElevated,
+      borderRadius: radii.sm,
+      borderWidth: 1,
+      borderColor: colors.border,
+      marginBottom: spacing.xs,
+      overflow: 'hidden',
+    },
+    tileIndent: {
+      marginLeft: spacing.md,
+      borderRadius: radii.sm - 2,
+    },
+    tileIndent2: {
+      marginLeft: spacing.md * 2,
+      borderRadius: radii.sm - 2,
+    },
+    tilePressed: {
+      opacity: 0.75,
+    },
+    tileAccent: {
+      width: 4,
+      alignSelf: 'stretch',
+    },
+    tileContent: {
+      flex: 1,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.sm,
+    },
+    tileName: {
+      ...typography.subtitle,
+      color: colors.textPrimary,
+      fontSize: 15,
+    },
+    tileRange: {
+      ...typography.caption,
+      color: colors.textMuted,
+      marginTop: 2,
+    },
+    durationBadge: {
+      alignSelf: 'flex-start',
+      marginTop: spacing.xs,
+      paddingHorizontal: spacing.xs,
+      paddingVertical: 2,
+      borderRadius: radii.pill,
+      borderWidth: 1,
+    },
+    durationText: {
+      fontSize: 11,
+      fontWeight: '600',
+    },
+    tileArrow: {
+      fontSize: 20,
+      color: colors.textMuted,
+      paddingRight: spacing.sm,
+    },
+  });
+}
+
+function makeStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    root: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.md,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.md,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    headerText: {
+      flex: 1,
+    },
+    title: {
+      ...typography.title,
+      color: colors.textPrimary,
+    },
+    subtitle: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      marginTop: 2,
+    },
+    iconButton: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    iconButtonPressed: {
+      backgroundColor: colors.bgElevated,
+    },
+    iconButtonText: {
+      fontSize: 20,
+      color: colors.textSecondary,
+    },
+    scroll: {
+      flex: 1,
+    },
+    scrollContent: {
+      paddingHorizontal: spacing.md,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.md,
+    },
+    fullTimelineButton: {
+      marginTop: spacing.md,
+      padding: spacing.md,
+      borderRadius: radii.sm,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.accent,
+      alignItems: 'center',
+    },
+    fullTimelinePressed: {
+      opacity: 0.75,
+    },
+    fullTimelineText: {
+      ...typography.body,
+      color: colors.accent,
+      fontWeight: '600',
+    },
+  });
+}
