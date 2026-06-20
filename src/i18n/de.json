@@ -22,6 +22,12 @@
   "chip": {
     "soon": "bald"
   },
+  "detailLevel": {
+    "label": "Detailgrad",
+    "core": "Wesentliches",
+    "extended": "Standard",
+    "detail": "Alles"
+  },
   "event": {
     "unknownDate": "Datum unbekannt",
     "present": "heute",

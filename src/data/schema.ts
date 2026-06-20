@@ -56,6 +56,33 @@ export type ImportanceLevel = 'core' | 'extended' | 'detail';
 
 export const VALID_IMPORTANCE_LEVELS: readonly ImportanceLevel[] = ['core', 'extended', 'detail'];
 
+/**
+ * Numeric rank per importance tier — lower = more essential. Used by the
+ * detail-level filter as a cumulative threshold: a tier shows itself plus all
+ * lower-ranked tiers.
+ */
+export const IMPORTANCE_RANK: Record<ImportanceLevel, number> = {
+  core: 0,
+  extended: 1,
+  detail: 2,
+};
+
+/**
+ * Rank of an event's importance. Events without an explicit `importance` are
+ * treated as `extended` (the default detail tier).
+ */
+export function importanceRank(event: Pick<TimelineEvent, 'importance'>): number {
+  return event.importance ? IMPORTANCE_RANK[event.importance] : IMPORTANCE_RANK.extended;
+}
+
+/** True if the event is visible at the given maximum importance rank threshold. */
+export function passesImportance(
+  event: Pick<TimelineEvent, 'importance'>,
+  maxRank: number,
+): boolean {
+  return importanceRank(event) <= maxRank;
+}
+
 export const VALID_CONTINENTS: readonly Continent[] = [
   'europa',
   'asien',

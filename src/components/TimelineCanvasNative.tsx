@@ -25,7 +25,7 @@ import {
   typography,
   type Category,
 } from '@/theme/tokens';
-import type { TrackMap } from '@/timeline/culling';
+import type { LineageConnector, TrackMap } from '@/timeline/culling';
 import {
   MAX_EVENTS_PER_LANE,
   POPOVER_MAX_HEIGHT,
@@ -57,6 +57,7 @@ type Props = {
   laneTrackCounts: Map<Category, number>;
   visibleByLane: Map<Category, TimelineEvent[]>;
   tracksByLane: Map<Category, TrackMap>;
+  connectorsByLane: Map<Category, LineageConnector[]>;
   overflowCounts: Map<Category, number>;
   labelVisibleIds: Set<string>;
   canvasWidth: number;
@@ -91,6 +92,7 @@ export function TimelineCanvasNative({
   laneTrackCounts,
   visibleByLane,
   tracksByLane,
+  connectorsByLane,
   overflowCounts,
   labelVisibleIds,
   canvasWidth,
@@ -200,6 +202,7 @@ export function TimelineCanvasNative({
                 // Clip to MAX_EVENTS_PER_LANE; excess is shown as badge in lane label.
                 const events = (visibleByLane.get(cat) ?? []).slice(0, MAX_EVENTS_PER_LANE);
                 const trackMap = tracksByLane.get(cat);
+                const connectors = connectorsByLane.get(cat) ?? [];
                 return (
                   <Group key={cat}>
                     <Rect
@@ -209,6 +212,25 @@ export function TimelineCanvasNative({
                       height={laneH}
                       color={colors.laneBg[cat]}
                     />
+                    {/* Lineage continuation lines — drawn under the bars. */}
+                    {connectors.map((c, ci) => {
+                      const x1 = (yearToT(c.fromYear) - jsOffsetX) * jsPixelsPerUnit;
+                      const x2 = (yearToT(c.toYear) - jsOffsetX) * jsPixelsPerUnit;
+                      if (x2 < 0 || x1 > canvasWidth) return null;
+                      const barY = laneTop + LANE_PADDING_V + c.track * TRACK_HEIGHT + 4;
+                      const cy = barY + (TRACK_HEIGHT - 8) / 2 - 1;
+                      return (
+                        <Rect
+                          key={`conn-${cat}-${ci}`}
+                          x={x1}
+                          y={cy}
+                          width={Math.max(1, x2 - x1)}
+                          height={2}
+                          color={colors.category[cat]}
+                          opacity={0.45}
+                        />
+                      );
+                    })}
                     {events.map((ev) => {
                       const startT = yearToT(ev.startYear);
                       const endT = yearToT(ev.endYear ?? ev.startYear);

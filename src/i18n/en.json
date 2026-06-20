@@ -22,6 +22,12 @@
   "chip": {
     "soon": "soon"
   },
+  "detailLevel": {
+    "label": "Detail level",
+    "core": "Essentials",
+    "extended": "Standard",
+    "detail": "All"
+  },
   "event": {
     "unknownDate": "Date unknown",
     "present": "present",

@@ -16,7 +16,12 @@ import {
 } from './timelineRenderShared';
 import { viewportYearRange, yearToT, pixelToYear, T_PRESENT as T_HEUTE } from '@/timeline/scale';
 import { dominantEpoch } from '@/timeline/epoch';
-import { type Continent, type TimelineEvent } from '@/data/schema';
+import {
+  IMPORTANCE_RANK,
+  type Continent,
+  type ImportanceLevel,
+  type TimelineEvent,
+} from '@/data/schema';
 import {
   LANE_GAP,
   LANE_LABEL_WIDTH,
@@ -29,6 +34,8 @@ import { LANE_ORDER } from '@/theme/categories';
 type Props = {
   activeCategories: Set<Category>;
   continent: Continent;
+  /** Cumulative detail tier; higher tiers reveal more events. */
+  detailLevel?: ImportanceLevel;
   onSelectEvent: (event: TimelineEvent) => void;
   /** Increment to animate back to the default human-history view. */
   resetKey?: number;
@@ -45,6 +52,7 @@ const ZOOM_MODAL_DELAY_MS = 650;
 export function TimelineView({
   activeCategories,
   continent,
+  detailLevel = 'detail',
   onSelectEvent,
   resetKey = 0,
   epochRange,
@@ -122,6 +130,8 @@ export function TimelineView({
     [activeCategories],
   );
 
+  const maxImportanceRank = IMPORTANCE_RANK[detailLevel];
+
   // Lane data for both web and native — driven by jsOffsetX (viewport-relative).
   const laneData = useMemo(() => {
     const range = viewportYearRange(canvasWidth, jsOffsetX, jsPixelsPerUnit);
@@ -133,10 +143,11 @@ export function TimelineView({
       lanes,
       continent,
       maxEventsPerLane: MAX_EVENTS_PER_LANE,
+      maxImportanceRank,
       eventIndex,
     });
-  }, [canvasWidth, jsOffsetX, jsPixelsPerUnit, lanes, zoomLevel, continent]);
-  const { visibleByLane, overflowCounts, tracksByLane } = laneData;
+  }, [canvasWidth, jsOffsetX, jsPixelsPerUnit, lanes, zoomLevel, continent, maxImportanceRank]);
+  const { visibleByLane, overflowCounts, tracksByLane, connectorsByLane } = laneData;
 
   const laneTrackCounts = useMemo(() => {
     const out = new Map<Category, number>();
@@ -332,6 +343,7 @@ export function TimelineView({
         laneTrackCounts={laneTrackCounts}
         visibleByLane={visibleByLane}
         tracksByLane={tracksByLane}
+        connectorsByLane={connectorsByLane}
         overflowCounts={overflowCounts}
         labelVisibleIds={labelVisibleIds}
         canvasWidth={canvasWidth}
@@ -362,6 +374,7 @@ export function TimelineView({
       laneTrackCounts={laneTrackCounts}
       visibleByLane={visibleByLane}
       tracksByLane={tracksByLane}
+      connectorsByLane={connectorsByLane}
       overflowCounts={overflowCounts}
       labelVisibleIds={labelVisibleIds}
       canvasWidth={canvasWidth}
