@@ -75,11 +75,11 @@ Wird künftig per Config validierbar (Phase 1.4+).
 
 #### `importance` _(verdrahtet: Detailgrad-Filter)_
 
-| Wert       | Rang | Bedeutung                                           |
-| ---------- | ---- | --------------------------------------------------- |
-| `core`     | 0    | Unverzichtbar – erscheint auf jedem Detailgrad.     |
+| Wert       | Rang | Bedeutung                                             |
+| ---------- | ---- | ----------------------------------------------------- |
+| `core`     | 0    | Unverzichtbar – erscheint auf jedem Detailgrad.       |
 | `extended` | 1    | Standard-Sichtbarkeit (Default für Events ohne Feld). |
-| `detail`   | 2    | Nur auf höchstem Detailgrad.                         |
+| `detail`   | 2    | Nur auf höchstem Detailgrad.                          |
 
 Der **Detailgrad-Filter** (`DetailLevelSelector`) wirkt als kumulativer
 Schwellwert: Stufe „Wesentliches" zeigt nur `core`, „Standard" zusätzlich

@@ -1,4 +1,9 @@
-import { passesImportance, type TimelineEvent, type ZoomLevel, type Continent } from '@/data/schema';
+import {
+  passesImportance,
+  type TimelineEvent,
+  type ZoomLevel,
+  type Continent,
+} from '@/data/schema';
 import type { Category } from '@/theme/tokens';
 
 export type IndexQuery = {

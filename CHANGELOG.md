@@ -101,8 +101,10 @@
   von 0.5 → 0.15 reduziert.
 
 ### Fixed (older) (`useAnimatedReaction` lief
-  auch auf Web und überschrieb `jsOffsetX` mit einem veralteten Wert) – Reaction
-  jetzt nur nativ.
+
+auch auf Web und überschrieb `jsOffsetX` mit einem veralteten Wert) – Reaction
+jetzt nur nativ.
+
 - Web: Navigation blieb nach Pan in die Vergangenheit hängen – fragiler
   `webJumpScrollX`-State-Roundtrip entfernt; Sprünge scrollen direkt.
 - Web: Zoom nach Klick auf „Neuzeit" sprang zu einem unverwandten früheren Jahr –
