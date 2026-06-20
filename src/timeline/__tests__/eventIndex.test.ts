@@ -117,6 +117,20 @@ describe('EventIndex.queryVisible matches filterVisible', () => {
     expect(sortedIds(index.queryVisible(f))).toEqual(sortedIds(filterVisible(events, f)));
   });
 
+  it('respects maxImportanceRank filter', () => {
+    const events = [
+      ev({ id: 'core', startYear: 100, importance: 'core' }),
+      ev({ id: 'ext', startYear: 200, importance: 'extended' }),
+      ev({ id: 'undef', startYear: 300 }),
+      ev({ id: 'det', startYear: 400, importance: 'detail' }),
+    ];
+    const index = buildEventIndex(events);
+    for (const maxImportanceRank of [0, 1, 2]) {
+      const f = { ...baseFilter, maxImportanceRank };
+      expect(sortedIds(index.queryVisible(f))).toEqual(sortedIds(filterVisible(events, f)));
+    }
+  });
+
   it('handles point events (no endYear)', () => {
     const events = [ev({ id: 'inside', startYear: 500 }), ev({ id: 'outside', startYear: 5000 })];
     const index = buildEventIndex(events);

@@ -1,5 +1,16 @@
 [
   {
+    "id": "geo-urknall",
+    "title": "Urknall",
+    "description": "Entstehung von Raum, Zeit, Materie und Energie. Beginn des Universums vor etwa 13,8 Milliarden Jahren.",
+    "startYear": -13800000000,
+    "category": "erdzeitalter",
+    "continent": "global",
+    "culture": "Kosmologie",
+    "importance": "core",
+    "minZoomLevel": 0
+  },
+  {
     "id": "geo-hadaikum",
     "title": "Hadaikum",
     "description": "Frühestes Äon der Erdgeschichte.",

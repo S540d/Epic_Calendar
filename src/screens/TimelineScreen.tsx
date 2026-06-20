@@ -4,12 +4,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import { ContinentTabBar } from '@/components/ContinentTabBar';
+import { DetailLevelSelector } from '@/components/DetailLevelSelector';
 import { EpochOverviewScreen } from '@/components/EpochOverviewScreen';
 import { FilterChipBar } from '@/components/FilterChipBar';
 import { TimelineView } from '@/components/TimelineView';
 import { EventDetailModal } from '@/screens/EventDetailModal';
 import { usePersistedState } from '@/hooks/usePersistedState';
-import type { Continent, TimelineEvent } from '@/data/schema';
+import type { Continent, ImportanceLevel, TimelineEvent } from '@/data/schema';
 import { colors, spacing, typography, type Category } from '@/theme/tokens';
 import { DEFAULT_CATEGORIES } from '@/theme/categories';
 
@@ -23,6 +24,7 @@ export function TimelineScreen() {
   const activeCategories = new Set<Category>(persistedCategories);
 
   const [continent, setContinent] = usePersistedState<Continent>('selectedContinent', 'europa');
+  const [detailLevel, setDetailLevel] = usePersistedState<ImportanceLevel>('detailLevel', 'detail');
   const [selected, setSelected] = useState<TimelineEvent | null>(null);
   const [showOverview, setShowOverview] = useState(true);
   const [epochRange, setEpochRange] = useState<{ startYear: number; endYear: number } | undefined>(
@@ -98,10 +100,12 @@ export function TimelineScreen() {
         </Pressable>
       </View>
       <FilterChipBar active={activeCategories} onToggle={toggleCategory} />
+      <DetailLevelSelector value={detailLevel} onChange={setDetailLevel} />
       <ScrollView style={styles.canvasWrap} contentContainerStyle={styles.canvasContent}>
         <TimelineView
           activeCategories={activeCategories}
           continent={continent}
+          detailLevel={detailLevel}
           onSelectEvent={setSelected}
           epochRange={epochRange}
         />
