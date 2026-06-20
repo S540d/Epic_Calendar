@@ -24,6 +24,7 @@
 
 ### Changed
 
+- **Landing-Page-Zeitstrahl jetzt linear (`LandmarkTimeline`):** Die `LandmarkTimeline` auf der Landing Page war zuvor **logarithmisch** skaliert (`logPos`/`Math.log10`). Sie nutzt jetzt eine **lineare Erdgeschichts-Achse** (von der Erdentstehung, -4.6 Mrd., bis heute) — konsistent zur viewport-lokal linearen interaktiven Timeline (Modell B). Der **Urknall** liegt außerhalb der linearen Skala (würde die Erdgeschichte sonst zu einem Punkt stauchen) und wird als fixer Marker links neben der Erdentstehung platziert; beide zeigen ihren **Zeitpunkt** und sind durch einen Achsenbruch (gestrichelte Linie + `//`) getrennt.
 - **Lineare Zeitskala (Phase 2, Issue #93):** Die Zeitachse verwendet jetzt
   viewport-lokale lineare Abbildung (Modell B). `yearToT(year) = year` und
   `tToYear(t) = t` sind Identity-Funktionen; `pixelsPerUnit` entspricht

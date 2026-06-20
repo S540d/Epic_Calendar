@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { LayoutChangeEvent, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { colors, typography } from '@/theme/tokens';
+import { formatEventYear } from '@/timeline/formatYear';
 
 type Landmark = {
   key: string;
@@ -52,17 +53,37 @@ const LANDMARKS: Landmark[] = [
   { key: 'firstHominids', year: -2_500_000, navStart: -2_580_000, navEnd: 2026, color: '#C28B4A' },
 ];
 
-const MIN_LOG = Math.log10(Math.abs(LANDMARKS[LANDMARKS.length - 1]!.year));
-const MAX_LOG = Math.log10(Math.abs(LANDMARKS[0]!.year));
+// Lineare Erdgeschichts-Achse: von der Erdentstehung bis heute (Modell B, wie die
+// interaktive Timeline). Der Urknall liegt davor und wäre auf einer linearen Skala
+// nicht darstellbar (würde die gesamte Erdgeschichte zu einem Punkt stauchen),
+// deshalb wird er als "außerhalb der Skala" liegender Marker links neben der
+// Erdentstehung platziert – beide mit Zeitpunkt, getrennt durch einen Achsenbruch.
+const EARTH_FORMATION_YEAR = -4_600_000_000;
+const PRESENT_YEAR = 2026;
 
-function logPos(year: number): number {
-  const log = Math.log10(Math.abs(year));
-  return 1 - (log - MIN_LOG) / (MAX_LOG - MIN_LOG);
+// Fraktionen der verfügbaren Breite.
+const BIG_BANG_FRAC = 0.05; // Urknall-Marker (außerhalb der Skala)
+const AXIS_START_FRAC = 0.2; // Beginn der linearen Achse = Erdentstehung
+
+/** Lineare Position eines Jahres auf der Erdgeschichts-Achse (0..1 der Breite). */
+function linearPos(year: number): number {
+  const clamped = Math.max(EARTH_FORMATION_YEAR, Math.min(PRESENT_YEAR, year));
+  const frac = (clamped - EARTH_FORMATION_YEAR) / (PRESENT_YEAR - EARTH_FORMATION_YEAR);
+  return AXIS_START_FRAC + frac * (1 - AXIS_START_FRAC);
 }
+
+/** X-Position (0..1) eines Landmarks – Urknall liegt außerhalb der linearen Skala. */
+function landmarkFrac(lm: Landmark): number {
+  return lm.key === 'bigBang' ? BIG_BANG_FRAC : linearPos(lm.year);
+}
+
+// Landmarks, die ihren Zeitpunkt anzeigen (Urknall + Erdentstehung stehen "nebeneinander",
+// daher Zeitpunkt-Label zur Einordnung des Achsenbruchs).
+const SHOW_YEAR = new Set(['bigBang', 'earthFormation']);
 
 const LINE_Y = 65;
 const TICK_H = 14;
-const LABEL_H = 40;
+const LABEL_H = 52;
 
 type Props = {
   onSelectEpoch: (startYear: number, endYear: number) => void;
@@ -76,17 +97,41 @@ export function LandmarkTimeline({ onSelectEpoch }: Props) {
     setWidth(e.nativeEvent.layout.width);
   };
 
+  const bigBangX = BIG_BANG_FRAC * width;
+  const axisStartX = AXIS_START_FRAC * width;
+
   return (
     <View style={styles.container} onLayout={handleLayout}>
-      <View style={[styles.line, { top: LINE_Y }]} />
+      {/* Lineare Erdgeschichts-Achse */}
+      <View style={[styles.line, { top: LINE_Y, left: axisStartX }]} />
+      {/* Achsenbruch zwischen Urknall (außerhalb der Skala) und linearer Achse */}
+      {width > 0 && (
+        <>
+          <View
+            pointerEvents="none"
+            style={[
+              styles.preludeLine,
+              { top: LINE_Y, left: bigBangX, width: axisStartX - bigBangX },
+            ]}
+          />
+          <Text
+            style={[styles.breakGlyph, { top: LINE_Y - 9, left: (bigBangX + axisStartX) / 2 - 6 }]}
+          >
+            //
+          </Text>
+        </>
+      )}
       <View style={[styles.presentMarker, { top: LINE_Y - 4 }]}>
         <Text style={styles.presentText}>▶</Text>
       </View>
 
       {width > 0 &&
         LANDMARKS.map((lm, i) => {
-          const x = logPos(lm.year) * width;
+          const x = landmarkFrac(lm) * width;
           const above = i % 2 === 0;
+          const name = t(`landmark.${lm.key}`);
+          const yearStr = formatEventYear(lm.year, t);
+          const showYear = SHOW_YEAR.has(lm.key);
 
           return (
             <Pressable
@@ -99,21 +144,31 @@ export function LandmarkTimeline({ onSelectEpoch }: Props) {
               ]}
               onPress={() => onSelectEpoch(lm.navStart, lm.navEnd)}
               accessibilityRole="button"
-              accessibilityLabel={t(`landmark.${lm.key}`)}
+              accessibilityLabel={`${name}, ${yearStr}`}
             >
               {above ? (
                 <>
                   <Text style={[styles.markerLabel, { color: lm.color }]} numberOfLines={2}>
-                    {t(`landmark.${lm.key}`)}
+                    {name}
                   </Text>
+                  {showYear && (
+                    <Text style={styles.yearLabel} numberOfLines={1}>
+                      {yearStr}
+                    </Text>
+                  )}
                   <View style={[styles.tick, { backgroundColor: lm.color }]} />
                 </>
               ) : (
                 <>
                   <View style={[styles.tick, { backgroundColor: lm.color }]} />
                   <Text style={[styles.markerLabel, { color: lm.color }]} numberOfLines={2}>
-                    {t(`landmark.${lm.key}`)}
+                    {name}
                   </Text>
+                  {showYear && (
+                    <Text style={styles.yearLabel} numberOfLines={1}>
+                      {yearStr}
+                    </Text>
+                  )}
                 </>
               )}
             </Pressable>
@@ -124,8 +179,8 @@ export function LandmarkTimeline({ onSelectEpoch }: Props) {
         (() => {
           const dinos = LANDMARKS.find((l) => l.key === 'dinosaurs');
           if (!dinos?.endYear) return null;
-          const x1 = logPos(dinos.year) * width;
-          const x2 = logPos(dinos.endYear) * width;
+          const x1 = linearPos(dinos.year) * width;
+          const x2 = linearPos(dinos.endYear) * width;
           return (
             <View
               pointerEvents="none"
@@ -147,17 +202,30 @@ export function LandmarkTimeline({ onSelectEpoch }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    height: 130,
+    height: 140,
     position: 'relative',
     marginHorizontal: 4,
     marginVertical: 8,
   },
   line: {
     position: 'absolute',
-    left: 0,
     right: 24,
     height: 2,
     backgroundColor: colors.border,
+  },
+  preludeLine: {
+    position: 'absolute',
+    height: 2,
+    borderTopWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: colors.border,
+    opacity: 0.6,
+  },
+  breakGlyph: {
+    position: 'absolute',
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.textMuted,
   },
   presentMarker: {
     position: 'absolute',
@@ -169,8 +237,8 @@ const styles = StyleSheet.create({
   },
   markerWrapper: {
     position: 'absolute',
-    width: 44,
-    marginLeft: -22,
+    width: 48,
+    marginLeft: -24,
     alignItems: 'center',
   },
   markerAbove: {
@@ -192,6 +260,13 @@ const styles = StyleSheet.create({
     fontSize: 9,
     textAlign: 'center',
     lineHeight: 12,
+  },
+  yearLabel: {
+    ...typography.caption,
+    fontSize: 8,
+    lineHeight: 11,
+    textAlign: 'center',
+    color: colors.textMuted,
   },
   pressed: {
     opacity: 0.65,
