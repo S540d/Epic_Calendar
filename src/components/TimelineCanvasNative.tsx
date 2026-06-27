@@ -38,12 +38,14 @@ import {
 let Canvas: any = null;
 let Group: any = null;
 let Rect: any = null;
+let Paint: any = null;
 if (Platform.OS !== 'web') {
   try {
     const skia = require('@shopify/react-native-skia');
     Canvas = skia.Canvas;
     Group = skia.Group;
     Rect = skia.Rect;
+    Paint = skia.Paint;
   } catch {
     // Skia not available
   }
@@ -240,14 +242,18 @@ export function TimelineCanvasNative({
                       const barY = laneTop + LANE_PADDING_V + trackIdx * TRACK_HEIGHT + 4;
                       const barH = TRACK_HEIGHT - 8;
                       return (
-                        <Rect
-                          key={ev.id}
-                          x={x}
-                          y={barY}
-                          width={w}
-                          height={barH}
-                          color={eventColor(ev)}
-                        />
+                        <React.Fragment key={ev.id}>
+                          <Rect x={x} y={barY} width={w} height={barH} color={eventColor(ev)} />
+                          {ev.continent === 'global' && Paint && (
+                            <Rect x={x} y={barY} width={w} height={barH}>
+                              <Paint
+                                style="stroke"
+                                color="rgba(255,255,255,0.30)"
+                                strokeWidth={1}
+                              />
+                            </Rect>
+                          )}
+                        </React.Fragment>
                       );
                     })}
                   </Group>

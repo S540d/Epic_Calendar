@@ -158,6 +158,15 @@ describe('timeline/culling.assignTracks', () => {
     expect(result.get('b')).toBe(0);
   });
 
+  it('assigns global events to lower tracks than regional events', () => {
+    // Regional event starts earlier (would normally get track 0 by startYear sort),
+    // but the global event should be prioritised to track 0.
+    const regional = ev({ id: 'r1', startYear: -500, endYear: 500, continent: 'europa' });
+    const global = ev({ id: 'g1', startYear: -300, endYear: 300, continent: 'global' });
+    const result = assignTracks([regional, global]);
+    expect(result.get('g1')).toBeLessThan(result.get('r1')!);
+  });
+
   it('keeps non-overlapping lineage successors on the same track', () => {
     // A long-running other event would push a greedy successor to track 1,
     // but the shared lineage keeps the successor on track 0.

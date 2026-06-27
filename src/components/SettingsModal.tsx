@@ -1,13 +1,5 @@
 import React, { useMemo } from 'react';
-import {
-  Modal,
-  Pressable,
-  StyleSheet,
-  Switch,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Modal, Pressable, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { ImportanceLevel } from '@/data/schema';
@@ -75,7 +67,10 @@ export function SettingsModal({ visible, onClose, detailLevel, onDetailLevelChan
           <Text style={styles.sectionLabel}>{t('settings.display')}</Text>
           <View style={styles.section}>
             <Text style={styles.rowLabel}>{t('detailLevel.label')}</Text>
-            <View style={[styles.segmentGroup, { marginTop: spacing.sm }]} accessibilityRole="radiogroup">
+            <View
+              style={[styles.segmentGroup, { marginTop: spacing.sm }]}
+              accessibilityRole="radiogroup"
+            >
               {DETAIL_LEVELS.map((level) => {
                 const active = level === detailLevel;
                 return (
