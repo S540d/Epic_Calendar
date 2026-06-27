@@ -51,7 +51,12 @@ export function assignTracks(events: TimelineEvent[]): TrackMap {
   // Phase 1: lineage groups – reserve the full span of the group on one track
   const sortedGroups = [...lineageMap.values()]
     .map((g) => g.slice().sort((a, b) => a.startYear - b.startYear))
-    .sort((a, b) => a[0]!.startYear - b[0]!.startYear);
+    .sort((a, b) => {
+      const aG = a[0]!.continent === 'global' ? 0 : 1;
+      const bG = b[0]!.continent === 'global' ? 0 : 1;
+      if (aG !== bG) return aG - bG;
+      return a[0]!.startYear - b[0]!.startYear;
+    });
 
   for (const group of sortedGroups) {
     const firstStart = group[0]!.startYear;
@@ -76,7 +81,12 @@ export function assignTracks(events: TimelineEvent[]): TrackMap {
   }
 
   // Phase 2: singletons – greedy interval packing
-  singletons.sort((a, b) => a.startYear - b.startYear);
+  singletons.sort((a, b) => {
+    const aG = a.continent === 'global' ? 0 : 1;
+    const bG = b.continent === 'global' ? 0 : 1;
+    if (aG !== bG) return aG - bG;
+    return a.startYear - b.startYear;
+  });
   for (const ev of singletons) {
     const evEnd = ev.endYear ?? ev.startYear;
     let placed = false;

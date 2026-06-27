@@ -336,6 +336,10 @@ export function TimelineCanvasWeb({
                                 backgroundColor: eventColor(ev),
                                 borderRadius: 3,
                                 cursor: 'pointer',
+                                ...(ev.continent === 'global' && {
+                                  borderWidth: 1,
+                                  borderColor: 'rgba(255, 255, 255, 0.35)',
+                                }),
                               } as any
                             }
                           />
