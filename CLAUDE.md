@@ -84,7 +84,7 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 
 ### Datenhaltung
 
-- `src/data/` – statische Daten: 7 JSON-Dateien, 543 Events gesamt (europa, asien, afrika, amerika, ozeanien, erdzeitalter, natur-wissenschaft)
+- `src/data/` – statische Daten: 7 JSON-Dateien, 548 Events gesamt (europa, asien, afrika, amerika, ozeanien, erdzeitalter, natur-wissenschaft)
 - `src/data/schema.ts` – gemeinsames Event-Schema (`TimelineEvent` mit optionalen Feldern: `importance`, `tags`, `lineageId`, `regions` seit Phase 1.2). `importance`/`lineageId` sind verdrahtet: `importanceRank`/`passesImportance`-Helfer + `IMPORTANCE_RANK` speisen den Detailgrad-Filter; `lineageId` steuert Track-Zuordnung + Verbindungslinien. `tags`/`regions` bleiben Slots.
 - `src/data/regions.ts` – `RegionConfig`-Typ + `REGIONS`-Skelett für hierarchische Geo-Filter (Phase 1.4; kein UI bis Phase 3)
 - `docs/event-flags.md` – menschenlesbare Flag-Referenz: alle Event-Achsen mit Pflicht/optional, Werten, LOD-Tabelle (Phase 1.5)
@@ -135,7 +135,7 @@ src/
 ├── data/
 │   ├── schema.ts              # Event-Typen (inkl. optionale Slots: importance, tags, lineageId, regions)
 │   ├── regions.ts             # RegionConfig + REGIONS-Skelett (Phase 1.4, kein UI)
-│   ├── events/                # Statische JSON-Daten: europa (186), asien (90), afrika (65), amerika (70), ozeanien (40), erdzeitalter (28), natur-wissenschaft (64) → 543 Events gesamt
+│   ├── events/                # Statische JSON-Daten: europa (190), asien (90), afrika (66), amerika (70), ozeanien (40), erdzeitalter (28), natur-wissenschaft (64) → 548 Events gesamt
 │   └── ...
 ├── timeline/
 │   ├── culling.ts             # Viewport-Culling + computeLaneData() (opt. eventIndex, maxImportanceRank) + lineage-aware assignTracks + computeLineageConnectors
@@ -246,10 +246,9 @@ Canvas-Overlay-Komponenten (ZoomLevelIndicator, EpochBand, …) nutzen weiterhin
 | #    | Titel                                                   | Priorität       |
 | ---- | ------------------------------------------------------- | --------------- |
 | #5   | Performance-Optimierung (Skia + Reanimated)             | ongoing         |
+| #5   | Performance-Optimierung (Skia + Reanimated)             | ongoing         |
 | #70  | Skalierbarkeit: mehr Events, Filter, Kategorien         | Epic / Tracker  |
-| #76  | Mehr Inhalte (Wissenschaft, Zivilisationen, Kultur)     | P2 / Content    |
-| #85  | Folgeaufträge (Linear Scale Detail-Default, fullEarth)  | P3              |
-| #121 | Content Coverage: Lückenanalyse Epochen × Kontinente    | P1 / Content    |
+| #76  | Mehr Inhalte (Zivilisationen/Nationen-Trennung, Kultur) | P2 / Content    |
 
 ## Referenzen
 
