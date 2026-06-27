@@ -243,13 +243,7 @@ export function TimelineCanvasNative({
                       const barH = TRACK_HEIGHT - 8;
                       return (
                         <React.Fragment key={ev.id}>
-                          <Rect
-                            x={x}
-                            y={barY}
-                            width={w}
-                            height={barH}
-                            color={eventColor(ev)}
-                          />
+                          <Rect x={x} y={barY} width={w} height={barH} color={eventColor(ev)} />
                           {ev.continent === 'global' && Paint && (
                             <Rect x={x} y={barY} width={w} height={barH}>
                               <Paint
