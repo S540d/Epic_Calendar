@@ -193,7 +193,7 @@ describe('timeline/culling.assignTracks', () => {
     expect(result.get('other')).not.toBe(result.get('roman1'));
   });
 
-  it('falls back to the lowest free track when no same-culture track has room', () => {
+  it('opens a second same-culture row when the first has no room (overlap)', () => {
     const roman1 = ev({ id: 'roman1', startYear: 0, endYear: 500, culture: 'römisch' });
     // Overlaps roman1, so it cannot share its track despite the same culture.
     const roman2 = ev({ id: 'roman2', startYear: 100, endYear: 200, culture: 'römisch' });
@@ -202,11 +202,38 @@ describe('timeline/culling.assignTracks', () => {
     expect(result.get('roman2')).toBe(1);
   });
 
-  it('does not cluster events without a culture field', () => {
+  it('never mixes different cultures into one row, even when there is free space', () => {
+    // Regression for the jumbled-rows screenshot (#146): Tudor (englisch) must
+    // NOT be packed into the free tail of the Byzantine row just because it fits.
+    const byzanz = ev({ id: 'byzanz', startYear: 330, endYear: 1453, culture: 'byzantinisch' });
+    const tudor = ev({ id: 'tudor', startYear: 1485, endYear: 1603, culture: 'englisch' });
+    const aufklaerung = ev({ id: 'aufkl', startYear: 1685, endYear: 1815, culture: 'neuzeitlich' });
+    const result = assignTracks([byzanz, tudor, aufklaerung]);
+    const rows = new Set([result.get('byzanz'), result.get('tudor'), result.get('aufkl')]);
+    expect(rows.size).toBe(3); // three cultures → three distinct rows
+  });
+
+  it('chains same-culture successors into one continuous row across distractors', () => {
+    // England row: Plantagenet → Tudor, despite an overlapping French dynasty between them.
+    const plantagenet = ev({ id: 'plant', startYear: 1154, endYear: 1399, culture: 'englisch' });
+    const valois = ev({ id: 'valois', startYear: 1328, endYear: 1589, culture: 'französisch' });
+    const tudor = ev({ id: 'tudor', startYear: 1485, endYear: 1603, culture: 'englisch' });
+    const result = assignTracks([plantagenet, valois, tudor]);
+    expect(result.get('plant')).toBe(result.get('tudor'));
+    expect(result.get('valois')).not.toBe(result.get('plant'));
+  });
+
+  it('keeps culture-less events in neutral rows, never in culture-owned rows', () => {
+    const rome = ev({ id: 'rome', startYear: 0, endYear: 100, culture: 'römisch' });
+    const neutral = ev({ id: 'neutral', startYear: 200, endYear: 300 }); // fits after rome, but must not join its row
+    const result = assignTracks([rome, neutral]);
+    expect(result.get('neutral')).not.toBe(result.get('rome'));
+  });
+
+  it('shares one neutral row between non-overlapping culture-less events', () => {
     const a = ev({ id: 'a', startYear: 0, endYear: 100 });
     const b = ev({ id: 'b', startYear: 200, endYear: 300 });
     const result = assignTracks([a, b]);
-    // Both share track 0 anyway (greedy, non-overlapping) — just confirms no crash/behavior change.
     expect(result.get('a')).toBe(0);
     expect(result.get('b')).toBe(0);
   });
@@ -216,6 +243,27 @@ describe('timeline/culling.assignTracks', () => {
     const b = ev({ id: 'b', startYear: 150, endYear: 250, culture: 'fränkisch', lineageId: 'L' });
     const result = assignTracks([a, b]);
     expect(result.get('a')).toBe(result.get('b'));
+  });
+
+  it('places a same-culture singleton onto its lineage-culture row when free', () => {
+    // A lineage row owned by "französisch" ends 1589; a French singleton starting later joins it.
+    const a = ev({
+      id: 'a',
+      startYear: 987,
+      endYear: 1328,
+      culture: 'französisch',
+      lineageId: 'F',
+    });
+    const b = ev({
+      id: 'b',
+      startYear: 1328,
+      endYear: 1589,
+      culture: 'französisch',
+      lineageId: 'F',
+    });
+    const bourbon = ev({ id: 'bourbon', startYear: 1589, endYear: 1792, culture: 'französisch' });
+    const result = assignTracks([a, b, bourbon]);
+    expect(result.get('bourbon')).toBe(result.get('a'));
   });
 });
 
