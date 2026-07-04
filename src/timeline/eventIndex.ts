@@ -16,6 +16,14 @@ export type IndexQuery = {
   maxImportanceRank?: number;
 };
 
+/** Query without a year range — used to derive the full (viewport-independent) event set for stable track assignment. */
+export type CategoryQuery = {
+  category: Category;
+  continent: Continent;
+  /** Highest importance rank to show (cumulative). Default 2 (= show all). */
+  maxImportanceRank?: number;
+};
+
 /**
  * Category-partitioned, startYear-sorted index over a set of TimelineEvents.
  * Allows O(hits + log n) visibility queries vs. the O(n) full scan in filterVisible.
@@ -64,6 +72,27 @@ export class EventIndex {
       }
     }
 
+    return result;
+  }
+
+  /**
+   * All events in a category that pass the continent/importance filters, regardless
+   * of year range. Used to compute stable, viewport-independent track assignments
+   * (see `assignTracks` callers) — track numbers must not depend on which slice of
+   * time is currently scrolled into view.
+   */
+  getFilteredCategory(query: CategoryQuery): TimelineEvent[] {
+    const { category, continent } = query;
+    const maxImportanceRank = query.maxImportanceRank ?? 2;
+    const arr = this.byCategory.get(category);
+    if (!arr) return [];
+
+    const result: TimelineEvent[] = [];
+    for (const ev of arr) {
+      if (ev.continent !== 'global' && ev.continent !== continent) continue;
+      if (!passesImportance(ev, maxImportanceRank)) continue;
+      result.push(ev);
+    }
     return result;
   }
 }

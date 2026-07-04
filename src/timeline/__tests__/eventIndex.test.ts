@@ -167,6 +167,57 @@ describe('EventIndex.queryVisible matches filterVisible', () => {
   );
 });
 
+describe('EventIndex.getFilteredCategory', () => {
+  it('returns all events in a category regardless of year range', () => {
+    const events = [
+      ev({ id: 'a', startYear: -400_000_000, category: 'zivilisation' }),
+      ev({ id: 'b', startYear: 2020, category: 'zivilisation' }),
+      ev({ id: 'c', startYear: 100, category: 'natur' }),
+    ];
+    const index = buildEventIndex(events);
+    expect(sortedIds(index.getFilteredCategory({ category: 'zivilisation', continent: 'europa' }))).toEqual([
+      'a',
+      'b',
+    ]);
+  });
+
+  it('respects the continent filter but keeps global events', () => {
+    const events = [
+      ev({ id: 'eu', startYear: 100, continent: 'europa' }),
+      ev({ id: 'as', startYear: 100, continent: 'asien' }),
+      ev({ id: 'gl', startYear: 100, continent: 'global' }),
+    ];
+    const index = buildEventIndex(events);
+    expect(
+      sortedIds(index.getFilteredCategory({ category: 'zivilisation', continent: 'europa' })),
+    ).toEqual(['eu', 'gl']);
+  });
+
+  it('respects maxImportanceRank filter', () => {
+    const events = [
+      ev({ id: 'core', startYear: 100, importance: 'core' }),
+      ev({ id: 'det', startYear: 400, importance: 'detail' }),
+    ];
+    const index = buildEventIndex(events);
+    expect(
+      sortedIds(index.getFilteredCategory({ category: 'zivilisation', continent: 'europa', maxImportanceRank: 0 })),
+    ).toEqual(['core']);
+  });
+
+  it('ignores minZoomLevel — tracks must be stable across zoom levels', () => {
+    const events = [ev({ id: 'a', startYear: 100, minZoomLevel: 3 })];
+    const index = buildEventIndex(events);
+    expect(
+      sortedIds(index.getFilteredCategory({ category: 'zivilisation', continent: 'europa' })),
+    ).toEqual(['a']);
+  });
+
+  it('returns empty array for a category with no events', () => {
+    const index = buildEventIndex([]);
+    expect(index.getFilteredCategory({ category: 'zivilisation', continent: 'europa' })).toEqual([]);
+  });
+});
+
 describe('EventIndex benchmark: 2000+ events', () => {
   it('queries 2000+ events in < 100ms for 100 iterations', () => {
     const events: TimelineEvent[] = [];

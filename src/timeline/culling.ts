@@ -212,7 +212,36 @@ export type LaneDataInput = {
   maxImportanceRank?: number;
   /** Optional pre-built index for O(hits + log n) queries instead of O(n) full scan. */
   eventIndex?: EventIndex;
+  /**
+   * Pre-computed, viewport-independent track assignment per lane (see
+   * `buildStableTracksByLane`). When provided, `computeLaneData` looks up track
+   * numbers here instead of recomputing them from the visible-in-viewport set —
+   * this keeps an event's row stable while panning/zooming. Falls back to the
+   * old per-viewport `assignTracks(capped)` behavior when omitted (e.g. tests).
+   */
+  stableTracksByLane?: Map<Category, TrackMap>;
 };
+
+/**
+ * Computes track assignments once per lane over the *full* filtered event set
+ * (continent + importance, no year range) so that an event's row never changes
+ * while panning/zooming — only which rows are currently scrolled into view
+ * changes. Must be recomputed when `continent`, `maxImportanceRank` or `lanes`
+ * change, but NOT on viewport (offset/zoom) changes.
+ */
+export function buildStableTracksByLane(
+  lanes: Category[],
+  continent: Continent,
+  maxImportanceRank: number | undefined,
+  eventIndex: EventIndex,
+): Map<Category, TrackMap> {
+  const tracksByLane = new Map<Category, TrackMap>();
+  for (const cat of lanes) {
+    const all = eventIndex.getFilteredCategory({ category: cat, continent, maxImportanceRank });
+    tracksByLane.set(cat, assignTracks(all));
+  }
+  return tracksByLane;
+}
 
 /**
  * Computes visibility, overflow and track data for every active lane in one
@@ -230,6 +259,7 @@ export function computeLaneData(input: LaneDataInput): LaneData {
     maxEventsPerLane,
     maxImportanceRank,
     eventIndex,
+    stableTracksByLane,
   } = input;
   const visibleByLane = new Map<Category, TimelineEvent[]>();
   const overflowCounts = new Map<Category, number>();
@@ -250,11 +280,44 @@ export function computeLaneData(input: LaneDataInput): LaneData {
     if (visible.length > maxEventsPerLane) {
       overflowCounts.set(cat, visible.length - maxEventsPerLane);
     }
-    // Only assign tracks for the capped set so layout stays predictable.
-    const capped = visible.slice(0, maxEventsPerLane);
-    const tracks = assignTracks(capped);
-    tracksByLane.set(cat, tracks);
-    connectorsByLane.set(cat, computeLineageConnectors(capped, tracks));
+
+    const stableTracks = stableTracksByLane?.get(cat);
+    if (stableTracks) {
+      // Rows come from the pre-computed, viewport-independent assignment.
+      // Cap by dropping the events with the highest global row numbers first,
+      // so the rendered set stays the lowest-numbered (most "important" /
+      // earliest-placed) rows rather than an arbitrary viewport-order slice.
+      const sortedByGlobalTrack = visible
+        .slice()
+        .sort((a, b) => (stableTracks.get(a.id) ?? Infinity) - (stableTracks.get(b.id) ?? Infinity));
+      const capped = sortedByGlobalTrack.slice(0, maxEventsPerLane);
+
+      // Remap global track numbers to a dense 0..k range for rendering, so a
+      // lane with e.g. only rows {3, 7} visible in this viewport still renders
+      // 2 compact rows instead of 8 (which would blow up lane height). Order
+      // is preserved (relative row order never changes), only gaps collapse —
+      // this keeps rows stable across pans while avoiding runaway lane height.
+      const usedGlobalTracks = [...new Set(capped.map((ev) => stableTracks.get(ev.id)))]
+        .filter((t): t is number => t !== undefined)
+        .sort((a, b) => a - b);
+      const denseTrack = new Map<number, number>();
+      usedGlobalTracks.forEach((globalTrack, denseIdx) => denseTrack.set(globalTrack, denseIdx));
+
+      const tracks: TrackMap = new Map();
+      for (const ev of capped) {
+        const globalTrack = stableTracks.get(ev.id);
+        if (globalTrack === undefined) continue;
+        tracks.set(ev.id, denseTrack.get(globalTrack)!);
+      }
+      tracksByLane.set(cat, tracks);
+      connectorsByLane.set(cat, computeLineageConnectors(capped, tracks));
+    } else {
+      // Fallback: viewport-local track assignment (legacy behavior, still used by tests).
+      const capped = visible.slice(0, maxEventsPerLane);
+      const tracks = assignTracks(capped);
+      tracksByLane.set(cat, tracks);
+      connectorsByLane.set(cat, computeLineageConnectors(capped, tracks));
+    }
   }
 
   return { visibleByLane, overflowCounts, tracksByLane, connectorsByLane };
