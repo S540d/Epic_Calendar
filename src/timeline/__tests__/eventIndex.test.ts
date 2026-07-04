@@ -175,10 +175,9 @@ describe('EventIndex.getFilteredCategory', () => {
       ev({ id: 'c', startYear: 100, category: 'natur' }),
     ];
     const index = buildEventIndex(events);
-    expect(sortedIds(index.getFilteredCategory({ category: 'zivilisation', continent: 'europa' }))).toEqual([
-      'a',
-      'b',
-    ]);
+    expect(
+      sortedIds(index.getFilteredCategory({ category: 'zivilisation', continent: 'europa' })),
+    ).toEqual(['a', 'b']);
   });
 
   it('respects the continent filter but keeps global events', () => {
@@ -200,7 +199,13 @@ describe('EventIndex.getFilteredCategory', () => {
     ];
     const index = buildEventIndex(events);
     expect(
-      sortedIds(index.getFilteredCategory({ category: 'zivilisation', continent: 'europa', maxImportanceRank: 0 })),
+      sortedIds(
+        index.getFilteredCategory({
+          category: 'zivilisation',
+          continent: 'europa',
+          maxImportanceRank: 0,
+        }),
+      ),
     ).toEqual(['core']);
   });
 
@@ -214,7 +219,9 @@ describe('EventIndex.getFilteredCategory', () => {
 
   it('returns empty array for a category with no events', () => {
     const index = buildEventIndex([]);
-    expect(index.getFilteredCategory({ category: 'zivilisation', continent: 'europa' })).toEqual([]);
+    expect(index.getFilteredCategory({ category: 'zivilisation', continent: 'europa' })).toEqual(
+      [],
+    );
   });
 });
 

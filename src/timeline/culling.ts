@@ -289,7 +289,9 @@ export function computeLaneData(input: LaneDataInput): LaneData {
       // earliest-placed) rows rather than an arbitrary viewport-order slice.
       const sortedByGlobalTrack = visible
         .slice()
-        .sort((a, b) => (stableTracks.get(a.id) ?? Infinity) - (stableTracks.get(b.id) ?? Infinity));
+        .sort(
+          (a, b) => (stableTracks.get(a.id) ?? Infinity) - (stableTracks.get(b.id) ?? Infinity),
+        );
       const capped = sortedByGlobalTrack.slice(0, maxEventsPerLane);
 
       // Remap global track numbers to a dense 0..k range for rendering, so a

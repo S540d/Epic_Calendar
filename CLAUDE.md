@@ -244,13 +244,13 @@ Canvas-Overlay-Komponenten (ZoomLevelIndicator, EpochBand, …) nutzen weiterhin
 
 ## Offene Issues (legitim)
 
-| #    | Titel                                                   | Priorität       |
-| ---- | ------------------------------------------------------- | --------------- |
-| #5   | Performance-Optimierung (Skia + Reanimated)             | ongoing         |
-| #70  | Skalierbarkeit: mehr Events, Filter, Kategorien         | Epic / Tracker  |
-| #76  | Mehr Inhalte (Wissenschaft, Zivilisationen, Kultur)     | P2 / Content    |
-| #85  | Folgeaufträge (Linear Scale Detail-Default, fullEarth)  | P3              |
-| #121 | Content Coverage: Lückenanalyse Epochen × Kontinente    | P1 / Content    |
+| #    | Titel                                                  | Priorität      |
+| ---- | ------------------------------------------------------ | -------------- |
+| #5   | Performance-Optimierung (Skia + Reanimated)            | ongoing        |
+| #70  | Skalierbarkeit: mehr Events, Filter, Kategorien        | Epic / Tracker |
+| #76  | Mehr Inhalte (Wissenschaft, Zivilisationen, Kultur)    | P2 / Content   |
+| #85  | Folgeaufträge (Linear Scale Detail-Default, fullEarth) | P3             |
+| #121 | Content Coverage: Lückenanalyse Epochen × Kontinente   | P1 / Content   |
 
 ## Referenzen
 

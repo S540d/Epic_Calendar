@@ -299,7 +299,12 @@ describe('timeline/culling.computeLaneData with stableTracksByLane (#146 B1)', (
       ev({ id: 'c', startYear: 200, endYear: 210 }),
     ];
     const index = buildEventIndex(events);
-    const stableTracksByLane = buildStableTracksByLane(['zivilisation'], 'europa', undefined, index);
+    const stableTracksByLane = buildStableTracksByLane(
+      ['zivilisation'],
+      'europa',
+      undefined,
+      index,
+    );
 
     // Viewport 1: only 'a' and 'b' visible.
     const view1 = computeLaneData({
@@ -336,7 +341,12 @@ describe('timeline/culling.computeLaneData with stableTracksByLane (#146 B1)', (
     const b = ev({ id: 'b', startYear: 50, endYear: 150, category: 'zivilisation' }); // overlaps a
     const events = [a, b];
     const index = buildEventIndex(events);
-    const stableTracksByLane = buildStableTracksByLane(['zivilisation'], 'europa', undefined, index);
+    const stableTracksByLane = buildStableTracksByLane(
+      ['zivilisation'],
+      'europa',
+      undefined,
+      index,
+    );
 
     const result = computeLaneData({
       events,
@@ -360,7 +370,12 @@ describe('timeline/culling.computeLaneData with stableTracksByLane (#146 B1)', (
     const far = ev({ id: 'far', startYear: 500, endYear: 510, category: 'zivilisation', track: 5 });
     const events = [a, far];
     const index = buildEventIndex(events);
-    const stableTracksByLane = buildStableTracksByLane(['zivilisation'], 'europa', undefined, index);
+    const stableTracksByLane = buildStableTracksByLane(
+      ['zivilisation'],
+      'europa',
+      undefined,
+      index,
+    );
     expect(stableTracksByLane.get('zivilisation')!.get('far')).toBe(5);
 
     const result = computeLaneData({
