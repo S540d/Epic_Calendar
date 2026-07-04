@@ -70,6 +70,7 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 - `culling.ts`: filtert Events außerhalb des Viewports; `computeLaneData` akzeptiert optionales `eventIndex?` für O(hits+log n)-Queries sowie `maxImportanceRank?` (Detailgrad-Filter) und liefert zusätzlich `connectorsByLane`. `assignTracks` ist lineage-aware (gleiche `lineageId` bevorzugt dieselbe Zeile); `computeLineageConnectors(events, trackMap)` baut die Verbindungslinien zwischen aufeinanderfolgenden Lineage-Events. `buildStableTracksByLane(lanes, continent, maxImportanceRank, eventIndex)` berechnet Tracks einmal viewport-unabhängig über die volle gefilterte Kategorie (siehe #146 B1 unten); wird optional als `stableTracksByLane` an `computeLaneData` übergeben.
 - `eventIndex.ts`: `EventIndex`-Klasse — Kategorie-partitioniert, startYear-sortiert; `buildEventIndex(events)` + `queryVisible(query)` (Binärsuche) + `getFilteredCategory({category, continent, maxImportanceRank})` (alle Events einer Kategorie ohne Zeitraum-/Zoom-Filter, Basis für `buildStableTracksByLane`); in `TimelineView` verdrahtet via `computeLaneData`
 - `formatYear.ts`: formatiert Jahreszahlen (v. Chr., Mio., Mrd.)
+- `search.ts` (#146 A): `searchEvents(events, query)` — Präfix-/Substring-Suche über `title`/`culture`/`tags`, diakritik- und case-insensitiv, Score-basiertes Ranking (exakter Titel-Match zuerst). `parseYearQuery(query)` erkennt reine Jahreszahl-Eingaben (`"500"`, `"-500"`, `"500 v. Chr."`, `"3 Mio v. Chr."`) und liefert das Jahr oder `null`.
 - `lod.ts`: Level-of-Detail-Berechnung, exportiert `T_MIN`, `T_MAX`, `FULL_T_SPAN`; `PRESENT_RIGHT_BUFFER_YEARS = 200` + `clampOffsetX()` begrenzen Scroll nach rechts
 - `scale.ts`: `yearToT`, `tToYear`, `pixelToYear`, `viewportYearRange`
 - `epoch.ts`: Epoche-Mapping für Breadcrumb + `NavigationEpoch`-Typ + `NAVIGATION_EPOCHS`-Baum (kosmische Frühzeit → Neuzeit)
@@ -126,10 +127,11 @@ src/
 │   ├── EpochBand.tsx              # Visuelles Epochen-Band (ersetzt EpochJumpBar)
 │   ├── EpochChipBar.tsx           # Zweistufige Chip-Leiste für schnelle Epochen-Navigation
 │   ├── EpochNavArrows.tsx         # Quick-Jump-Pfeile (← Epoche / Epoche →) im Timeline-Header
-│   ├── EpochOverviewScreen.tsx    # Landing Page: Epochen-Kacheln als Einstieg (Props: onSelectEpoch, onShowFullTimeline, onOpenSettings)
+│   ├── EpochOverviewScreen.tsx    # Landing Page: Epochen-Kacheln als Einstieg (Props: onSelectEpoch, onShowFullTimeline, onOpenSettings, onOpenSearch)
 │   ├── FilterChipBar.tsx          # Kategorie-/Kontinent-Filter
 │   ├── DetailLevelSelector.tsx    # Detailgrad-Segmented-Control (wiederverwendbar; genutzt in SettingsModal)
 │   ├── SettingsModal.tsx          # Settings-Bottom-Sheet (Dark Mode, Detailgrad, Sprache)
+│   ├── SearchModal.tsx            # Such-Bottom-Sheet (#146 A): Ereignis-/Jahr-Suche, Tap → jumpToEvent/jumpToYear
 │   ├── LandmarkTimeline.tsx       # Landmark-Zeitstrahl auf der Landing Page (linear; Urknall außerhalb der Skala)
 │   ├── ContinentTabBar.tsx        # Kontinent-Auswahl
 │   ├── ZoomLevelIndicator.tsx     # Persistenter LOD-Indikator
@@ -146,6 +148,7 @@ src/
 │   ├── scale.ts               # yearToT, tToYear, pixelToYear
 │   ├── epoch.ts               # Epoche-Mapping + NavigationEpoch + NAVIGATION_EPOCHS
 │   ├── formatYear.ts          # Jahr-Formatierung
+│   ├── search.ts              # searchEvents (title/culture/tags) + parseYearQuery (#146 A)
 │   └── __tests__/
 ├── theme/
 │   ├── tokens.ts              # Design-Tokens (statisch; canvas-Komponenten nutzen dies direkt)
@@ -224,6 +227,7 @@ Canvas-Overlay-Komponenten (ZoomLevelIndicator, EpochBand, …) nutzen weiterhin
 - `EpochOverviewScreen` → `TimelineScreen`: Navigation via `showOverview`-State in `TimelineScreen.tsx`. `TimelineView` mountet neu bei jedem Epochen-Wechsel (kein `resetKey` mehr nötig).
 - `EpochOverviewScreen` erhält **kein** `onToggleLanguage`/`currentLanguage` mehr — stattdessen `onOpenSettings`, das den `SettingsModal` in `TimelineScreen` öffnet.
 - `SettingsModal` liegt immer als `<>…</>` Sibling beider Screens in `TimelineScreen`; Modal-Visible-State bleibt in `TimelineScreen`. Dadurch ist das Modal auch auf dem Overview-Screen erreichbar.
+- `SearchModal` folgt demselben Sibling-Pattern wie `SettingsModal` (#146 A) — erreichbar von beiden Screens. Anders als `epochRange` (nur beim Mount ausgewertet) reagieren `TimelineView`s `jumpToEvent`/`jumpToYear`-Props auf **jede** Änderung via `requestId` (monoton hochgezählt in `TimelineScreen`, nicht `event.id`), damit ein erneuter Sprung zum selben Ziel die Animation erneut auslöst. Bei Event-Treffern setzt `handleSearchSelectEvent` in `TimelineScreen` zuerst Kategorie/Kontinent, damit das Ziel-Event unter den aktiven Filtern überhaupt sichtbar ist, bevor der Zoom-Jump feuert.
 
 ## Do's and Don'ts
 

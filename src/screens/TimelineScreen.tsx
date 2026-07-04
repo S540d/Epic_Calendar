@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { ContinentTabBar } from '@/components/ContinentTabBar';
 import { EpochOverviewScreen } from '@/components/EpochOverviewScreen';
 import { FilterChipBar } from '@/components/FilterChipBar';
+import { SearchModal } from '@/components/SearchModal';
 import { SettingsModal } from '@/components/SettingsModal';
 import { TimelineView } from '@/components/TimelineView';
 import { EventDetailModal } from '@/screens/EventDetailModal';
@@ -30,9 +31,17 @@ export function TimelineScreen() {
   const [selected, setSelected] = useState<TimelineEvent | null>(null);
   const [showOverview, setShowOverview] = useState(true);
   const [settingsVisible, setSettingsVisible] = useState(false);
+  const [searchVisible, setSearchVisible] = useState(false);
   const [epochRange, setEpochRange] = useState<{ startYear: number; endYear: number } | undefined>(
     undefined,
   );
+  const [jumpToEvent, setJumpToEvent] = useState<
+    { event: TimelineEvent; requestId: number } | undefined
+  >(undefined);
+  const [jumpToYear, setJumpToYear] = useState<{ year: number; requestId: number } | undefined>(
+    undefined,
+  );
+  const jumpRequestIdRef = useRef(0);
 
   const toggleCategory = (cat: Category) => {
     setPersistedCategories((prev) => {
@@ -60,6 +69,32 @@ export function TimelineScreen() {
 
   const handleOpenSettings = useCallback(() => setSettingsVisible(true), []);
   const handleCloseSettings = useCallback(() => setSettingsVisible(false), []);
+  const handleOpenSearch = useCallback(() => setSearchVisible(true), []);
+  const handleCloseSearch = useCallback(() => setSearchVisible(false), []);
+
+  // Search result → event: ensure the event's category and continent are
+  // active so the jump target is actually visible, then leave the overview
+  // and trigger the zoom-to-fit + detail-modal jump in TimelineView (#146 A).
+  const handleSearchSelectEvent = useCallback((event: TimelineEvent) => {
+    setPersistedCategories((prev) =>
+      prev.includes(event.category) ? prev : [...prev, event.category],
+    );
+    if (event.continent !== 'global') {
+      setContinent(event.continent);
+    }
+    setShowOverview(false);
+    setEpochRange(undefined);
+    jumpRequestIdRef.current += 1;
+    setJumpToEvent({ event, requestId: jumpRequestIdRef.current });
+  }, []);
+
+  // Search result → bare year: just center the viewport, no filter changes.
+  const handleSearchSelectYear = useCallback((year: number) => {
+    setShowOverview(false);
+    setEpochRange(undefined);
+    jumpRequestIdRef.current += 1;
+    setJumpToYear({ year, requestId: jumpRequestIdRef.current });
+  }, []);
 
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
@@ -70,6 +105,7 @@ export function TimelineScreen() {
           onSelectEpoch={handleSelectEpoch}
           onShowFullTimeline={handleShowFullTimeline}
           onOpenSettings={handleOpenSettings}
+          onOpenSearch={handleOpenSearch}
         />
       ) : (
         <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
@@ -82,6 +118,14 @@ export function TimelineScreen() {
             >
               <Text style={styles.title}>{t('app.title')}</Text>
               <Text style={styles.subtitle}>{t('app.subtitle')}</Text>
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
+              onPress={handleOpenSearch}
+              accessibilityLabel={t('search.title')}
+              accessibilityRole="button"
+            >
+              <Text style={styles.iconButtonText}>🔍</Text>
             </Pressable>
             <Pressable
               style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
@@ -108,6 +152,8 @@ export function TimelineScreen() {
               detailLevel={detailLevel}
               onSelectEvent={setSelected}
               epochRange={epochRange}
+              jumpToEvent={jumpToEvent}
+              jumpToYear={jumpToYear}
             />
           </ScrollView>
           <ContinentTabBar active={continent} onChange={setContinent} />
@@ -119,6 +165,12 @@ export function TimelineScreen() {
         onClose={handleCloseSettings}
         detailLevel={detailLevel}
         onDetailLevelChange={setDetailLevel}
+      />
+      <SearchModal
+        visible={searchVisible}
+        onClose={handleCloseSearch}
+        onSelectEvent={handleSearchSelectEvent}
+        onSelectYear={handleSearchSelectYear}
       />
     </>
   );
