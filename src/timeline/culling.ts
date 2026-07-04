@@ -13,20 +13,27 @@ export type TrackMap = Map<string, number>; // eventId → trackIndex (0-based)
  * Assigns each event to the lowest-numbered track where no previously
  * assigned event overlaps it (greedy interval packing).
  *
- * Three-phase algorithm:
+ * Four-phase algorithm:
  *   Phase 0 – manual event.track overrides (highest priority)
  *   Phase 1 – lineage groups: all events sharing a lineageId go to the same
  *             track; the full span (first→last event) is reserved so that
  *             unrelated events cannot displace successors mid-lineage.
- *   Phase 2 – remaining singletons (greedy, same as before)
+ *   Phase 2 – singletons WITH a `culture`: prefer a track that already holds
+ *             an event of the same culture (if it fits, no overlap), so
+ *             culturally related events cluster into one visual row even
+ *             without an explicit `lineageId` (#146 B2). Falls back to the
+ *             lowest free track when no same-culture track has room.
+ *   Phase 3 – remaining singletons without `culture` (greedy, same as before)
  */
 export function assignTracks(events: TimelineEvent[]): TrackMap {
   const result = new Map<string, number>();
   const trackEndYears: number[] = [];
+  const trackCultures: Set<string>[] = [];
 
   const manualEvents: TimelineEvent[] = [];
   const lineageMap = new Map<string, TimelineEvent[]>();
-  const singletons: TimelineEvent[] = [];
+  const singletonsWithCulture: TimelineEvent[] = [];
+  const singletonsWithoutCulture: TimelineEvent[] = [];
 
   for (const ev of events) {
     if (ev.track !== undefined) {
@@ -35,17 +42,27 @@ export function assignTracks(events: TimelineEvent[]): TrackMap {
       const group = lineageMap.get(ev.lineageId) ?? [];
       group.push(ev);
       lineageMap.set(ev.lineageId, group);
+    } else if (ev.culture) {
+      singletonsWithCulture.push(ev);
     } else {
-      singletons.push(ev);
+      singletonsWithoutCulture.push(ev);
+    }
+  }
+
+  function ensureTrackSlot(t: number): void {
+    while (trackEndYears.length <= t) {
+      trackEndYears.push(-Infinity);
+      trackCultures.push(new Set());
     }
   }
 
   // Phase 0: manual overrides
   for (const ev of manualEvents) {
     result.set(ev.id, ev.track!);
-    while (trackEndYears.length <= ev.track!) trackEndYears.push(-Infinity);
+    ensureTrackSlot(ev.track!);
     const evEnd = ev.endYear ?? ev.startYear;
     if (evEnd > (trackEndYears[ev.track!] ?? -Infinity)) trackEndYears[ev.track!] = evEnd;
+    if (ev.culture) trackCultures[ev.track!]!.add(ev.culture);
   }
 
   // Phase 1: lineage groups – reserve the full span of the group on one track
@@ -71,23 +88,66 @@ export function assignTracks(events: TimelineEvent[]): TrackMap {
     }
     if (assigned === -1) {
       assigned = trackEndYears.length;
-      trackEndYears.push(-Infinity);
+      ensureTrackSlot(assigned);
     }
     // Reserve the full lineage span so singletons cannot displace successors
     trackEndYears[assigned] = lastEnd;
     for (const ev of group) {
       result.set(ev.id, assigned);
+      if (ev.culture) trackCultures[assigned]!.add(ev.culture);
     }
   }
 
-  // Phase 2: singletons – greedy interval packing
-  singletons.sort((a, b) => {
+  // Phase 2: singletons with a culture – prefer a same-culture track with room.
+  singletonsWithCulture.sort((a, b) => {
     const aG = a.continent === 'global' ? 0 : 1;
     const bG = b.continent === 'global' ? 0 : 1;
     if (aG !== bG) return aG - bG;
     return a.startYear - b.startYear;
   });
-  for (const ev of singletons) {
+  for (const ev of singletonsWithCulture) {
+    const evEnd = ev.endYear ?? ev.startYear;
+    let placed = false;
+
+    // First pass: a track already holding the same culture, with room.
+    for (let t = 0; t < trackEndYears.length; t++) {
+      if (trackCultures[t]!.has(ev.culture!) && (trackEndYears[t] ?? -Infinity) <= ev.startYear) {
+        trackEndYears[t] = evEnd;
+        trackCultures[t]!.add(ev.culture!);
+        result.set(ev.id, t);
+        placed = true;
+        break;
+      }
+    }
+    // Fallback: lowest free track, same as culture-agnostic singletons.
+    if (!placed) {
+      for (let t = 0; t < trackEndYears.length; t++) {
+        if ((trackEndYears[t] ?? -Infinity) <= ev.startYear) {
+          trackEndYears[t] = evEnd;
+          trackCultures[t]!.add(ev.culture!);
+          result.set(ev.id, t);
+          placed = true;
+          break;
+        }
+      }
+    }
+    if (!placed) {
+      const t = trackEndYears.length;
+      ensureTrackSlot(t);
+      trackEndYears[t] = evEnd;
+      trackCultures[t]!.add(ev.culture!);
+      result.set(ev.id, t);
+    }
+  }
+
+  // Phase 3: singletons without a culture – greedy interval packing.
+  singletonsWithoutCulture.sort((a, b) => {
+    const aG = a.continent === 'global' ? 0 : 1;
+    const bG = b.continent === 'global' ? 0 : 1;
+    if (aG !== bG) return aG - bG;
+    return a.startYear - b.startYear;
+  });
+  for (const ev of singletonsWithoutCulture) {
     const evEnd = ev.endYear ?? ev.startYear;
     let placed = false;
     for (let t = 0; t < trackEndYears.length; t++) {
@@ -99,8 +159,10 @@ export function assignTracks(events: TimelineEvent[]): TrackMap {
       }
     }
     if (!placed) {
-      result.set(ev.id, trackEndYears.length);
-      trackEndYears.push(evEnd);
+      const t = trackEndYears.length;
+      ensureTrackSlot(t);
+      trackEndYears[t] = evEnd;
+      result.set(ev.id, t);
     }
   }
 

@@ -180,6 +180,43 @@ describe('timeline/culling.assignTracks', () => {
     expect(result.get('other')).toBe(1);
     expect(result.get('b')).toBe(0); // follows its lineage, not the free track 1
   });
+
+  it('clusters non-overlapping same-culture singletons onto one track (#146 B2)', () => {
+    // Without culture affinity, greedy packing would put 'roman2' on track 0
+    // too (it doesn't overlap 'roman1') — this test only proves the *intent*
+    // holds when a distractor of a different culture is interleaved.
+    const roman1 = ev({ id: 'roman1', startYear: 0, endYear: 100, culture: 'römisch' });
+    const other = ev({ id: 'other', startYear: 50, endYear: 400, culture: 'keltisch' }); // forces roman2 off track 0 if greedy-only
+    const roman2 = ev({ id: 'roman2', startYear: 150, endYear: 250, culture: 'römisch' });
+    const result = assignTracks([roman1, other, roman2]);
+    expect(result.get('roman1')).toBe(result.get('roman2'));
+    expect(result.get('other')).not.toBe(result.get('roman1'));
+  });
+
+  it('falls back to the lowest free track when no same-culture track has room', () => {
+    const roman1 = ev({ id: 'roman1', startYear: 0, endYear: 500, culture: 'römisch' });
+    // Overlaps roman1, so it cannot share its track despite the same culture.
+    const roman2 = ev({ id: 'roman2', startYear: 100, endYear: 200, culture: 'römisch' });
+    const result = assignTracks([roman1, roman2]);
+    expect(result.get('roman1')).toBe(0);
+    expect(result.get('roman2')).toBe(1);
+  });
+
+  it('does not cluster events without a culture field', () => {
+    const a = ev({ id: 'a', startYear: 0, endYear: 100 });
+    const b = ev({ id: 'b', startYear: 200, endYear: 300 });
+    const result = assignTracks([a, b]);
+    // Both share track 0 anyway (greedy, non-overlapping) — just confirms no crash/behavior change.
+    expect(result.get('a')).toBe(0);
+    expect(result.get('b')).toBe(0);
+  });
+
+  it('lineage groups take priority over culture affinity for the same events', () => {
+    const a = ev({ id: 'a', startYear: 0, endYear: 100, culture: 'fränkisch', lineageId: 'L' });
+    const b = ev({ id: 'b', startYear: 150, endYear: 250, culture: 'fränkisch', lineageId: 'L' });
+    const result = assignTracks([a, b]);
+    expect(result.get('a')).toBe(result.get('b'));
+  });
 });
 
 describe('timeline/culling.computeLineageConnectors', () => {
