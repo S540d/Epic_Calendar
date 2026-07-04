@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- **`herrscher`-Kategorie war unsichtbar (Issue #146):** Die Kategorie „Herrscher & Dynastien" hatte einen Filter-Chip, aber kein `laneOrder` — die 116 gepflegten Events (römische Kaiser, englische/französische Dynastien, Präsidenten …) wurden nie gerendert. `laneOrder: 4` ergänzt → wird jetzt als unterste Lane (feinste Detailebene unter Nationen) angezeigt. Durch die kultur-getrennten Zeilen clustern die meist sequenziellen Herrscher sauber (z. B. alle römischen Kaiser in einer Zeile).
 - **Lane-Labels hochkant (PR #124):** `LANE_LABEL_WIDTH` 96 → 28 px. Labels werden mit einem inneren View (width=laneHeight, height=28) um –90° gedreht – spart 68 px Canvas-Breite auf Web und Native.
 - **Zukunfts-Padding behoben (PR #124):** `PRESENT_RIGHT_PAD_FRACTION` (skalierte mit Viewport-Spanne: 15 % von 5 Mrd. Jahren = 750 Mio. Jahre Zukunfts-Scroll) ersetzt durch `PRESENT_RIGHT_BUFFER_YEARS = 200` – fester Puffer unabhängig vom Zoom-Level.
 - **Achsen-Anker am linken Viewport-Rand (PR #124):** `generateTicks` prependet jetzt ein Anker-Label bei px=0 mit dem formatierten Viewport-Startjahr, wenn der erste reguläre Tick mehr als `TICK_LABEL_WIDTH` (90 px) vom linken Rand entfernt ist. Der sichtbare Bereich hat immer eine Datumsbeschriftung am Anfang.

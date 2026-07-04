@@ -36,8 +36,8 @@ describe('category registry — derived arrays match the previous hardcoded valu
     ]);
   });
 
-  it('LANE_ORDER preserves the lane order (no herrscher lane)', () => {
-    expect(LANE_ORDER).toEqual(['erdzeitalter', 'zivilisation', 'natur', 'nation']);
+  it('LANE_ORDER renders all five categories, herrscher as the bottom lane', () => {
+    expect(LANE_ORDER).toEqual(['erdzeitalter', 'zivilisation', 'natur', 'nation', 'herrscher']);
   });
 
   it('DEFAULT_CATEGORIES includes erdzeitalter, natur, and zivilisation', () => {
@@ -141,9 +141,9 @@ describe('category registry — internal consistency', () => {
     expect(new Set(lane).size).toBe(lane.length);
   });
 
-  it('herrscher is a chip but has no lane (preserved quirk)', () => {
+  it('herrscher is both a chip and a lane', () => {
     expect(CHIP_CATEGORIES).toContain('herrscher');
-    expect(LANE_ORDER).not.toContain('herrscher');
+    expect(LANE_ORDER).toContain('herrscher');
   });
 });
 
