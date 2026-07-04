@@ -13,6 +13,7 @@ type Props = {
   onSelectEpoch: (startYear: number, endYear: number) => void;
   onShowFullTimeline: () => void;
   onOpenSettings: () => void;
+  onOpenSearch: () => void;
 };
 
 const EPOCH_COLORS: Record<string, string> = {
@@ -106,7 +107,12 @@ function EpochTile({ epoch, onPress, level = 0, colors }: EpochTileProps) {
   );
 }
 
-export function EpochOverviewScreen({ onSelectEpoch, onShowFullTimeline, onOpenSettings }: Props) {
+export function EpochOverviewScreen({
+  onSelectEpoch,
+  onShowFullTimeline,
+  onOpenSettings,
+  onOpenSearch,
+}: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -125,6 +131,14 @@ export function EpochOverviewScreen({ onSelectEpoch, onShowFullTimeline, onOpenS
           <Text style={styles.title}>{t('epochNav.title')}</Text>
           <Text style={styles.subtitle}>{t('epochNav.subtitle')}</Text>
         </View>
+        <Pressable
+          style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
+          onPress={onOpenSearch}
+          accessibilityLabel={t('search.title')}
+          accessibilityRole="button"
+        >
+          <Text style={styles.iconButtonText}>🔍</Text>
+        </Pressable>
         <Pressable
           style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
           onPress={onOpenSettings}

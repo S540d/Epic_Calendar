@@ -111,6 +111,14 @@
     "title": "Mehrere Ereignisse",
     "dismiss": "Schließen"
   },
+  "search": {
+    "title": "Suche",
+    "placeholder": "Ereignis oder Jahr suchen…",
+    "close": "Schließen",
+    "minChars": "Mindestens 2 Zeichen eingeben",
+    "noResults": "Keine Treffer",
+    "jumpToYear": "Springe zu Jahr {{year}}"
+  },
   "axis": {
     "billion": "Mrd",
     "million": "Mio",

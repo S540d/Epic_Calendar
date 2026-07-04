@@ -41,6 +41,19 @@ type Props = {
   resetKey?: number;
   /** When set, the timeline animates to this epoch after mount. */
   epochRange?: { startYear: number; endYear: number };
+  /**
+   * Set (e.g. from search) to zoom-to-fit a specific event and open its
+   * detail modal. `requestId` must change on every jump request (even to the
+   * same event) so repeated searches for the same event still re-trigger the
+   * animation. Does not change the active category/continent filter itself —
+   * the caller must ensure the event is visible under the current filters.
+   */
+  jumpToEvent?: { event: TimelineEvent; requestId: number } | null;
+  /**
+   * Set (e.g. from search) to center the viewport on a specific year without
+   * opening a detail modal. Same `requestId` re-trigger semantics as `jumpToEvent`.
+   */
+  jumpToYear?: { year: number; requestId: number } | null;
 };
 
 // Built once at module load from the static event set — avoids O(n) full scans per frame.
@@ -56,6 +69,8 @@ export function TimelineView({
   onSelectEvent,
   resetKey = 0,
   epochRange,
+  jumpToEvent,
+  jumpToYear,
 }: Props) {
   const { width: screenWidth } = useWindowDimensions();
   const canvasWidth = Math.max(0, screenWidth - LANE_LABEL_WIDTH);
@@ -333,6 +348,52 @@ export function TimelineView({
       clearTimeout(clearTimer);
     };
   }, [epochRange, canvasWidth]);
+
+  // Jump to a specific event (e.g. from search, #146 A). Keyed on requestId
+  // (not event.id) so repeated jumps to the same event still re-trigger the
+  // animation. Reuses the same zoom-to-fit + minimap highlight + delayed
+  // detail-modal pattern as epoch jumps and tap-to-select.
+  const lastJumpRequestIdRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!jumpToEvent) return;
+    if (canvasWidth <= 0) return;
+    if (lastJumpRequestIdRef.current === jumpToEvent.requestId) return;
+    lastJumpRequestIdRef.current = jumpToEvent.requestId;
+    const { event } = jumpToEvent;
+    setMinimapHighlight({
+      startT: yearToT(event.startYear),
+      endT: yearToT(event.endYear ?? event.startYear),
+    });
+    const zoomTimer = setTimeout(() => {
+      zoomToFitRef.current(event.startYear, event.endYear, true);
+      setPendingSelectEvent(event);
+    }, 100);
+    const clearTimer = setTimeout(() => setMinimapHighlight(null), 450);
+    return () => {
+      clearTimeout(zoomTimer);
+      clearTimeout(clearTimer);
+    };
+  }, [jumpToEvent, canvasWidth]);
+
+  // Jump to a bare year (e.g. "gehe zu 1848" in search, #146 A) — same pattern
+  // as jumpToEvent but without a detail modal at the end.
+  const lastYearJumpRequestIdRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!jumpToYear) return;
+    if (canvasWidth <= 0) return;
+    if (lastYearJumpRequestIdRef.current === jumpToYear.requestId) return;
+    lastYearJumpRequestIdRef.current = jumpToYear.requestId;
+    const { year } = jumpToYear;
+    setMinimapHighlight({ startT: yearToT(year), endT: yearToT(year) });
+    const zoomTimer = setTimeout(() => {
+      zoomToFitRef.current(year, undefined, true);
+    }, 100);
+    const clearTimer = setTimeout(() => setMinimapHighlight(null), 450);
+    return () => {
+      clearTimeout(zoomTimer);
+      clearTimeout(clearTimer);
+    };
+  }, [jumpToYear, canvasWidth]);
 
   // Tap on a web event bar → zoom to fit + queue the detail modal.
   const handleEventTap = useCallback(
