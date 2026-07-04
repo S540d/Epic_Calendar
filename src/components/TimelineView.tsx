@@ -2,7 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { Platform, useWindowDimensions } from 'react-native';
 
 import { ALL_EVENTS } from '@/data/events';
-import { computeLaneData, type TrackMap } from '@/timeline/culling';
+import { buildStableTracksByLane, computeLaneData, type TrackMap } from '@/timeline/culling';
 import { buildEventIndex } from '@/timeline/eventIndex';
 import { useTimelineViewport } from './useTimelineViewport';
 import { useTimelineGestures } from './useTimelineGestures';
@@ -132,6 +132,14 @@ export function TimelineView({
 
   const maxImportanceRank = IMPORTANCE_RANK[detailLevel];
 
+  // Viewport-independent track assignment per lane (#146 B1) — recomputed only
+  // when the filtered event set changes (continent/detail/active lanes), NOT on
+  // every pan/zoom frame. Keeps an event's row stable while scrolling.
+  const stableTracksByLane = useMemo(
+    () => buildStableTracksByLane(lanes, continent, maxImportanceRank, eventIndex),
+    [lanes, continent, maxImportanceRank],
+  );
+
   // Lane data for both web and native — driven by jsOffsetX (viewport-relative).
   const laneData = useMemo(() => {
     const range = viewportYearRange(canvasWidth, jsOffsetX, jsPixelsPerUnit);
@@ -145,8 +153,18 @@ export function TimelineView({
       maxEventsPerLane: MAX_EVENTS_PER_LANE,
       maxImportanceRank,
       eventIndex,
+      stableTracksByLane,
     });
-  }, [canvasWidth, jsOffsetX, jsPixelsPerUnit, lanes, zoomLevel, continent, maxImportanceRank]);
+  }, [
+    canvasWidth,
+    jsOffsetX,
+    jsPixelsPerUnit,
+    lanes,
+    zoomLevel,
+    continent,
+    maxImportanceRank,
+    stableTracksByLane,
+  ]);
   const { visibleByLane, overflowCounts, tracksByLane, connectorsByLane } = laneData;
 
   const laneTrackCounts = useMemo(() => {

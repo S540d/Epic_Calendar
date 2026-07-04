@@ -67,8 +67,8 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 
 - Logarithmische Zeitskala: `yearToT(year)` / `tToYear(t)` aus `@/timeline/scale`
 - LOD-Bänder steuern welche Events bei welchem Zoom sichtbar sind (ppu-Schwellen: `2e-6` / `5e-4` / `0.02` / `2` → Level 0–4)
-- `culling.ts`: filtert Events außerhalb des Viewports; `computeLaneData` akzeptiert optionales `eventIndex?` für O(hits+log n)-Queries sowie `maxImportanceRank?` (Detailgrad-Filter) und liefert zusätzlich `connectorsByLane`. `assignTracks` ist lineage-aware (gleiche `lineageId` bevorzugt dieselbe Zeile); `computeLineageConnectors(events, trackMap)` baut die Verbindungslinien zwischen aufeinanderfolgenden Lineage-Events.
-- `eventIndex.ts`: `EventIndex`-Klasse — Kategorie-partitioniert, startYear-sortiert; `buildEventIndex(events)` + `queryVisible(query)` (Binärsuche); in `TimelineView` verdrahtet via `computeLaneData`
+- `culling.ts`: filtert Events außerhalb des Viewports; `computeLaneData` akzeptiert optionales `eventIndex?` für O(hits+log n)-Queries sowie `maxImportanceRank?` (Detailgrad-Filter) und liefert zusätzlich `connectorsByLane`. `assignTracks` ist lineage-aware (gleiche `lineageId` bevorzugt dieselbe Zeile); `computeLineageConnectors(events, trackMap)` baut die Verbindungslinien zwischen aufeinanderfolgenden Lineage-Events. `buildStableTracksByLane(lanes, continent, maxImportanceRank, eventIndex)` berechnet Tracks einmal viewport-unabhängig über die volle gefilterte Kategorie (siehe #146 B1 unten); wird optional als `stableTracksByLane` an `computeLaneData` übergeben.
+- `eventIndex.ts`: `EventIndex`-Klasse — Kategorie-partitioniert, startYear-sortiert; `buildEventIndex(events)` + `queryVisible(query)` (Binärsuche) + `getFilteredCategory({category, continent, maxImportanceRank})` (alle Events einer Kategorie ohne Zeitraum-/Zoom-Filter, Basis für `buildStableTracksByLane`); in `TimelineView` verdrahtet via `computeLaneData`
 - `formatYear.ts`: formatiert Jahreszahlen (v. Chr., Mio., Mrd.)
 - `lod.ts`: Level-of-Detail-Berechnung, exportiert `T_MIN`, `T_MAX`, `FULL_T_SPAN`; `PRESENT_RIGHT_BUFFER_YEARS = 200` + `clampOffsetX()` begrenzen Scroll nach rechts
 - `scale.ts`: `yearToT`, `tToYear`, `pixelToYear`, `viewportYearRange`
@@ -78,6 +78,7 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 - **Landing-Page-Zeitstrahl linear (`LandmarkTimeline`):** Die **Erdgeschichte ist linear** skaliert (`linearPos()`, konsistent zu Modell B der interaktiven Timeline) — von der Erdentstehung (`EARTH_FORMATION_YEAR = -4.6 Mrd.`) bis heute (`PRESENT_YEAR = 2026`). Der **Urknall** liegt außerhalb dieser Skala (würde die Erdgeschichte sonst zu einem Punkt stauchen) und wird als fixer Marker links neben der Erdentstehung platziert (`BIG_BANG_FRAC = 0.05`, Achsenbeginn `AXIS_START_FRAC = 0.2`). Urknall **und** Erdentstehung zeigen ihren **Zeitpunkt** (`formatEventYear`, via `SHOW_YEAR`-Set) und sind durch einen Achsenbruch (gestrichelte Prelude-Linie + `//`-Glyph) getrennt. **Nicht mehr logarithmisch** (kein `logPos`/`Math.log10` mehr). Kuratierte Landmarks (von links nach rechts): Urknall (außerhalb) → Erde entsteht → Erstes Leben (-3,8 Mrd.) → [Annotation: „Milliarden Jahre nur Mikroben"] → Erste Säugetiere (-225 Mio.) → Dinos (-252–66 Mio., als Balken) → Erste Hominide (-2,5 Mio.). Mondentstehung entfernt (auf linearer Skala redundant zur Erdentstehung).
 - **Web-Renderer viewport-relativ (seit #115):** `TimelineCanvasWeb` rendert Balken wie Native: `x = (startYear − jsOffsetX) × ppu`. Kein `webCanvasWidth` (wäre Milliarden Pixel breit). Pan via RNGH `GestureDetector` + `wheel`-Event-Shim (Ctrl/⌘+Wheel = Zoom). `useTimelineViewport` hat keine Platform-Branches mehr — `withTiming` gilt für web und native gleich.
 - **Lineage-Verbindungslinien (`lineageId` verdrahtet):** `assignTracks` hält nicht-überlappende Nachfolger derselben `lineageId` in einer Zeile; `computeLineageConnectors` erzeugt die Linien (`connectorsByLane`), die beide Renderer **unter** den Balken zeichnen (gedämpfte Kategoriefarbe, ~2 px).
+- **Stabile Track-Zuordnung (#146 B1):** `TimelineView` berechnet `stableTracksByLane` per `useMemo` mit Deps `[lanes, continent, maxImportanceRank]` (NICHT `jsOffsetX`/`jsPixelsPerUnit`) und reicht sie an `computeLaneData` durch. Damit bleibt die Zeilennummer eines Events beim Pannen/Zoomen konstant — vorher lief `assignTracks` pro Frame über die viewport-gecappte Menge, wodurch Events zwischen Zeilen sprangen. `computeLaneData` remappt die im Viewport sichtbaren globalen Tracknummern zusätzlich dicht auf 0..k (Reihenfolge bleibt erhalten, nur Lücken kollabieren), sonst würden global weit auseinanderliegende Zeilen die Lane-Höhe explodieren lassen. Ohne `stableTracksByLane` fällt `computeLaneData` auf das alte Verhalten zurück (von bestehenden Tests genutzt).
 - **Detailgrad-Filter (`importance` verdrahtet):** `DetailLevelSelector` (Wesentliches/Standard/Alles) setzt `maxImportanceRank` als kumulativen Schwellwert in `filterVisible`/`queryVisible`. Default „Alles" (= alles sichtbar, abwärtskompatibel); Events ohne `importance` zählen als `extended`. Ergänzt den automatischen Zoom-LOD um eine manuelle Achse; persistiert als `detailLevel`. Einstellung jetzt im **Settings-Menü** (nicht mehr als Inline-Bar).
 - **Settings-Menü (`SettingsModal`):** Bottom-Sheet-Modal, öffnet per ⚙-Icon im Header beider Screens. Drei Sections: Erscheinungsbild (Dark/Light-Mode-Toggle), Darstellung (Detailgrad), Sprache (DE/EN). Dark Mode via `ThemeContext`; Sprache via i18next + AsyncStorage-Persistenz.
 - **ThemeContext (`useTheme()`):** `ThemeProvider` in `App.tsx` liefert `{ isDark, colors, toggleTheme }`. `darkColors`/`lightColors` in `src/theme/ThemeContext.tsx`. Alle UI-Chrome-Komponenten nutzen `useTheme()` mit `makeStyles(colors)`-Pattern (dynamisch, per `useMemo`). **Canvas-Renderer** (Skia/Canvas2D) und deren Overlays bleiben dunkel (statische `colors`-Importe).
@@ -243,13 +244,13 @@ Canvas-Overlay-Komponenten (ZoomLevelIndicator, EpochBand, …) nutzen weiterhin
 
 ## Offene Issues (legitim)
 
-| #    | Titel                                                   | Priorität       |
-| ---- | ------------------------------------------------------- | --------------- |
-| #5   | Performance-Optimierung (Skia + Reanimated)             | ongoing         |
-| #70  | Skalierbarkeit: mehr Events, Filter, Kategorien         | Epic / Tracker  |
-| #76  | Mehr Inhalte (Wissenschaft, Zivilisationen, Kultur)     | P2 / Content    |
-| #85  | Folgeaufträge (Linear Scale Detail-Default, fullEarth)  | P3              |
-| #121 | Content Coverage: Lückenanalyse Epochen × Kontinente    | P1 / Content    |
+| #    | Titel                                                  | Priorität      |
+| ---- | ------------------------------------------------------ | -------------- |
+| #5   | Performance-Optimierung (Skia + Reanimated)            | ongoing        |
+| #70  | Skalierbarkeit: mehr Events, Filter, Kategorien        | Epic / Tracker |
+| #76  | Mehr Inhalte (Wissenschaft, Zivilisationen, Kultur)    | P2 / Content   |
+| #85  | Folgeaufträge (Linear Scale Detail-Default, fullEarth) | P3             |
+| #121 | Content Coverage: Lückenanalyse Epochen × Kontinente   | P1 / Content   |
 
 ## Referenzen
 

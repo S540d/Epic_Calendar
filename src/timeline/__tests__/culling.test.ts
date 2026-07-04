@@ -1,10 +1,12 @@
 import {
   assignTracks,
+  buildStableTracksByLane,
   computeLaneData,
   computeLineageConnectors,
   filterVisible,
   type VisibilityFilter,
 } from '../culling';
+import { buildEventIndex } from '../eventIndex';
 import type { TimelineEvent } from '@/data/schema';
 import type { Category } from '@/theme/tokens';
 
@@ -271,5 +273,124 @@ describe('timeline/culling.computeLaneData', () => {
     });
     expect(result.visibleByLane.has('natur')).toBe(false);
     expect(result.visibleByLane.get('zivilisation')).toEqual([]);
+  });
+});
+
+describe('timeline/culling.buildStableTracksByLane', () => {
+  it('assigns tracks over the full category regardless of a year range', () => {
+    const events = [
+      ev({ id: 'a', startYear: -400_000_000, category: 'zivilisation' }),
+      ev({ id: 'b', startYear: 2020, category: 'zivilisation' }),
+    ];
+    const index = buildEventIndex(events);
+    const tracksByLane = buildStableTracksByLane(['zivilisation'], 'europa', undefined, index);
+    const tracks = tracksByLane.get('zivilisation')!;
+    expect(tracks.get('a')).toBe(0);
+    expect(tracks.get('b')).toBe(0); // non-overlapping → same track is fine, no forced spread
+  });
+});
+
+describe('timeline/culling.computeLaneData with stableTracksByLane (#146 B1)', () => {
+  it('keeps an event on the same row when the viewport pans (no stableTracksByLane recompute)', () => {
+    // Three non-overlapping events on the same category, spread over a wide range.
+    const events = [
+      ev({ id: 'a', startYear: 0, endYear: 10 }),
+      ev({ id: 'b', startYear: 100, endYear: 110 }),
+      ev({ id: 'c', startYear: 200, endYear: 210 }),
+    ];
+    const index = buildEventIndex(events);
+    const stableTracksByLane = buildStableTracksByLane(
+      ['zivilisation'],
+      'europa',
+      undefined,
+      index,
+    );
+
+    // Viewport 1: only 'a' and 'b' visible.
+    const view1 = computeLaneData({
+      events,
+      startYear: -50,
+      endYear: 150,
+      zoomLevel: 4,
+      lanes: ['zivilisation'],
+      continent: 'europa',
+      maxEventsPerLane: 15,
+      stableTracksByLane,
+    });
+    // Viewport 2: pan right, only 'b' and 'c' visible.
+    const view2 = computeLaneData({
+      events,
+      startYear: 50,
+      endYear: 250,
+      zoomLevel: 4,
+      lanes: ['zivilisation'],
+      continent: 'europa',
+      maxEventsPerLane: 15,
+      stableTracksByLane,
+    });
+
+    // 'b' keeps the same row across both viewports even though the visible
+    // set around it changed — this is the core guarantee of #146 B1.
+    expect(view1.tracksByLane.get('zivilisation')?.get('b')).toBe(
+      view2.tracksByLane.get('zivilisation')?.get('b'),
+    );
+  });
+
+  it('assigns overlapping events to different, but viewport-stable, rows', () => {
+    const a = ev({ id: 'a', startYear: 0, endYear: 100, category: 'zivilisation' });
+    const b = ev({ id: 'b', startYear: 50, endYear: 150, category: 'zivilisation' }); // overlaps a
+    const events = [a, b];
+    const index = buildEventIndex(events);
+    const stableTracksByLane = buildStableTracksByLane(
+      ['zivilisation'],
+      'europa',
+      undefined,
+      index,
+    );
+
+    const result = computeLaneData({
+      events,
+      startYear: 0,
+      endYear: 1000,
+      zoomLevel: 4,
+      lanes: ['zivilisation'],
+      continent: 'europa',
+      maxEventsPerLane: 15,
+      stableTracksByLane,
+    });
+    expect(result.tracksByLane.get('zivilisation')?.get('a')).toBe(0);
+    expect(result.tracksByLane.get('zivilisation')?.get('b')).toBe(1);
+  });
+
+  it('compacts rows to a dense 0..k range for the events actually rendered in the viewport', () => {
+    // Manual overrides force 'a' onto global row 0 and 'far' onto global row 5 —
+    // a big gap that must not translate into 5 empty rendered rows when 'far'
+    // is the only high-numbered event visible in this viewport.
+    const a = ev({ id: 'a', startYear: 0, endYear: 10, category: 'zivilisation', track: 0 });
+    const far = ev({ id: 'far', startYear: 500, endYear: 510, category: 'zivilisation', track: 5 });
+    const events = [a, far];
+    const index = buildEventIndex(events);
+    const stableTracksByLane = buildStableTracksByLane(
+      ['zivilisation'],
+      'europa',
+      undefined,
+      index,
+    );
+    expect(stableTracksByLane.get('zivilisation')!.get('far')).toBe(5);
+
+    const result = computeLaneData({
+      events,
+      startYear: -50,
+      endYear: 1000,
+      zoomLevel: 4,
+      lanes: ['zivilisation'],
+      continent: 'europa',
+      maxEventsPerLane: 15,
+      stableTracksByLane,
+    });
+    const tracks = result.tracksByLane.get('zivilisation')!;
+    // Dense-remapped: only 2 distinct global rows are present → rendered as 0 and 1.
+    expect(tracks.get('a')).toBe(0);
+    expect(tracks.get('far')).toBe(1);
   });
 });
