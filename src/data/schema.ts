@@ -30,6 +30,17 @@ export type TimelineEvent = {
   /** Free-form keyword tags for cross-cutting search/filter. */
   tags?: string[];
   /**
+   * Hierarchy level within a lane, ordering rows top-to-bottom (#70).
+   * epoche   = era phases (Antike, Mittelalter, Renaissance …) — a single
+   *            chronological sequence, rendered as the continuous top row.
+   * reich    = empires/cultures with their own lifespan (Rom, Byzanz, Maya) —
+   *            the default tier; these exist in parallel.
+   * dynastie = ruling houses within an empire (Komnenen, Habsburg) — finest
+   *            level, typically carrying a lineageId.
+   * Absent → treated as `reich` (the default main tier).
+   */
+  tier?: 'epoche' | 'reich' | 'dynastie';
+  /**
    * Links this event to a named lineage (e.g. "frankenreich").
    * Events sharing a lineageId can be rendered in the same track
    * and connected by a continuation line.
@@ -83,6 +94,28 @@ export function passesImportance(
   return importanceRank(event) <= maxRank;
 }
 
+export type TierLevel = 'epoche' | 'reich' | 'dynastie';
+
+export const VALID_TIERS: readonly TierLevel[] = ['epoche', 'reich', 'dynastie'];
+
+/**
+ * Numeric rank per tier — lower = higher in the lane (rendered first). Used by
+ * `assignTracks` as the primary row-ordering key, above chronology.
+ */
+export const TIER_RANK: Record<TierLevel, number> = {
+  epoche: 0,
+  reich: 1,
+  dynastie: 2,
+};
+
+/**
+ * Rank of an event's tier. Events without an explicit `tier` are treated as
+ * `reich` (the default main tier).
+ */
+export function tierRank(event: Pick<TimelineEvent, 'tier'>): number {
+  return event.tier ? TIER_RANK[event.tier] : TIER_RANK.reich;
+}
+
 export const VALID_CONTINENTS: readonly Continent[] = [
   'europa',
   'asien',
@@ -132,6 +165,8 @@ export function validateEvent(
     event.tags.some((t) => typeof t !== 'string')
   )
     errors.push('tags must be an array of strings');
+  if (event.tier !== undefined && !VALID_TIERS.includes(event.tier as TierLevel))
+    errors.push(`invalid tier: ${String(event.tier)}`);
   if (event.lineageId !== undefined && typeof event.lineageId !== 'string')
     errors.push('lineageId must be a string');
   if (event.regions !== undefined && !Array.isArray(event.regions))

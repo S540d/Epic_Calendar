@@ -267,6 +267,59 @@ describe('timeline/culling.assignTracks', () => {
   });
 });
 
+describe('timeline/culling.assignTracks tier ordering (#70)', () => {
+  it('places a later epoche band above an earlier reich (default) event', () => {
+    // Regression for the jumbled hierarchy: the Byzantine Empire (a reich,
+    // starting 330) must NOT sit above the Renaissance (an epoche band,
+    // starting 1400). Tier is the primary row-ordering axis, above chronology.
+    const byzanz = ev({ id: 'byzanz', startYear: 330, endYear: 1453, culture: 'byzantinisch' });
+    const renaissance = ev({
+      id: 'renaissance',
+      startYear: 1400,
+      endYear: 1600,
+      culture: 'neuzeitlich',
+      tier: 'epoche',
+    });
+    const result = assignTracks([byzanz, renaissance]);
+    // Lower track number = higher in the lane. Epoche must win despite starting later.
+    expect(result.get('renaissance')!).toBeLessThan(result.get('byzanz')!);
+  });
+
+  it('orders three tiers top-to-bottom: epoche < reich < dynastie', () => {
+    const dynastie = ev({
+      id: 'komnenen',
+      startYear: 1081,
+      endYear: 1185,
+      culture: 'byzantinisch',
+      tier: 'dynastie',
+    });
+    const reich = ev({ id: 'byzanz', startYear: 330, endYear: 1453, culture: 'byzantinisch2' });
+    const epoche = ev({
+      id: 'mittelalter',
+      startYear: 500,
+      endYear: 1500,
+      culture: 'mittelalterlich',
+      tier: 'epoche',
+    });
+    const result = assignTracks([dynastie, reich, epoche]);
+    expect(result.get('mittelalter')!).toBeLessThan(result.get('byzanz')!);
+    expect(result.get('byzanz')!).toBeLessThan(result.get('komnenen')!);
+  });
+
+  it('treats events without a tier as reich (default), below an epoche band', () => {
+    const rome = ev({ id: 'rome', startYear: -27, endYear: 476, culture: 'römisch' }); // no tier
+    const antike = ev({
+      id: 'antike',
+      startYear: -800,
+      endYear: 500,
+      culture: 'epochal',
+      tier: 'epoche',
+    });
+    const result = assignTracks([rome, antike]);
+    expect(result.get('antike')!).toBeLessThan(result.get('rome')!);
+  });
+});
+
 describe('timeline/culling.computeLineageConnectors', () => {
   it('connects consecutive same-lineage events on the same track', () => {
     const a = ev({ id: 'a', startYear: 0, endYear: 100, lineageId: 'L' });

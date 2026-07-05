@@ -1,4 +1,4 @@
-import { validateEvent, type TimelineEvent, VALID_IMPORTANCE_LEVELS } from '../schema';
+import { validateEvent, type TimelineEvent, VALID_IMPORTANCE_LEVELS, VALID_TIERS } from '../schema';
 import type { Category } from '@/theme/tokens';
 
 const CATEGORIES: Category[] = ['erdzeitalter', 'natur', 'zivilisation', 'nation', 'herrscher'];
@@ -80,6 +80,17 @@ describe('validateEvent', () => {
   it('flags an invalid importance value', () => {
     const errs = validateEvent({ ...valid, importance: 'legendary' as never }, CATEGORIES);
     expect(errs.some((e) => e.includes('importance'))).toBe(true);
+  });
+
+  it('covers all VALID_TIERS without error (#70)', () => {
+    for (const tier of VALID_TIERS) {
+      expect(validateEvent({ ...valid, tier }, CATEGORIES)).toEqual([]);
+    }
+  });
+
+  it('flags an invalid tier value (#70)', () => {
+    const errs = validateEvent({ ...valid, tier: 'kaiserreich' as never }, CATEGORIES);
+    expect(errs.some((e) => e.includes('tier'))).toBe(true);
   });
 
   it('flags tags that is not an array', () => {
