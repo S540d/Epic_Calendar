@@ -39,6 +39,8 @@ type Props = {
   onSelectEvent: (event: TimelineEvent) => void;
   /** Increment to animate back to the default human-history view. */
   resetKey?: number;
+  /** Shows the live FPS overlay (#5 FPS-Monitoring, opt-in via Settings). */
+  showFpsMonitor?: boolean;
   /** When set, the timeline animates to this epoch after mount. */
   epochRange?: { startYear: number; endYear: number };
   /**
@@ -68,6 +70,7 @@ export function TimelineView({
   detailLevel = 'detail',
   onSelectEvent,
   resetKey = 0,
+  showFpsMonitor = false,
   epochRange,
   jumpToEvent,
   jumpToYear,
@@ -442,6 +445,7 @@ export function TimelineView({
         jumpToToday={jumpToToday}
         showEpochLabel={showEpochLabel}
         minimapHighlight={minimapHighlight}
+        showFpsMonitor={showFpsMonitor}
       />
     );
   }
@@ -475,6 +479,7 @@ export function TimelineView({
       onPopoverClose={closePopover}
       onPopoverSelect={handlePopoverSelect}
       minimapHighlight={minimapHighlight}
+      showFpsMonitor={showFpsMonitor}
     />
   );
 }

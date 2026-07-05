@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { EpochBand } from './EpochBand';
 import { EpochChipBar } from './EpochChipBar';
 import { EpochNavArrows } from './EpochNavArrows';
+import { FpsMonitor } from './FpsMonitor';
 import { TimeAxis } from './TimeAxis';
 import { TimelineBreadcrumb } from './TimelineBreadcrumb';
 import { TimelineMinimap } from './TimelineMinimap';
@@ -81,6 +82,8 @@ type Props = {
   onPopoverClose: () => void;
   onPopoverSelect: (event: TimelineEvent) => void;
   minimapHighlight?: { startT: number; endT: number } | null;
+  /** Shows the live FPS overlay (#5 FPS-Monitoring, opt-in via Settings). */
+  showFpsMonitor?: boolean;
 };
 
 /**
@@ -116,6 +119,7 @@ export function TimelineCanvasNative({
   onPopoverClose,
   onPopoverSelect,
   minimapHighlight,
+  showFpsMonitor = false,
 }: Props) {
   const { t } = useTranslation();
 
@@ -131,11 +135,14 @@ export function TimelineCanvasNative({
         />
         <View style={StyleSheet.absoluteFill} pointerEvents="none">
           <ZoomLevelIndicator zoomLevel={zoomLevel} />
-          <TimelineBreadcrumb
-            startYear={viewportRange.startYear}
-            endYear={viewportRange.endYear}
-            epoch={epochLabel}
-          />
+          <View style={styles.topRightGroup}>
+            <FpsMonitor enabled={showFpsMonitor} />
+            <TimelineBreadcrumb
+              startYear={viewportRange.startYear}
+              endYear={viewportRange.endYear}
+              epoch={epochLabel}
+            />
+          </View>
         </View>
       </View>
 

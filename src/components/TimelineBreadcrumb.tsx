@@ -34,9 +34,6 @@ export function TimelineBreadcrumb({ startYear, endYear, epoch }: Props) {
 
 const styles = StyleSheet.create({
   pill: {
-    position: 'absolute',
-    top: 6,
-    right: 8,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(31, 36, 45, 0.88)',

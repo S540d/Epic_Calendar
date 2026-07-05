@@ -92,6 +92,14 @@ export const timelineStyles = StyleSheet.create({
   axisRow: {
     flexDirection: 'row',
   },
+  topRightGroup: {
+    position: 'absolute',
+    top: 6,
+    right: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   epochBandRow: {
     flexDirection: 'row',
     backgroundColor: colors.bg,

@@ -9,6 +9,7 @@
     "appearance": "Appearance",
     "darkMode": "Dark mode",
     "display": "Display",
+    "fpsMonitor": "Show FPS monitor",
     "language": "Language"
   },
   "category": {

@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { EpochBand } from './EpochBand';
 import { EpochChipBar } from './EpochChipBar';
 import { EpochNavArrows } from './EpochNavArrows';
+import { FpsMonitor } from './FpsMonitor';
 import { TimeAxis } from './TimeAxis';
 import { TimelineBreadcrumb } from './TimelineBreadcrumb';
 import { TimelineMinimap } from './TimelineMinimap';
@@ -63,6 +64,8 @@ type Props = {
   /** Whether the Erdzeitalter lane is active (epoch pill only meaningful then). */
   showEpochLabel: boolean;
   minimapHighlight?: { startT: number; endT: number } | null;
+  /** Shows the live FPS overlay (#5 FPS-Monitoring, opt-in via Settings). */
+  showFpsMonitor?: boolean;
 };
 
 /**
@@ -96,6 +99,7 @@ export function TimelineCanvasWeb({
   jumpToToday,
   showEpochLabel,
   minimapHighlight,
+  showFpsMonitor = false,
 }: Props) {
   const { t } = useTranslation();
   const WEB_PPU = jsPixelsPerUnit;
@@ -173,11 +177,14 @@ export function TimelineCanvasWeb({
         />
         <View style={StyleSheet.absoluteFill} pointerEvents="none">
           <ZoomLevelIndicator zoomLevel={zoomLevel} />
-          <TimelineBreadcrumb
-            startYear={visibleStartYear}
-            endYear={visibleEndYear}
-            epoch={webEpochLabel}
-          />
+          <View style={styles.topRightGroup}>
+            <FpsMonitor enabled={showFpsMonitor} />
+            <TimelineBreadcrumb
+              startYear={visibleStartYear}
+              endYear={visibleEndYear}
+              epoch={webEpochLabel}
+            />
+          </View>
         </View>
       </View>
       <TimelineMinimap

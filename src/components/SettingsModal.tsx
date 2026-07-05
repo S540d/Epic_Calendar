@@ -11,11 +11,20 @@ type Props = {
   onClose: () => void;
   detailLevel: ImportanceLevel;
   onDetailLevelChange: (level: ImportanceLevel) => void;
+  showFpsMonitor: boolean;
+  onShowFpsMonitorChange: (value: boolean) => void;
 };
 
 const DETAIL_LEVELS: ImportanceLevel[] = ['core', 'extended', 'detail'];
 
-export function SettingsModal({ visible, onClose, detailLevel, onDetailLevelChange }: Props) {
+export function SettingsModal({
+  visible,
+  onClose,
+  detailLevel,
+  onDetailLevelChange,
+  showFpsMonitor,
+  onShowFpsMonitorChange,
+}: Props) {
   const { t, i18n } = useTranslation();
   const { isDark, colors, toggleTheme } = useTheme();
 
@@ -88,6 +97,16 @@ export function SettingsModal({ visible, onClose, detailLevel, onDetailLevelChan
                   </TouchableOpacity>
                 );
               })}
+            </View>
+            <View style={[styles.row, { marginTop: spacing.sm }]}>
+              <Text style={styles.rowLabel}>{t('settings.fpsMonitor')}</Text>
+              <Switch
+                value={showFpsMonitor}
+                onValueChange={onShowFpsMonitorChange}
+                trackColor={{ false: colors.border, true: colors.accent }}
+                thumbColor={colors.bgElevated}
+                accessibilityLabel={t('settings.fpsMonitor')}
+              />
             </View>
           </View>
 
