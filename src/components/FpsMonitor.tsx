@@ -23,7 +23,8 @@ export const FpsMonitor = React.memo(function FpsMonitor({ enabled }: Props) {
 
   if (!enabled) return null;
 
-  const color = fps >= GOOD_FPS_THRESHOLD ? GOOD_COLOR : fps >= OK_FPS_THRESHOLD ? OK_COLOR : BAD_COLOR;
+  const color =
+    fps >= GOOD_FPS_THRESHOLD ? GOOD_COLOR : fps >= OK_FPS_THRESHOLD ? OK_COLOR : BAD_COLOR;
 
   return (
     <View style={styles.pill} pointerEvents="none">
