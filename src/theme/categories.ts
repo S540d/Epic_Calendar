@@ -83,8 +83,10 @@ const CATEGORY_LIST = [
     laneBg: 'rgba(207, 138, 48, 0.10)',
     palette: ['#BF7020', '#D98C38', '#A05810', '#E8A050', '#8C4808', '#F0B868', '#704000'],
     labelKey: 'category.herrscher',
-    // Quirk preserved: shown as a chip but has no lane (laneOrder absent).
     chipOrder: 3,
+    // Rendered as the bottom lane (finest detail below nations). The 116
+    // herrscher events were previously invisible — chip present but no lane.
+    laneOrder: 4,
     enabled: true,
   },
 ] as const satisfies readonly CategoryConfigBase[];

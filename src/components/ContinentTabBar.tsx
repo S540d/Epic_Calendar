@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { type Continent } from '@/data/schema';
-import { colors, radii, spacing, typography } from '@/theme/tokens';
+import { radii, spacing, typography } from '@/theme/tokens';
+import { useTheme, type ThemeColors } from '@/theme/ThemeContext';
 
 type Props = {
   active: Continent;
@@ -15,6 +16,8 @@ const ENABLED: Continent[] = ['global', 'europa', 'asien', 'afrika', 'amerika'];
 
 export function ContinentTabBar({ active, onChange }: Props) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   return (
     <View style={styles.bar} accessibilityRole="tablist" accessibilityLabel="Kontinente">
@@ -50,35 +53,37 @@ export function ContinentTabBar({ active, onChange }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  bar: {
-    flexDirection: 'row',
-    backgroundColor: colors.bgElevated,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.border,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.sm,
-    gap: spacing.xs,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: spacing.sm,
-    borderRadius: radii.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tabActive: {
-    backgroundColor: colors.surface,
-  },
-  tabText: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  tabTextActive: {
-    color: colors.textPrimary,
-    fontWeight: '700',
-  },
-  tabTextDisabled: {
-    color: colors.textMuted,
-  },
-});
+function makeStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    bar: {
+      flexDirection: 'row',
+      backgroundColor: colors.bgElevated,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.border,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.sm,
+      gap: spacing.xs,
+    },
+    tab: {
+      flex: 1,
+      paddingVertical: spacing.sm,
+      borderRadius: radii.md,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    tabActive: {
+      backgroundColor: colors.surface,
+    },
+    tabText: {
+      ...typography.caption,
+      color: colors.textSecondary,
+    },
+    tabTextActive: {
+      color: colors.textPrimary,
+      fontWeight: '700',
+    },
+    tabTextDisabled: {
+      color: colors.textMuted,
+    },
+  });
+}

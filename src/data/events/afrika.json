@@ -828,5 +828,18 @@
     "importance": "detail",
     "minZoomLevel": 3,
     "tags": ["somalia", "äthiopien", "islam", "horn-von-afrika"]
+  },
+  {
+    "id": "af-mamluk-sultanat",
+    "title": "Mamluk-Sultanat Ägypten",
+    "description": "Ehemalige türkisch-kaukasische Sklavensoldaten (Mamluken) übernehmen die Macht in Ägypten. Sie stoppen die Mongolen in der entscheidenden Schlacht von Ain Dschalut (1260) und vertreiben die letzten Kreuzfahrer aus dem Heiligen Land. Kairo wird zum kulturellen und religiösen Zentrum der islamischen Welt nach dem Mongolensturm.",
+    "startYear": 1250,
+    "endYear": 1517,
+    "category": "nation",
+    "continent": "afrika",
+    "culture": "ägyptisch-islamisch",
+    "importance": "extended",
+    "minZoomLevel": 2,
+    "tags": ["mamluk", "ägypten", "islam", "mongolen", "kreuzzüge"]
   }
 ]

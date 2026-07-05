@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { type TimelineEvent } from '@/data/schema';
-import { colors, radii, spacing, typography } from '@/theme/tokens';
+import { radii, spacing, typography } from '@/theme/tokens';
 import { formatEventYear } from '@/timeline/formatYear';
+import { useTheme, type ThemeColors } from '@/theme/ThemeContext';
 
 type Props = {
   event: TimelineEvent | null;
@@ -13,6 +14,8 @@ type Props = {
 
 export function EventDetailModal({ event, onClose }: Props) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const timeRange = event
     ? `${formatEventYear(event.startYear, t)}${event.endYear !== undefined ? ` – ${formatEventYear(event.endYear, t)}` : ''}`
@@ -71,48 +74,50 @@ export function EventDetailModal({ event, onClose }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-    justifyContent: 'flex-end',
-  },
-  sheet: {
-    backgroundColor: colors.bgElevated,
-    borderTopLeftRadius: radii.lg,
-    borderTopRightRadius: radii.lg,
-    padding: spacing.lg,
-    maxHeight: '70%',
-  },
-  colorBar: {
-    height: 4,
-    width: 48,
-    borderRadius: radii.pill,
-    marginBottom: spacing.md,
-  },
-  category: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginBottom: spacing.xs,
-  },
-  title: {
-    ...typography.title,
-    color: colors.textPrimary,
-    marginBottom: spacing.sm,
-  },
-  range: {
-    ...typography.subtitle,
-    color: colors.accent,
-    marginBottom: spacing.md,
-  },
-  meta: {
-    ...typography.body,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
-  },
-  body: {
-    ...typography.body,
-    color: colors.textPrimary,
-    lineHeight: 22,
-  },
-});
+function makeStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    backdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.55)',
+      justifyContent: 'flex-end',
+    },
+    sheet: {
+      backgroundColor: colors.bgElevated,
+      borderTopLeftRadius: radii.lg,
+      borderTopRightRadius: radii.lg,
+      padding: spacing.lg,
+      maxHeight: '70%',
+    },
+    colorBar: {
+      height: 4,
+      width: 48,
+      borderRadius: radii.pill,
+      marginBottom: spacing.md,
+    },
+    category: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      marginBottom: spacing.xs,
+    },
+    title: {
+      ...typography.title,
+      color: colors.textPrimary,
+      marginBottom: spacing.sm,
+    },
+    range: {
+      ...typography.subtitle,
+      color: colors.accent,
+      marginBottom: spacing.md,
+    },
+    meta: {
+      ...typography.body,
+      color: colors.textSecondary,
+      marginBottom: spacing.sm,
+    },
+    body: {
+      ...typography.body,
+      color: colors.textPrimary,
+      lineHeight: 22,
+    },
+  });
+}

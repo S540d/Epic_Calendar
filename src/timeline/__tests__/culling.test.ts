@@ -1,10 +1,12 @@
 import {
   assignTracks,
+  buildStableTracksByLane,
   computeLaneData,
   computeLineageConnectors,
   filterVisible,
   type VisibilityFilter,
 } from '../culling';
+import { buildEventIndex } from '../eventIndex';
 import type { TimelineEvent } from '@/data/schema';
 import type { Category } from '@/theme/tokens';
 
@@ -158,6 +160,15 @@ describe('timeline/culling.assignTracks', () => {
     expect(result.get('b')).toBe(0);
   });
 
+  it('assigns global events to lower tracks than regional events', () => {
+    // Regional event starts earlier (would normally get track 0 by startYear sort),
+    // but the global event should be prioritised to track 0.
+    const regional = ev({ id: 'r1', startYear: -500, endYear: 500, continent: 'europa' });
+    const global = ev({ id: 'g1', startYear: -300, endYear: 300, continent: 'global' });
+    const result = assignTracks([regional, global]);
+    expect(result.get('g1')).toBeLessThan(result.get('r1')!);
+  });
+
   it('keeps non-overlapping lineage successors on the same track', () => {
     // A long-running other event would push a greedy successor to track 1,
     // but the shared lineage keeps the successor on track 0.
@@ -168,6 +179,91 @@ describe('timeline/culling.assignTracks', () => {
     expect(result.get('a')).toBe(0);
     expect(result.get('other')).toBe(1);
     expect(result.get('b')).toBe(0); // follows its lineage, not the free track 1
+  });
+
+  it('clusters non-overlapping same-culture singletons onto one track (#146 B2)', () => {
+    // Without culture affinity, greedy packing would put 'roman2' on track 0
+    // too (it doesn't overlap 'roman1') — this test only proves the *intent*
+    // holds when a distractor of a different culture is interleaved.
+    const roman1 = ev({ id: 'roman1', startYear: 0, endYear: 100, culture: 'römisch' });
+    const other = ev({ id: 'other', startYear: 50, endYear: 400, culture: 'keltisch' }); // forces roman2 off track 0 if greedy-only
+    const roman2 = ev({ id: 'roman2', startYear: 150, endYear: 250, culture: 'römisch' });
+    const result = assignTracks([roman1, other, roman2]);
+    expect(result.get('roman1')).toBe(result.get('roman2'));
+    expect(result.get('other')).not.toBe(result.get('roman1'));
+  });
+
+  it('opens a second same-culture row when the first has no room (overlap)', () => {
+    const roman1 = ev({ id: 'roman1', startYear: 0, endYear: 500, culture: 'römisch' });
+    // Overlaps roman1, so it cannot share its track despite the same culture.
+    const roman2 = ev({ id: 'roman2', startYear: 100, endYear: 200, culture: 'römisch' });
+    const result = assignTracks([roman1, roman2]);
+    expect(result.get('roman1')).toBe(0);
+    expect(result.get('roman2')).toBe(1);
+  });
+
+  it('never mixes different cultures into one row, even when there is free space', () => {
+    // Regression for the jumbled-rows screenshot (#146): Tudor (englisch) must
+    // NOT be packed into the free tail of the Byzantine row just because it fits.
+    const byzanz = ev({ id: 'byzanz', startYear: 330, endYear: 1453, culture: 'byzantinisch' });
+    const tudor = ev({ id: 'tudor', startYear: 1485, endYear: 1603, culture: 'englisch' });
+    const aufklaerung = ev({ id: 'aufkl', startYear: 1685, endYear: 1815, culture: 'neuzeitlich' });
+    const result = assignTracks([byzanz, tudor, aufklaerung]);
+    const rows = new Set([result.get('byzanz'), result.get('tudor'), result.get('aufkl')]);
+    expect(rows.size).toBe(3); // three cultures → three distinct rows
+  });
+
+  it('chains same-culture successors into one continuous row across distractors', () => {
+    // England row: Plantagenet → Tudor, despite an overlapping French dynasty between them.
+    const plantagenet = ev({ id: 'plant', startYear: 1154, endYear: 1399, culture: 'englisch' });
+    const valois = ev({ id: 'valois', startYear: 1328, endYear: 1589, culture: 'französisch' });
+    const tudor = ev({ id: 'tudor', startYear: 1485, endYear: 1603, culture: 'englisch' });
+    const result = assignTracks([plantagenet, valois, tudor]);
+    expect(result.get('plant')).toBe(result.get('tudor'));
+    expect(result.get('valois')).not.toBe(result.get('plant'));
+  });
+
+  it('keeps culture-less events in neutral rows, never in culture-owned rows', () => {
+    const rome = ev({ id: 'rome', startYear: 0, endYear: 100, culture: 'römisch' });
+    const neutral = ev({ id: 'neutral', startYear: 200, endYear: 300 }); // fits after rome, but must not join its row
+    const result = assignTracks([rome, neutral]);
+    expect(result.get('neutral')).not.toBe(result.get('rome'));
+  });
+
+  it('shares one neutral row between non-overlapping culture-less events', () => {
+    const a = ev({ id: 'a', startYear: 0, endYear: 100 });
+    const b = ev({ id: 'b', startYear: 200, endYear: 300 });
+    const result = assignTracks([a, b]);
+    expect(result.get('a')).toBe(0);
+    expect(result.get('b')).toBe(0);
+  });
+
+  it('lineage groups take priority over culture affinity for the same events', () => {
+    const a = ev({ id: 'a', startYear: 0, endYear: 100, culture: 'fränkisch', lineageId: 'L' });
+    const b = ev({ id: 'b', startYear: 150, endYear: 250, culture: 'fränkisch', lineageId: 'L' });
+    const result = assignTracks([a, b]);
+    expect(result.get('a')).toBe(result.get('b'));
+  });
+
+  it('places a same-culture singleton onto its lineage-culture row when free', () => {
+    // A lineage row owned by "französisch" ends 1589; a French singleton starting later joins it.
+    const a = ev({
+      id: 'a',
+      startYear: 987,
+      endYear: 1328,
+      culture: 'französisch',
+      lineageId: 'F',
+    });
+    const b = ev({
+      id: 'b',
+      startYear: 1328,
+      endYear: 1589,
+      culture: 'französisch',
+      lineageId: 'F',
+    });
+    const bourbon = ev({ id: 'bourbon', startYear: 1589, endYear: 1792, culture: 'französisch' });
+    const result = assignTracks([a, b, bourbon]);
+    expect(result.get('bourbon')).toBe(result.get('a'));
   });
 });
 
@@ -262,5 +358,124 @@ describe('timeline/culling.computeLaneData', () => {
     });
     expect(result.visibleByLane.has('natur')).toBe(false);
     expect(result.visibleByLane.get('zivilisation')).toEqual([]);
+  });
+});
+
+describe('timeline/culling.buildStableTracksByLane', () => {
+  it('assigns tracks over the full category regardless of a year range', () => {
+    const events = [
+      ev({ id: 'a', startYear: -400_000_000, category: 'zivilisation' }),
+      ev({ id: 'b', startYear: 2020, category: 'zivilisation' }),
+    ];
+    const index = buildEventIndex(events);
+    const tracksByLane = buildStableTracksByLane(['zivilisation'], 'europa', undefined, index);
+    const tracks = tracksByLane.get('zivilisation')!;
+    expect(tracks.get('a')).toBe(0);
+    expect(tracks.get('b')).toBe(0); // non-overlapping → same track is fine, no forced spread
+  });
+});
+
+describe('timeline/culling.computeLaneData with stableTracksByLane (#146 B1)', () => {
+  it('keeps an event on the same row when the viewport pans (no stableTracksByLane recompute)', () => {
+    // Three non-overlapping events on the same category, spread over a wide range.
+    const events = [
+      ev({ id: 'a', startYear: 0, endYear: 10 }),
+      ev({ id: 'b', startYear: 100, endYear: 110 }),
+      ev({ id: 'c', startYear: 200, endYear: 210 }),
+    ];
+    const index = buildEventIndex(events);
+    const stableTracksByLane = buildStableTracksByLane(
+      ['zivilisation'],
+      'europa',
+      undefined,
+      index,
+    );
+
+    // Viewport 1: only 'a' and 'b' visible.
+    const view1 = computeLaneData({
+      events,
+      startYear: -50,
+      endYear: 150,
+      zoomLevel: 4,
+      lanes: ['zivilisation'],
+      continent: 'europa',
+      maxEventsPerLane: 15,
+      stableTracksByLane,
+    });
+    // Viewport 2: pan right, only 'b' and 'c' visible.
+    const view2 = computeLaneData({
+      events,
+      startYear: 50,
+      endYear: 250,
+      zoomLevel: 4,
+      lanes: ['zivilisation'],
+      continent: 'europa',
+      maxEventsPerLane: 15,
+      stableTracksByLane,
+    });
+
+    // 'b' keeps the same row across both viewports even though the visible
+    // set around it changed — this is the core guarantee of #146 B1.
+    expect(view1.tracksByLane.get('zivilisation')?.get('b')).toBe(
+      view2.tracksByLane.get('zivilisation')?.get('b'),
+    );
+  });
+
+  it('assigns overlapping events to different, but viewport-stable, rows', () => {
+    const a = ev({ id: 'a', startYear: 0, endYear: 100, category: 'zivilisation' });
+    const b = ev({ id: 'b', startYear: 50, endYear: 150, category: 'zivilisation' }); // overlaps a
+    const events = [a, b];
+    const index = buildEventIndex(events);
+    const stableTracksByLane = buildStableTracksByLane(
+      ['zivilisation'],
+      'europa',
+      undefined,
+      index,
+    );
+
+    const result = computeLaneData({
+      events,
+      startYear: 0,
+      endYear: 1000,
+      zoomLevel: 4,
+      lanes: ['zivilisation'],
+      continent: 'europa',
+      maxEventsPerLane: 15,
+      stableTracksByLane,
+    });
+    expect(result.tracksByLane.get('zivilisation')?.get('a')).toBe(0);
+    expect(result.tracksByLane.get('zivilisation')?.get('b')).toBe(1);
+  });
+
+  it('compacts rows to a dense 0..k range for the events actually rendered in the viewport', () => {
+    // Manual overrides force 'a' onto global row 0 and 'far' onto global row 5 —
+    // a big gap that must not translate into 5 empty rendered rows when 'far'
+    // is the only high-numbered event visible in this viewport.
+    const a = ev({ id: 'a', startYear: 0, endYear: 10, category: 'zivilisation', track: 0 });
+    const far = ev({ id: 'far', startYear: 500, endYear: 510, category: 'zivilisation', track: 5 });
+    const events = [a, far];
+    const index = buildEventIndex(events);
+    const stableTracksByLane = buildStableTracksByLane(
+      ['zivilisation'],
+      'europa',
+      undefined,
+      index,
+    );
+    expect(stableTracksByLane.get('zivilisation')!.get('far')).toBe(5);
+
+    const result = computeLaneData({
+      events,
+      startYear: -50,
+      endYear: 1000,
+      zoomLevel: 4,
+      lanes: ['zivilisation'],
+      continent: 'europa',
+      maxEventsPerLane: 15,
+      stableTracksByLane,
+    });
+    const tracks = result.tracksByLane.get('zivilisation')!;
+    // Dense-remapped: only 2 distinct global rows are present → rendered as 0 and 1.
+    expect(tracks.get('a')).toBe(0);
+    expect(tracks.get('far')).toBe(1);
   });
 });

@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import { colors, radii, spacing, typography, type Category } from '@/theme/tokens';
+import { radii, spacing, typography, type Category } from '@/theme/tokens';
 import { CHIP_CATEGORIES, DISABLED_CATEGORIES } from '@/theme/categories';
+import { useTheme, type ThemeColors } from '@/theme/ThemeContext';
 
 type Props = {
   active: Set<Category>;
@@ -12,6 +13,8 @@ type Props = {
 
 export function FilterChipBar({ active, onToggle }: Props) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   return (
     <ScrollView
@@ -62,38 +65,40 @@ export function FilterChipBar({ active, onToggle }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  scrollView: {
-    flexShrink: 0,
-    flexGrow: 0,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    gap: spacing.sm,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radii.pill,
-    borderWidth: 1,
-    backgroundColor: colors.bgElevated,
-    gap: spacing.sm,
-  },
-  chipDisabled: {
-    opacity: 0.5,
-  },
-  chipText: {
-    ...typography.caption,
-    color: colors.textPrimary,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-});
+function makeStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    scrollView: {
+      flexShrink: 0,
+      flexGrow: 0,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      gap: spacing.sm,
+    },
+    chip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      borderRadius: radii.pill,
+      borderWidth: 1,
+      backgroundColor: colors.bgElevated,
+      gap: spacing.sm,
+    },
+    chipDisabled: {
+      opacity: 0.5,
+    },
+    chipText: {
+      ...typography.caption,
+      color: colors.textPrimary,
+    },
+    dot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+    },
+  });
+}

@@ -67,9 +67,10 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 
 - Logarithmische Zeitskala: `yearToT(year)` / `tToYear(t)` aus `@/timeline/scale`
 - LOD-Bänder steuern welche Events bei welchem Zoom sichtbar sind (ppu-Schwellen: `2e-6` / `5e-4` / `0.02` / `2` → Level 0–4)
-- `culling.ts`: filtert Events außerhalb des Viewports; `computeLaneData` akzeptiert optionales `eventIndex?` für O(hits+log n)-Queries sowie `maxImportanceRank?` (Detailgrad-Filter) und liefert zusätzlich `connectorsByLane`. `assignTracks` ist lineage-aware (gleiche `lineageId` bevorzugt dieselbe Zeile); `computeLineageConnectors(events, trackMap)` baut die Verbindungslinien zwischen aufeinanderfolgenden Lineage-Events.
-- `eventIndex.ts`: `EventIndex`-Klasse — Kategorie-partitioniert, startYear-sortiert; `buildEventIndex(events)` + `queryVisible(query)` (Binärsuche); in `TimelineView` verdrahtet via `computeLaneData`
+- `culling.ts`: filtert Events außerhalb des Viewports; `computeLaneData` akzeptiert optionales `eventIndex?` für O(hits+log n)-Queries sowie `maxImportanceRank?` (Detailgrad-Filter) und liefert zusätzlich `connectorsByLane`. `assignTracks` ist lineage-aware (gleiche `lineageId` bevorzugt dieselbe Zeile); `computeLineageConnectors(events, trackMap)` baut die Verbindungslinien zwischen aufeinanderfolgenden Lineage-Events. `buildStableTracksByLane(lanes, continent, maxImportanceRank, eventIndex)` berechnet Tracks einmal viewport-unabhängig über die volle gefilterte Kategorie (siehe #146 B1 unten); wird optional als `stableTracksByLane` an `computeLaneData` übergeben.
+- `eventIndex.ts`: `EventIndex`-Klasse — Kategorie-partitioniert, startYear-sortiert; `buildEventIndex(events)` + `queryVisible(query)` (Binärsuche) + `getFilteredCategory({category, continent, maxImportanceRank})` (alle Events einer Kategorie ohne Zeitraum-/Zoom-Filter, Basis für `buildStableTracksByLane`); in `TimelineView` verdrahtet via `computeLaneData`
 - `formatYear.ts`: formatiert Jahreszahlen (v. Chr., Mio., Mrd.)
+- `search.ts` (#146 A): `searchEvents(events, query)` — Präfix-/Substring-Suche über `title`/`culture`/`tags`, diakritik- und case-insensitiv, Score-basiertes Ranking (exakter Titel-Match zuerst). `parseYearQuery(query)` erkennt reine Jahreszahl-Eingaben (`"500"`, `"-500"`, `"500 v. Chr."`, `"3 Mio v. Chr."`) und liefert das Jahr oder `null`.
 - `lod.ts`: Level-of-Detail-Berechnung, exportiert `T_MIN`, `T_MAX`, `FULL_T_SPAN`; `PRESENT_RIGHT_BUFFER_YEARS = 200` + `clampOffsetX()` begrenzen Scroll nach rechts
 - `scale.ts`: `yearToT`, `tToYear`, `pixelToYear`, `viewportYearRange`
 - `epoch.ts`: Epoche-Mapping für Breadcrumb + `NavigationEpoch`-Typ + `NAVIGATION_EPOCHS`-Baum (kosmische Frühzeit → Neuzeit)
@@ -78,7 +79,11 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 - **Landing-Page-Zeitstrahl linear (`LandmarkTimeline`):** Die **Erdgeschichte ist linear** skaliert (`linearPos()`, konsistent zu Modell B der interaktiven Timeline) — von der Erdentstehung (`EARTH_FORMATION_YEAR = -4.6 Mrd.`) bis heute (`PRESENT_YEAR = 2026`). Der **Urknall** liegt außerhalb dieser Skala (würde die Erdgeschichte sonst zu einem Punkt stauchen) und wird als fixer Marker links neben der Erdentstehung platziert (`BIG_BANG_FRAC = 0.05`, Achsenbeginn `AXIS_START_FRAC = 0.2`). Urknall **und** Erdentstehung zeigen ihren **Zeitpunkt** (`formatEventYear`, via `SHOW_YEAR`-Set) und sind durch einen Achsenbruch (gestrichelte Prelude-Linie + `//`-Glyph) getrennt. **Nicht mehr logarithmisch** (kein `logPos`/`Math.log10` mehr). Kuratierte Landmarks (von links nach rechts): Urknall (außerhalb) → Erde entsteht → Erstes Leben (-3,8 Mrd.) → [Annotation: „Milliarden Jahre nur Mikroben"] → Erste Säugetiere (-225 Mio.) → Dinos (-252–66 Mio., als Balken) → Erste Hominide (-2,5 Mio.). Mondentstehung entfernt (auf linearer Skala redundant zur Erdentstehung).
 - **Web-Renderer viewport-relativ (seit #115):** `TimelineCanvasWeb` rendert Balken wie Native: `x = (startYear − jsOffsetX) × ppu`. Kein `webCanvasWidth` (wäre Milliarden Pixel breit). Pan via RNGH `GestureDetector` + `wheel`-Event-Shim (Ctrl/⌘+Wheel = Zoom). `useTimelineViewport` hat keine Platform-Branches mehr — `withTiming` gilt für web und native gleich.
 - **Lineage-Verbindungslinien (`lineageId` verdrahtet):** `assignTracks` hält nicht-überlappende Nachfolger derselben `lineageId` in einer Zeile; `computeLineageConnectors` erzeugt die Linien (`connectorsByLane`), die beide Renderer **unter** den Balken zeichnen (gedämpfte Kategoriefarbe, ~2 px).
-- **Detailgrad-Filter (`importance` verdrahtet):** `DetailLevelSelector` (Wesentliches/Standard/Alles) setzt `maxImportanceRank` als kumulativen Schwellwert in `filterVisible`/`queryVisible`. Default „Alles" (= alles sichtbar, abwärtskompatibel); Events ohne `importance` zählen als `extended`. Ergänzt den automatischen Zoom-LOD um eine manuelle Achse; persistiert als `detailLevel`.
+- **Stabile Track-Zuordnung (#146 B1):** `TimelineView` berechnet `stableTracksByLane` per `useMemo` mit Deps `[lanes, continent, maxImportanceRank]` (NICHT `jsOffsetX`/`jsPixelsPerUnit`) und reicht sie an `computeLaneData` durch. Damit bleibt die Zeilennummer eines Events beim Pannen/Zoomen konstant — vorher lief `assignTracks` pro Frame über die viewport-gecappte Menge, wodurch Events zwischen Zeilen sprangen. `computeLaneData` remappt die im Viewport sichtbaren globalen Tracknummern zusätzlich dicht auf 0..k (Reihenfolge bleibt erhalten, nur Lücken kollabieren), sonst würden global weit auseinanderliegende Zeilen die Lane-Höhe explodieren lassen. Ohne `stableTracksByLane` fällt `computeLaneData` auf das alte Verhalten zurück (von bestehenden Tests genutzt).
+- **Kultur-getrennte Zeilen (#146 B2):** Zeilen in `assignTracks` sind strikt kultur-homogen: Jede automatisch vergebene Zeile hat einen Besitzer (`culture`-String oder `null` für neutrale Events), fremde Kulturen dürfen sie **nie** belegen — auch nicht als Platz-Fallback. Ein Event ohne freie eigene Zeile öffnet eine neue Zeile seiner Kultur, statt in eine fremde zu mischen. Lineage-Gruppen beanspruchen die Zeile ihrer Kultur (Span-Reservierung bleibt); Singletons werden global-first + chronologisch platziert, wodurch neue Zeilen von oben nach unten in Reihenfolge ihres ersten Events entstehen. Manuelle `track`-Overrides pinnen weiterhin exakte Zeilennummern (Besitzer = Kultur des ersten Events). Mehr Zeilen als beim rein geometrischen Packen — akzeptiert, da B1s Dense-Remapping die sichtbare Höhe begrenzt.
+- **Detailgrad-Filter (`importance` verdrahtet):** `DetailLevelSelector` (Wesentliches/Standard/Alles) setzt `maxImportanceRank` als kumulativen Schwellwert in `filterVisible`/`queryVisible`. Default „Alles" (= alles sichtbar, abwärtskompatibel); Events ohne `importance` zählen als `extended`. Ergänzt den automatischen Zoom-LOD um eine manuelle Achse; persistiert als `detailLevel`. Einstellung jetzt im **Settings-Menü** (nicht mehr als Inline-Bar).
+- **Settings-Menü (`SettingsModal`):** Bottom-Sheet-Modal, öffnet per ⚙-Icon im Header beider Screens. Drei Sections: Erscheinungsbild (Dark/Light-Mode-Toggle), Darstellung (Detailgrad), Sprache (DE/EN). Dark Mode via `ThemeContext`; Sprache via i18next + AsyncStorage-Persistenz.
+- **ThemeContext (`useTheme()`):** `ThemeProvider` in `App.tsx` liefert `{ isDark, colors, toggleTheme }`. `darkColors`/`lightColors` in `src/theme/ThemeContext.tsx`. Alle UI-Chrome-Komponenten nutzen `useTheme()` mit `makeStyles(colors)`-Pattern (dynamisch, per `useMemo`). **Canvas-Renderer** (Skia/Canvas2D) und deren Overlays bleiben dunkel (statische `colors`-Importe).
 
 ### Datenhaltung
 
@@ -86,7 +91,7 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 - `src/data/schema.ts` – gemeinsames Event-Schema (`TimelineEvent` mit optionalen Feldern: `importance`, `tags`, `lineageId`, `regions` seit Phase 1.2). `importance`/`lineageId` sind verdrahtet: `importanceRank`/`passesImportance`-Helfer + `IMPORTANCE_RANK` speisen den Detailgrad-Filter; `lineageId` steuert Track-Zuordnung + Verbindungslinien. `tags`/`regions` bleiben Slots.
 - `src/data/regions.ts` – `RegionConfig`-Typ + `REGIONS`-Skelett für hierarchische Geo-Filter (Phase 1.4; kein UI bis Phase 3)
 - `docs/event-flags.md` – menschenlesbare Flag-Referenz: alle Event-Achsen mit Pflicht/optional, Werten, LOD-Tabelle (Phase 1.5)
-- AsyncStorage: Kontinent-Auswahl + Kategorie-Filter + Detailgrad (`detailLevel`) persistent
+- AsyncStorage-Keys: `activeCategories`, `selectedContinent`, `detailLevel`, `theme_isDark`, `i18n_language` (alle via `usePersistedState` oder direkt AsyncStorage)
 
 ### Build & Test
 
@@ -122,9 +127,11 @@ src/
 │   ├── EpochBand.tsx              # Visuelles Epochen-Band (ersetzt EpochJumpBar)
 │   ├── EpochChipBar.tsx           # Zweistufige Chip-Leiste für schnelle Epochen-Navigation
 │   ├── EpochNavArrows.tsx         # Quick-Jump-Pfeile (← Epoche / Epoche →) im Timeline-Header
-│   ├── EpochOverviewScreen.tsx    # Landing Page: Epochen-Kacheln als Einstieg
+│   ├── EpochOverviewScreen.tsx    # Landing Page: Epochen-Kacheln als Einstieg (Props: onSelectEpoch, onShowFullTimeline, onOpenSettings, onOpenSearch)
 │   ├── FilterChipBar.tsx          # Kategorie-/Kontinent-Filter
-│   ├── DetailLevelSelector.tsx    # Detailgrad-Filter (importance: Wesentliches/Standard/Alles)
+│   ├── DetailLevelSelector.tsx    # Detailgrad-Segmented-Control (wiederverwendbar; genutzt in SettingsModal)
+│   ├── SettingsModal.tsx          # Settings-Bottom-Sheet (Dark Mode, Detailgrad, Sprache)
+│   ├── SearchModal.tsx            # Such-Bottom-Sheet (#146 A): Ereignis-/Jahr-Suche, Tap → jumpToEvent/jumpToYear
 │   ├── LandmarkTimeline.tsx       # Landmark-Zeitstrahl auf der Landing Page (linear; Urknall außerhalb der Skala)
 │   ├── ContinentTabBar.tsx        # Kontinent-Auswahl
 │   ├── ZoomLevelIndicator.tsx     # Persistenter LOD-Indikator
@@ -141,11 +148,13 @@ src/
 │   ├── scale.ts               # yearToT, tToYear, pixelToYear
 │   ├── epoch.ts               # Epoche-Mapping + NavigationEpoch + NAVIGATION_EPOCHS
 │   ├── formatYear.ts          # Jahr-Formatierung
+│   ├── search.ts              # searchEvents (title/culture/tags) + parseYearQuery (#146 A)
 │   └── __tests__/
 ├── theme/
-│   └── tokens.ts              # Design-Tokens
+│   ├── tokens.ts              # Design-Tokens (statisch; canvas-Komponenten nutzen dies direkt)
+│   └── ThemeContext.tsx       # ThemeProvider + useTheme() + darkColors/lightColors
 └── screens/
-    ├── TimelineScreen.tsx     # Haupt-Screen: Landing Page ↔ Timeline-Umschaltung
+    ├── TimelineScreen.tsx     # Haupt-Screen: Landing Page ↔ Timeline-Umschaltung + SettingsModal
     └── EventDetailModal.tsx
 ```
 
@@ -183,6 +192,24 @@ const panGesture = useMemo(() => Gesture.Pan()..., [canvasWidth, startOffsetX, o
 const gesture = useMemo(() => Gesture.Simultaneous(pan, pinch, exclusive), [pan, pinch, exclusive]);
 ```
 
+### makeStyles-Pattern (Theming)
+
+UI-Chrome-Komponenten definieren Styles als Funktion über `ThemeColors` und rufen sie per `useMemo` auf:
+
+```ts
+const { colors } = useTheme();
+const styles = useMemo(() => makeStyles(colors), [colors]);
+
+function makeStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    root: { backgroundColor: colors.bg },
+    // ...
+  });
+}
+```
+
+Canvas-Overlay-Komponenten (ZoomLevelIndicator, EpochBand, …) nutzen weiterhin statische `colors`-Imports aus `tokens.ts` — der Canvas-Hintergrund bleibt immer dunkel.
+
 ---
 
 ## Bekannte Eigenheiten
@@ -198,6 +225,9 @@ const gesture = useMemo(() => Gesture.Simultaneous(pan, pinch, exclusive), [pan,
 - `TFunction` aus `i18next` als Typ für Helper-Funktionen, die `t` übergeben bekommen — `(k: string) => string` oder `(k: string, o?: object) => string` ist inkompatibel mit dem strikten `TFunction<"translation", undefined>`-Typ.
 - `useTimelineViewport` akzeptiert `initialEpochRange?: { startYear: number; endYear: number }` — setzt den Anfangs-Viewport auf die gewählte Epoche (statt `humanHistoryViewState`). Wird beim Remount von `TimelineView` ausgewertet (kein Laufzeit-Update nach Mount).
 - `EpochOverviewScreen` → `TimelineScreen`: Navigation via `showOverview`-State in `TimelineScreen.tsx`. `TimelineView` mountet neu bei jedem Epochen-Wechsel (kein `resetKey` mehr nötig).
+- `EpochOverviewScreen` erhält **kein** `onToggleLanguage`/`currentLanguage` mehr — stattdessen `onOpenSettings`, das den `SettingsModal` in `TimelineScreen` öffnet.
+- `SettingsModal` liegt immer als `<>…</>` Sibling beider Screens in `TimelineScreen`; Modal-Visible-State bleibt in `TimelineScreen`. Dadurch ist das Modal auch auf dem Overview-Screen erreichbar.
+- `SearchModal` folgt demselben Sibling-Pattern wie `SettingsModal` (#146 A) — erreichbar von beiden Screens. Anders als `epochRange` (nur beim Mount ausgewertet) reagieren `TimelineView`s `jumpToEvent`/`jumpToYear`-Props auf **jede** Änderung via `requestId` (monoton hochgezählt in `TimelineScreen`, nicht `event.id`), damit ein erneuter Sprung zum selben Ziel die Animation erneut auslöst. Bei Event-Treffern setzt `handleSearchSelectEvent` in `TimelineScreen` zuerst Kategorie/Kontinent, damit das Ziel-Event unter den aktiven Filtern überhaupt sichtbar ist, bevor der Zoom-Jump feuert.
 
 ## Do's and Don'ts
 
@@ -219,14 +249,13 @@ const gesture = useMemo(() => Gesture.Simultaneous(pan, pinch, exclusive), [pan,
 
 ## Offene Issues (legitim)
 
-| #   | Titel                                                             | Priorität       |
-| --- | ----------------------------------------------------------------- | --------------- |
-| #5  | Performance-Optimierung (Skia + Reanimated)                       | ongoing         |
-| #32 | Mobile Usability Überblick                                        | Tracker         |
-| #46 | Listen-/Story-Modus                                               | P3 / Diskussion |
-| #51 | Triage-Plan (Tracking-Board)                                      | Referenz        |
-| #70 | Skalierbarkeit: mehr Events, Filter, Kategorien                   | Epic / Tracker  |
-| #93 | Umsetzungsplan #70 (Phase 3+: UI-Filter, Geo-Filter, Performance) | Nächste Phasen  |
+| #    | Titel                                                  | Priorität      |
+| ---- | ------------------------------------------------------ | -------------- |
+| #5   | Performance-Optimierung (Skia + Reanimated)            | ongoing        |
+| #70  | Skalierbarkeit: mehr Events, Filter, Kategorien        | Epic / Tracker |
+| #76  | Mehr Inhalte (Wissenschaft, Zivilisationen, Kultur)    | P2 / Content   |
+| #85  | Folgeaufträge (Linear Scale Detail-Default, fullEarth) | P3             |
+| #121 | Content Coverage: Lückenanalyse Epochen × Kontinente   | P1 / Content   |
 
 ## Referenzen
 

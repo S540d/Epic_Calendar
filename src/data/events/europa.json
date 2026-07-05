@@ -2111,5 +2111,63 @@
     "importance": "core",
     "minZoomLevel": 2,
     "tags": ["kalter-krieg", "sowjetunion", "usa", "europa"]
+  },
+  {
+    "id": "eu-bulgarien-erstes-reich",
+    "title": "Erstes Bulgarisches Reich",
+    "description": "Khan Asparuh gründet 681 das Erste Bulgarische Reich auf dem Balkan. Unter Zar Simeon I. (reg. 893–927) entwickelt sich Bulgarien zur mächtigsten Balkannation und größten christlichen Macht nach Byzanz. Die Christianisierung 864 unter Boris I. führt zur Entwicklung des glagolitischen und kyrillischen Alphabets.",
+    "startYear": 681,
+    "endYear": 1018,
+    "category": "nation",
+    "continent": "europa",
+    "culture": "bulgarisch",
+    "importance": "extended",
+    "minZoomLevel": 2,
+    "tags": ["bulgarien", "balkan", "mittelalter", "orthodoxie"],
+    "regions": ["bulgarien"],
+    "lineageId": "bulgarien-reich"
+  },
+  {
+    "id": "eu-bulgarien-zweites-reich",
+    "title": "Zweites Bulgarisches Reich",
+    "description": "Nach 168 Jahren byzantinischer Herrschaft befreien die Brüder Asen und Petar 1185 Bulgarien. Das Zweite Bulgarische Reich erlebt unter Zar Ivan Asen II. seine Blüte als stärkste Balkankraft. Es zerfällt nach der Niederlage gegen die Osmanen und deren Einnahme Sofias (1396).",
+    "startYear": 1185,
+    "endYear": 1396,
+    "category": "nation",
+    "continent": "europa",
+    "culture": "bulgarisch",
+    "importance": "extended",
+    "minZoomLevel": 2,
+    "tags": ["bulgarien", "balkan", "mittelalter", "osmanen"],
+    "regions": ["bulgarien"],
+    "lineageId": "bulgarien-reich"
+  },
+  {
+    "id": "eu-serbisches-reich",
+    "title": "Serbisches Reich (Nemanjiden)",
+    "description": "Stefan Nemanja begründet im 12. Jahrhundert die Nemanjidendynastie und den serbischen Staat. Unter Stefan Dušan (reg. 1331–1355) erreicht Serbien seinen Höhepunkt: Er krönt sich 1346 zum 'Zar der Serben und Griechen' und schafft das größte Reich Südosteuropas seiner Zeit – bis zur Niederlage gegen die Osmanen auf dem Amselfeld (1389) und dem endgültigen Ende 1371.",
+    "startYear": 1217,
+    "endYear": 1371,
+    "category": "nation",
+    "continent": "europa",
+    "culture": "serbisch",
+    "importance": "extended",
+    "minZoomLevel": 2,
+    "tags": ["serbien", "balkan", "mittelalter", "nemanjiden", "amselfeld"],
+    "regions": ["serbien"]
+  },
+  {
+    "id": "eu-ungarn-koenigreich",
+    "title": "Königreich Ungarn",
+    "description": "König Stephan I. (Stefan der Heilige) gründet am 1. Januar 1000 das Königreich Ungarn nach der Christianisierung der Magyaren. Ungarn wird zur zentralen Macht Ostmitteleuropas – abwechselnd Puffer gegen und Opfer von Mongolen (1241) und Osmanen. Die vernichtende Niederlage in der Schlacht von Mohács (1526) beendet das unabhängige mittelalterliche Ungarn.",
+    "startYear": 1000,
+    "endYear": 1526,
+    "category": "nation",
+    "continent": "europa",
+    "culture": "ungarisch",
+    "importance": "extended",
+    "minZoomLevel": 2,
+    "tags": ["ungarn", "osteuropa", "mittelalter", "magyaren", "osmanen"],
+    "regions": ["ungarn"]
   }
 ]

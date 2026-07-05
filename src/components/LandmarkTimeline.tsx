@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { LayoutChangeEvent, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { colors, typography } from '@/theme/tokens';
+import { typography } from '@/theme/tokens';
 import { formatEventYear } from '@/timeline/formatYear';
+import { useTheme, type ThemeColors } from '@/theme/ThemeContext';
 
 type Landmark = {
   key: string;
@@ -91,7 +92,9 @@ type Props = {
 
 export function LandmarkTimeline({ onSelectEpoch }: Props) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const [width, setWidth] = useState(0);
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const handleLayout = (e: LayoutChangeEvent) => {
     setWidth(e.nativeEvent.layout.width);
@@ -220,83 +223,85 @@ export function LandmarkTimeline({ onSelectEpoch }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    height: 140,
-    position: 'relative',
-    marginHorizontal: 4,
-    marginVertical: 8,
-  },
-  line: {
-    position: 'absolute',
-    right: 24,
-    height: 2,
-    backgroundColor: colors.border,
-  },
-  preludeLine: {
-    position: 'absolute',
-    height: 2,
-    borderTopWidth: 2,
-    borderStyle: 'dashed',
-    borderColor: colors.border,
-    opacity: 0.6,
-  },
-  breakGlyph: {
-    position: 'absolute',
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.textMuted,
-  },
-  presentMarker: {
-    position: 'absolute',
-    right: 4,
-  },
-  presentText: {
-    fontSize: 12,
-    color: colors.textMuted,
-  },
-  markerWrapper: {
-    position: 'absolute',
-    width: 48,
-    marginLeft: -24,
-    alignItems: 'center',
-  },
-  markerAbove: {
-    top: LINE_Y - TICK_H - LABEL_H,
-    height: TICK_H + LABEL_H,
-    justifyContent: 'flex-end',
-  },
-  markerBelow: {
-    top: LINE_Y,
-    height: TICK_H + LABEL_H,
-    justifyContent: 'flex-start',
-  },
-  tick: {
-    width: 2,
-    height: TICK_H,
-  },
-  markerLabel: {
-    ...typography.caption,
-    fontSize: 9,
-    textAlign: 'center',
-    lineHeight: 12,
-  },
-  yearLabel: {
-    ...typography.caption,
-    fontSize: 8,
-    lineHeight: 11,
-    textAlign: 'center',
-    color: colors.textMuted,
-  },
-  quietEon: {
-    ...typography.caption,
-    position: 'absolute',
-    fontSize: 9,
-    fontStyle: 'italic',
-    textAlign: 'center',
-    color: colors.textMuted,
-  },
-  pressed: {
-    opacity: 0.65,
-  },
-});
+function makeStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    container: {
+      height: 140,
+      position: 'relative',
+      marginHorizontal: 4,
+      marginVertical: 8,
+    },
+    line: {
+      position: 'absolute',
+      right: 24,
+      height: 2,
+      backgroundColor: colors.border,
+    },
+    preludeLine: {
+      position: 'absolute',
+      height: 2,
+      borderTopWidth: 2,
+      borderStyle: 'dashed',
+      borderColor: colors.border,
+      opacity: 0.6,
+    },
+    breakGlyph: {
+      position: 'absolute',
+      fontSize: 14,
+      fontWeight: '700',
+      color: colors.textMuted,
+    },
+    presentMarker: {
+      position: 'absolute',
+      right: 4,
+    },
+    presentText: {
+      fontSize: 12,
+      color: colors.textMuted,
+    },
+    markerWrapper: {
+      position: 'absolute',
+      width: 48,
+      marginLeft: -24,
+      alignItems: 'center',
+    },
+    markerAbove: {
+      top: LINE_Y - TICK_H - LABEL_H,
+      height: TICK_H + LABEL_H,
+      justifyContent: 'flex-end',
+    },
+    markerBelow: {
+      top: LINE_Y,
+      height: TICK_H + LABEL_H,
+      justifyContent: 'flex-start',
+    },
+    tick: {
+      width: 2,
+      height: TICK_H,
+    },
+    markerLabel: {
+      ...typography.caption,
+      fontSize: 9,
+      textAlign: 'center',
+      lineHeight: 12,
+    },
+    yearLabel: {
+      ...typography.caption,
+      fontSize: 8,
+      lineHeight: 11,
+      textAlign: 'center',
+      color: colors.textMuted,
+    },
+    quietEon: {
+      ...typography.caption,
+      position: 'absolute',
+      fontSize: 9,
+      fontStyle: 'italic',
+      textAlign: 'center',
+      color: colors.textMuted,
+    },
+    pressed: {
+      opacity: 0.65,
+    },
+  });
+}
