@@ -1,5 +1,6 @@
 import {
   passesImportance,
+  tierRank,
   type TimelineEvent,
   type ZoomLevel,
   type Continent,
@@ -81,7 +82,12 @@ export function assignTracks(events: TimelineEvent[]): TrackMap {
     return t;
   }
 
-  const byGlobalThenStart = (a: TimelineEvent, b: TimelineEvent) => {
+  // Row ordering (#70): tier is the primary axis so that `epoche` bands claim
+  // the top rows, `reich` (default) the middle, `dynastie` the bottom — above
+  // the existing global-first and chronological tie-breakers.
+  const byTierGlobalThenStart = (a: TimelineEvent, b: TimelineEvent) => {
+    const tierDiff = tierRank(a) - tierRank(b);
+    if (tierDiff !== 0) return tierDiff;
     const aG = a.continent === 'global' ? 0 : 1;
     const bG = b.continent === 'global' ? 0 : 1;
     if (aG !== bG) return aG - bG;
@@ -100,7 +106,7 @@ export function assignTracks(events: TimelineEvent[]): TrackMap {
   // Phase 1: lineage groups – reserve the full span of the group on one track.
   const sortedGroups = [...lineageMap.values()]
     .map((g) => g.slice().sort((a, b) => a.startYear - b.startYear))
-    .sort((a, b) => byGlobalThenStart(a[0]!, b[0]!));
+    .sort((a, b) => byTierGlobalThenStart(a[0]!, b[0]!));
 
   for (const group of sortedGroups) {
     const firstStart = group[0]!.startYear;
@@ -116,7 +122,7 @@ export function assignTracks(events: TimelineEvent[]): TrackMap {
   }
 
   // Phase 2: singletons — strictly keyed by culture; never mixed into foreign rows.
-  singletons.sort(byGlobalThenStart);
+  singletons.sort(byTierGlobalThenStart);
   for (const ev of singletons) {
     const key = ev.culture ?? null;
     const t = claimRow(key, ev.startYear);
