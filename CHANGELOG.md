@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- **SEO-Grundausstattung (Issue #149, Schritt A+B):** `public/index.html` überschreibt das Metro-Web-Standardtemplate mit Meta-Description, Open-Graph- und Twitter-Card-Tags sowie einem `WebApplication`-JSON-LD-Block (Schema.org) für die Produktions-URL. `public/robots.txt` erlaubt Crawlern vollen Zugriff und referenziert `public/sitemap.xml` (Root-URL der Web-Version). Beide Dateien landen unverändert im `expo export --platform web`-Output (Metro kopiert `public/` 1:1 in `dist/`).
+
 ### Fixed
 
 - **`herrscher`-Kategorie war unsichtbar (Issue #146):** Die Kategorie „Herrscher & Dynastien" hatte einen Filter-Chip, aber kein `laneOrder` — die 116 gepflegten Events (römische Kaiser, englische/französische Dynastien, Präsidenten …) wurden nie gerendert. `laneOrder: 4` ergänzt → wird jetzt als unterste Lane (feinste Detailebene unter Nationen) angezeigt. Durch die kultur-getrennten Zeilen clustern die meist sequenziellen Herrscher sauber (z. B. alle römischen Kaiser in einer Zeile).
