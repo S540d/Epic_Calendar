@@ -215,6 +215,7 @@ Canvas-Overlay-Komponenten (ZoomLevelIndicator, EpochBand, …) nutzen weiterhin
 ## Bekannte Eigenheiten
 
 - `baseUrl: '/Epic_Calendar'` in `app.json` – für GitHub Pages nötig
+- **Web-HTML-Template (#149):** Bei Metro-Web (kein Expo Router) wird das HTML-Template aus `public/index.html` gelesen (nicht `web/index.html` – das ist der alte `@expo/webpack-config`-Pfad und wird von Metro ignoriert). `public/` wird von `expo export --platform web` 1:1 nach `dist/` kopiert – auch `robots.txt`/`sitemap.xml` liegen dort.
 - Skia auf Web: kein `WithSkiaWeb` – weiße Seite → Standard-ScrollView-Fallback
 - `react-native-reanimated` 3.x (nicht 4.x) – Expo SDK 52 Kompatibilität
 - `jest-expo ~52` erwartet `"jest": "^29"` (nicht 30.x!)
