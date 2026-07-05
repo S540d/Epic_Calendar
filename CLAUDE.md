@@ -83,7 +83,8 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 - **Tier-Hierarchie für Zeilen-Ordnung (#70):** Optionales `tier`-Feld (`'epoche' | 'reich' | 'dynastie'`) im Schema; `TIER_RANK`/`tierRank()`-Helfer (epoche=0, reich=1, dynastie=2). `assignTracks` sortiert primär nach `tierRank` (via `byTierGlobalThenStart`), dann global-first, dann chronologisch — dadurch liegen `epoche`-Bänder oben, `reich` (Default bei fehlendem `tier`) in der Mitte, `dynastie` unten. Löst das Problem, dass langlaufende Reiche (Byzanz 330–1453) über zeitlich späteren Epochen-Phasen (Renaissance, Aufklärung) standen. 8 Epochen-Bänder in `europa.json` tragen `tier: 'epoche'`; `dynastie` ist vorbereitet, aber noch nicht bespielt. Kultur-Homogenität pro Zeile bleibt _innerhalb_ eines Tiers erhalten.
 - **Kultur-getrennte Zeilen (#146 B2):** Zeilen in `assignTracks` sind strikt kultur-homogen: Jede automatisch vergebene Zeile hat einen Besitzer (`culture`-String oder `null` für neutrale Events), fremde Kulturen dürfen sie **nie** belegen — auch nicht als Platz-Fallback. Ein Event ohne freie eigene Zeile öffnet eine neue Zeile seiner Kultur, statt in eine fremde zu mischen. Lineage-Gruppen beanspruchen die Zeile ihrer Kultur (Span-Reservierung bleibt); Singletons werden global-first + chronologisch platziert, wodurch neue Zeilen von oben nach unten in Reihenfolge ihres ersten Events entstehen. Manuelle `track`-Overrides pinnen weiterhin exakte Zeilennummern (Besitzer = Kultur des ersten Events). Mehr Zeilen als beim rein geometrischen Packen — akzeptiert, da B1s Dense-Remapping die sichtbare Höhe begrenzt.
 - **Detailgrad-Filter (`importance` verdrahtet):** `DetailLevelSelector` (Wesentliches/Standard/Alles) setzt `maxImportanceRank` als kumulativen Schwellwert in `filterVisible`/`queryVisible`. Default „Alles" (= alles sichtbar, abwärtskompatibel); Events ohne `importance` zählen als `extended`. Ergänzt den automatischen Zoom-LOD um eine manuelle Achse; persistiert als `detailLevel`. Einstellung jetzt im **Settings-Menü** (nicht mehr als Inline-Bar).
-- **Settings-Menü (`SettingsModal`):** Bottom-Sheet-Modal, öffnet per ⚙-Icon im Header beider Screens. Drei Sections: Erscheinungsbild (Dark/Light-Mode-Toggle), Darstellung (Detailgrad), Sprache (DE/EN). Dark Mode via `ThemeContext`; Sprache via i18next + AsyncStorage-Persistenz.
+- **Settings-Menü (`SettingsModal`):** Bottom-Sheet-Modal, öffnet per ⚙-Icon im Header beider Screens. Drei Sections: Erscheinungsbild (Dark/Light-Mode-Toggle), Darstellung (Detailgrad, FPS-Monitor-Toggle), Sprache (DE/EN). Dark Mode via `ThemeContext`; Sprache via i18next + AsyncStorage-Persistenz.
+- **FPS-Monitor (#5):** `useFpsMonitor(enabled)` misst die Bildrate via Reanimated `useFrameCallback` (UI-Thread, 500ms-Sample-Fenster, `runOnJS` zurück zu React State); läuft nur bei `enabled=true` (kein Overhead im Default-Fall). `FpsMonitor`-Komponente rendert eine farbcodierte Pill (≥50 FPS grün, ≥30 gelb, sonst rot), non-interactive. In beiden Renderern (`TimelineCanvasWeb`/`TimelineCanvasNative`) zusammen mit `TimelineBreadcrumb` in einem gemeinsamen `topRightGroup`-Flex-Container (`timelineRenderShared.ts`) — beide Komponenten sind selbst **nicht** mehr `position: absolute` positioniert, sonst würden sie sich am selben Eck überlappen. Toggle „FPS-Monitor anzeigen" im Settings-Menü, persistiert als `showFpsMonitor` (Default: aus).
 - **ThemeContext (`useTheme()`):** `ThemeProvider` in `App.tsx` liefert `{ isDark, colors, toggleTheme }`. `darkColors`/`lightColors` in `src/theme/ThemeContext.tsx`. Alle UI-Chrome-Komponenten nutzen `useTheme()` mit `makeStyles(colors)`-Pattern (dynamisch, per `useMemo`). **Canvas-Renderer** (Skia/Canvas2D) und deren Overlays bleiben dunkel (statische `colors`-Importe).
 
 ### Datenhaltung
@@ -92,7 +93,7 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 - `src/data/schema.ts` – gemeinsames Event-Schema (`TimelineEvent` mit optionalen Feldern: `importance`, `tags`, `lineageId`, `regions` seit Phase 1.2; `tier` seit #70). `importance`/`lineageId`/`tier` sind verdrahtet: `importanceRank`/`passesImportance`-Helfer + `IMPORTANCE_RANK` speisen den Detailgrad-Filter; `lineageId` steuert Track-Zuordnung + Verbindungslinien; `tier` (`tierRank`/`TIER_RANK`) ist die primäre Zeilen-Sortier-Achse in `assignTracks`. `tags`/`regions` bleiben Slots.
 - `src/data/regions.ts` – `RegionConfig`-Typ + `REGIONS`-Skelett für hierarchische Geo-Filter (Phase 1.4; kein UI bis Phase 3)
 - `docs/event-flags.md` – menschenlesbare Flag-Referenz: alle Event-Achsen mit Pflicht/optional, Werten, LOD-Tabelle (Phase 1.5)
-- AsyncStorage-Keys: `activeCategories`, `selectedContinent`, `detailLevel`, `theme_isDark`, `i18n_language` (alle via `usePersistedState` oder direkt AsyncStorage)
+- AsyncStorage-Keys: `activeCategories`, `selectedContinent`, `detailLevel`, `theme_isDark`, `i18n_language`, `showFpsMonitor` (alle via `usePersistedState` oder direkt AsyncStorage)
 
 ### Build & Test
 
@@ -123,7 +124,9 @@ src/
 │   ├── useTimelineViewport.ts     # Viewport-State + Zoom/Pan/Jump-Commands (unified web+native)
 │   ├── useTimelineGestures.ts     # RNGH Pan/Pinch/Tap-Gesten
 │   ├── TimeAxis.tsx               # Zeitachse
-│   ├── TimelineBreadcrumb.tsx     # Zoom-Breadcrumb mit Epochen-Kontext
+│   ├── TimelineBreadcrumb.tsx     # Zoom-Breadcrumb mit Epochen-Kontext (Layout via topRightGroup, s.u.)
+│   ├── FpsMonitor.tsx             # FPS-Overlay-Pill (#5, opt-in via Settings, Layout via topRightGroup)
+│   ├── useFpsMonitor.ts           # Reanimated useFrameCallback-Hook für FpsMonitor
 │   ├── TimelineMinimap.tsx        # Übersichtsleiste (Tap + a11y-Actions)
 │   ├── EpochBand.tsx              # Visuelles Epochen-Band (ersetzt EpochJumpBar)
 │   ├── EpochChipBar.tsx           # Zweistufige Chip-Leiste für schnelle Epochen-Navigation
@@ -131,7 +134,7 @@ src/
 │   ├── EpochOverviewScreen.tsx    # Landing Page: Epochen-Kacheln als Einstieg (Props: onSelectEpoch, onShowFullTimeline, onOpenSettings, onOpenSearch)
 │   ├── FilterChipBar.tsx          # Kategorie-/Kontinent-Filter
 │   ├── DetailLevelSelector.tsx    # Detailgrad-Segmented-Control (wiederverwendbar; genutzt in SettingsModal)
-│   ├── SettingsModal.tsx          # Settings-Bottom-Sheet (Dark Mode, Detailgrad, Sprache)
+│   ├── SettingsModal.tsx          # Settings-Bottom-Sheet (Dark Mode, Detailgrad, FPS-Monitor, Sprache)
 │   ├── SearchModal.tsx            # Such-Bottom-Sheet (#146 A): Ereignis-/Jahr-Suche, Tap → jumpToEvent/jumpToYear
 │   ├── LandmarkTimeline.tsx       # Landmark-Zeitstrahl auf der Landing Page (linear; Urknall außerhalb der Skala)
 │   ├── ContinentTabBar.tsx        # Kontinent-Auswahl
