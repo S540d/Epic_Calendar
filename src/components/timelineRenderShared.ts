@@ -68,11 +68,16 @@ export function computeLabelVisibleIds(
       });
       for (const ev of sorted) {
         const x = (yearToT(ev.startYear) - jsOffsetX) * jsPixelsPerUnit;
-        const w = Math.max(
+        const barW = Math.max(
           0,
           (yearToT(ev.endYear ?? ev.startYear) - yearToT(ev.startYear)) * jsPixelsPerUnit,
         );
-        if (w < LABEL_MIN_BAR_PX) continue;
+        // Point events (no endYear, or zero-length range) render as a fixed-width
+        // dot (Math.max(2, …) in both canvas renderers) — too narrow to ever pass
+        // LABEL_MIN_BAR_PX. Give them a virtual label slot of LABEL_MAX_WIDTH to
+        // their right instead of silently going unlabeled forever.
+        const isPoint = barW < LABEL_MIN_BAR_PX;
+        const w = isPoint ? LABEL_MAX_WIDTH : barW;
         const visibleLeft = Math.max(x, 0);
         const visibleRight = Math.min(x + w, canvasWidth);
         if (visibleRight - visibleLeft < 6) continue;

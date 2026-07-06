@@ -4,6 +4,15 @@
 
 ### Added
 
+- **Wissenschaft-Erfindungen ergänzt (Issue #151):** 4 neue Meilensteine in `natur-wissenschaft.json`: Erfindung des Rades (-3500), Cai Lun/Papier (105), Magnetkompass (1040), Schießpulver (850).
+
+### Fixed
+
+- **Punkt-Ereignisse ohne Beschriftung (Issue #160):** Ereignisse ohne `endYear` (z. B. Chicxulub-Einschlag, Toba-Superausbruch) hatten in `computeLabelVisibleIds` immer eine berechnete Balkenbreite von 0 px und fielen dadurch garantiert unter `LABEL_MIN_BAR_PX` — sie bekamen nie ein Label, unabhängig vom Zoomlevel, obwohl der gerenderte Balken (`Math.max(2, …)`) sichtbar war. Punkt-Ereignisse erhalten jetzt einen virtuellen Label-Slot der Breite `LABEL_MAX_WIDTH` rechts neben dem Marker (beide Renderer, Web + Native).
+- **Vertikales Scrollen zwischen Spuren auf Mobile (Issue #161):** Der RNGH-Pan-Gesture des Zeitstrahls konkurrierte mit der äußeren `ScrollView` um vertikale Touch-Gesten, ohne dass beide explizit verdrahtet waren. `useTimelineGestures` nimmt jetzt optional eine `scrollRef` entgegen und registriert sie via `simultaneousWithExternalGesture`, damit die `ScrollView` vertikale Drags zuverlässig erkennt, statt das Touch-Event an den Pan-Handler zu verlieren.
+
+### Added
+
 - **FPS-Monitor (Issue #5):** Neue optionale Overlay-Anzeige der gemessenen Bildrate oben rechts im Zeitstrahl, misst per Reanimated `useFrameCallback` (500ms-Fenster) auf beiden Plattformen. Standardmäßig aus, Umschalter unter Einstellungen → Darstellung → „FPS-Monitor anzeigen" (persistiert via AsyncStorage `showFpsMonitor`). Farbcodiert (≥50 grün, ≥30 gelb, darunter rot) als schnelles Diagnosewerkzeug für die laufende Performance-Optimierung von Skia/Reanimated.
 
 - **Hierarchie-Ebene `tier` für Zeilen-Ordnung (Issue #70):** Neues optionales Schema-Feld `tier: 'epoche' | 'reich' | 'dynastie'` ordnet die Zeilen innerhalb einer Lane. `assignTracks` sortiert jetzt **primär nach `tierRank`** (epoche=0 oben, reich=1 Mitte, dynastie=2 unten), erst danach global-first + chronologisch. Dadurch bilden die europäischen Epochen-Bänder (Frühmittelalter → Renaissance → Wissenschaftliche Revolution → Aufklärung → Industrialisierung) eine durchgehende obere Zeitleiste, während langlaufende Reiche wie Byzanz (330–1453) als `reich` darunter liegen — vorher stand Byzanz über der Renaissance, weil die `culture`-Gruppierung Epochen-Phasen und echte Reiche vermischte. Fehlendes `tier` gilt als `reich` (Default, abwärtskompatibel); 8 Epochen-Bänder in `europa.json` explizit auf `epoche` gesetzt. Die kultur-homogenen Spuren (Plantagenet → Tudor) bleiben _innerhalb_ eines Tiers erhalten. Die `dynastie`-Ebene ist vorbereitet, wird aber erst in einem Folge-PR bespielt.
