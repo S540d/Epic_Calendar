@@ -36,6 +36,7 @@ export function TimelineScreen() {
   const [epochRange, setEpochRange] = useState<{ startYear: number; endYear: number } | undefined>(
     undefined,
   );
+  const canvasScrollRef = useRef<ScrollView>(null);
   const [jumpToEvent, setJumpToEvent] = useState<
     { event: TimelineEvent; requestId: number } | undefined
   >(undefined);
@@ -146,7 +147,11 @@ export function TimelineScreen() {
             </Pressable>
           </View>
           <FilterChipBar active={activeCategories} onToggle={toggleCategory} />
-          <ScrollView style={styles.canvasWrap} contentContainerStyle={styles.canvasContent}>
+          <ScrollView
+            ref={canvasScrollRef}
+            style={styles.canvasWrap}
+            contentContainerStyle={styles.canvasContent}
+          >
             <TimelineView
               activeCategories={activeCategories}
               continent={continent}
@@ -156,6 +161,7 @@ export function TimelineScreen() {
               jumpToEvent={jumpToEvent}
               jumpToYear={jumpToYear}
               showFpsMonitor={showFpsMonitor}
+              scrollRef={canvasScrollRef}
             />
           </ScrollView>
           <ContinentTabBar active={continent} onChange={setContinent} />

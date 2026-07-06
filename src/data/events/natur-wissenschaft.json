@@ -759,5 +759,53 @@
     "importance": "extended",
     "minZoomLevel": 3,
     "tags": ["klima", "umwelt", "global-warming"]
+  },
+  {
+    "id": "rad-erfindung",
+    "title": "Erfindung des Rades",
+    "description": "In Mesopotamien entsteht das Rad, zunächst als Töpferscheibe, wenig später als Wagenrad. Eine der folgenreichsten technischen Erfindungen der Menschheitsgeschichte für Transport und Handwerk.",
+    "startYear": -3500,
+    "category": "natur",
+    "continent": "global",
+    "culture": "Technologiegeschichte",
+    "importance": "core",
+    "minZoomLevel": 1,
+    "tags": ["technologie", "transport", "urgeschichte"]
+  },
+  {
+    "id": "papier-erfindung",
+    "title": "Cai Lun – Erfindung des Papiers",
+    "description": "Der chinesische Hofbeamte Cai Lun verbessert die Papierherstellung aus Pflanzenfasern entscheidend. Papier verdrängt über Jahrhunderte Bambus, Seide und Pergament als Beschreibstoff und verbreitet sich über die Seidenstraße nach Westen.",
+    "startYear": 105,
+    "category": "natur",
+    "continent": "global",
+    "culture": "Technologiegeschichte",
+    "importance": "core",
+    "minZoomLevel": 2,
+    "tags": ["technologie", "china", "kommunikation"]
+  },
+  {
+    "id": "kompass-erfindung",
+    "title": "Magnetkompass",
+    "description": "In China wird der Magnetkompass zur Navigation entwickelt, zunächst für Landvermessung und Geomantie, ab dem 11. Jahrhundert für die Seefahrt. Ermöglicht Hochseereisen ohne Sichtkontakt zur Küste.",
+    "startYear": 1040,
+    "category": "natur",
+    "continent": "global",
+    "culture": "Technologiegeschichte",
+    "importance": "core",
+    "minZoomLevel": 2,
+    "tags": ["technologie", "navigation", "china"]
+  },
+  {
+    "id": "schiesspulver-erfindung",
+    "title": "Schießpulver",
+    "description": "Chinesische Alchemisten entdecken bei der Suche nach einem Unsterblichkeitselixier die explosive Mischung aus Salpeter, Schwefel und Holzkohle. Verändert Kriegsführung und Bergbau weltweit grundlegend.",
+    "startYear": 850,
+    "category": "natur",
+    "continent": "global",
+    "culture": "Technologiegeschichte",
+    "importance": "core",
+    "minZoomLevel": 2,
+    "tags": ["technologie", "china", "militär"]
   }
 ]

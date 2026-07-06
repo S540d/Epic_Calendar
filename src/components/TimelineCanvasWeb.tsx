@@ -31,6 +31,8 @@ import {
 } from '@/theme/tokens';
 import type { LineageConnector, TrackMap } from '@/timeline/culling';
 import {
+  LABEL_MAX_WIDTH,
+  LABEL_MIN_BAR_PX,
   MAX_EVENTS_PER_LANE,
   MIN_HIT_PX,
   laneHeightForTracks,
@@ -317,8 +319,11 @@ export function TimelineCanvasWeb({
 
                       // Label: show if selected by collision-aware pass, visible portion wide enough.
                       const showLabel = labelVisibleIds.has(ev.id) && lblSize > 0;
+                      // Point events render as a fixed-width dot (w=2) — give the
+                      // label a virtual slot to its right instead of clamping to 0.
+                      const labelSlotW = w < LABEL_MIN_BAR_PX ? LABEL_MAX_WIDTH : w;
                       const visibleLeft = Math.max(x, 0);
-                      const visibleRight = Math.min(x + w, canvasWidth);
+                      const visibleRight = Math.min(x + labelSlotW, canvasWidth);
                       const labelLeft = visibleLeft + 3;
                       const labelMaxW = Math.max(0, visibleRight - visibleLeft - 6);
                       const labelTopPos =

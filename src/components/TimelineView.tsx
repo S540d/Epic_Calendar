@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Platform, useWindowDimensions } from 'react-native';
+import { Platform, useWindowDimensions, type ScrollView } from 'react-native';
 
 import { ALL_EVENTS } from '@/data/events';
 import { buildStableTracksByLane, computeLaneData, type TrackMap } from '@/timeline/culling';
@@ -56,6 +56,12 @@ type Props = {
    * opening a detail modal. Same `requestId` re-trigger semantics as `jumpToEvent`.
    */
   jumpToYear?: { year: number; requestId: number } | null;
+  /**
+   * Ref to the parent ScrollView (mobile vertical scroll between lanes).
+   * Wired into the pan gesture so RNGH yields vertical drags to it instead
+   * of racing it for the touch (see #161).
+   */
+  scrollRef?: React.RefObject<ScrollView | null>;
 };
 
 // Built once at module load from the static event set — avoids O(n) full scans per frame.
@@ -74,6 +80,7 @@ export function TimelineView({
   epochRange,
   jumpToEvent,
   jumpToYear,
+  scrollRef,
 }: Props) {
   const { width: screenWidth } = useWindowDimensions();
   const canvasWidth = Math.max(0, screenWidth - LANE_LABEL_WIDTH);
@@ -291,6 +298,7 @@ export function TimelineView({
     startFocalT,
     onTap: handleCanvasTap,
     zoomAtPoint,
+    scrollRef,
   });
 
   const canvasHeight = Math.max(

@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import type { ScrollView } from 'react-native';
 import { Gesture } from 'react-native-gesture-handler';
 import { runOnJS, type SharedValue } from 'react-native-reanimated';
 import { clampOffsetX, clampPixelsPerUnit } from '@/timeline/lod';
@@ -15,6 +16,12 @@ type Params = {
   onTap: (px: number, py: number) => void;
   /** Zoom keeping a focal x fixed (double-tap zoom-in). */
   zoomAtPoint: (focalX: number, factor: number) => void;
+  /**
+   * Parent ScrollView ref (vertical scroll between lanes on mobile, #161).
+   * Wired as a simultaneous external gesture so RNGH doesn't claim the touch
+   * before the ScrollView gets a chance to recognize a vertical drag.
+   */
+  scrollRef?: React.RefObject<ScrollView | null>;
 };
 
 /**
@@ -31,24 +38,36 @@ export function useTimelineGestures({
   startFocalT,
   onTap,
   zoomAtPoint,
+  scrollRef,
 }: Params) {
   // Pan: activeOffsetX / failOffsetY lets vertical swipes pass to the parent ScrollView.
   // The X threshold is a little wider than the tap maxDistance so a deliberate
   // drag becomes a pan while a quick tap stays a tap (less accidental scrolling).
-  const panGesture = useMemo(
-    () =>
-      Gesture.Pan()
-        .activeOffsetX([-12, 12])
-        .failOffsetY([-8, 8])
-        .onStart(() => {
-          startOffsetX.value = offsetX.value;
-        })
-        .onUpdate((e) => {
-          const raw = startOffsetX.value - e.translationX / pixelsPerUnit.value;
-          offsetX.value = clampOffsetX(raw, pixelsPerUnit.value, canvasWidth);
-        }),
-    [canvasWidth, startOffsetX, offsetX, pixelsPerUnit],
-  );
+  // simultaneousWithExternalGesture(scrollRef) additionally tells RNGH not to
+  // claim the touch outright, so the ScrollView still gets a chance to recognize
+  // a vertical drag on the first frames instead of losing the race to the Pan
+  // handler on some Android devices (#161 — vertical scroll between lanes was
+  // sometimes swallowed by the timeline's own pan gesture).
+  const panGesture = useMemo(() => {
+    let pan = Gesture.Pan()
+      .activeOffsetX([-12, 12])
+      .failOffsetY([-8, 8])
+      .onStart(() => {
+        startOffsetX.value = offsetX.value;
+      })
+      .onUpdate((e) => {
+        const raw = startOffsetX.value - e.translationX / pixelsPerUnit.value;
+        offsetX.value = clampOffsetX(raw, pixelsPerUnit.value, canvasWidth);
+      });
+    if (scrollRef) {
+      // RNGH's internal GestureRef type doesn't account for RefObject<T | null>
+      // (React 19 ref shape); the ScrollView ref is valid at runtime regardless.
+      pan = pan.simultaneousWithExternalGesture(
+        scrollRef as unknown as Parameters<typeof pan.simultaneousWithExternalGesture>[0],
+      );
+    }
+    return pan;
+  }, [canvasWidth, startOffsetX, offsetX, pixelsPerUnit, scrollRef]);
 
   const pinchGesture = useMemo(
     () =>
