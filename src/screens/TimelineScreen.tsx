@@ -28,6 +28,7 @@ export function TimelineScreen() {
 
   const [continent, setContinent] = usePersistedState<Continent>('selectedContinent', 'europa');
   const [detailLevel, setDetailLevel] = usePersistedState<ImportanceLevel>('detailLevel', 'detail');
+  const [showFpsMonitor, setShowFpsMonitor] = usePersistedState<boolean>('showFpsMonitor', false);
   const [selected, setSelected] = useState<TimelineEvent | null>(null);
   const [showOverview, setShowOverview] = useState(true);
   const [settingsVisible, setSettingsVisible] = useState(false);
@@ -154,6 +155,7 @@ export function TimelineScreen() {
               epochRange={epochRange}
               jumpToEvent={jumpToEvent}
               jumpToYear={jumpToYear}
+              showFpsMonitor={showFpsMonitor}
             />
           </ScrollView>
           <ContinentTabBar active={continent} onChange={setContinent} />
@@ -165,6 +167,8 @@ export function TimelineScreen() {
         onClose={handleCloseSettings}
         detailLevel={detailLevel}
         onDetailLevelChange={setDetailLevel}
+        showFpsMonitor={showFpsMonitor}
+        onShowFpsMonitorChange={setShowFpsMonitor}
       />
       <SearchModal
         visible={searchVisible}
