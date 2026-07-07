@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- **Kategorie „Natur & Wissenschaft" zeigte keine Inhalte:** `natur-wissenschaft.json` (68 Events, inkl. der 4 neuen aus #151) wurde nie in `src/data/events/index.ts` importiert und war dadurch nie Teil von `ALL_EVENTS` — die Kategorie war seit ihrer Einführung faktisch leer, unabhängig von Filtern oder Zoomlevel. Datei jetzt korrekt eingebunden.
 - **Punkt-Ereignisse ohne Beschriftung (Issue #160):** Ereignisse ohne `endYear` (z. B. Chicxulub-Einschlag, Toba-Superausbruch) hatten in `computeLabelVisibleIds` immer eine berechnete Balkenbreite von 0 px und fielen dadurch garantiert unter `LABEL_MIN_BAR_PX` — sie bekamen nie ein Label, unabhängig vom Zoomlevel, obwohl der gerenderte Balken (`Math.max(2, …)`) sichtbar war. Punkt-Ereignisse erhalten jetzt einen virtuellen Label-Slot der Breite `LABEL_MAX_WIDTH` rechts neben dem Marker (beide Renderer, Web + Native).
 - **Vertikales Scrollen zwischen Spuren auf Mobile (Issue #161):** Der RNGH-Pan-Gesture des Zeitstrahls konkurrierte mit der äußeren `ScrollView` um vertikale Touch-Gesten, ohne dass beide explizit verdrahtet waren. `useTimelineGestures` nimmt jetzt optional eine `scrollRef` entgegen und registriert sie via `simultaneousWithExternalGesture`, damit die `ScrollView` vertikale Drags zuverlässig erkennt, statt das Touch-Event an den Pan-Handler zu verlieren.
 

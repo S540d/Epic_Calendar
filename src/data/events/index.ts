@@ -4,6 +4,7 @@ import asien from './asien.json';
 import afrika from './afrika.json';
 import amerika from './amerika.json';
 import ozeanien from './ozeanien.json';
+import naturWissenschaft from './natur-wissenschaft.json';
 import type { TimelineEvent } from '@/data/schema';
 
 export const ALL_EVENTS: TimelineEvent[] = [
@@ -13,4 +14,5 @@ export const ALL_EVENTS: TimelineEvent[] = [
   ...(afrika as TimelineEvent[]),
   ...(amerika as TimelineEvent[]),
   ...(ozeanien as TimelineEvent[]),
+  ...(naturWissenschaft as TimelineEvent[]),
 ];
