@@ -28,6 +28,8 @@ import {
 } from '@/theme/tokens';
 import type { LineageConnector, TrackMap } from '@/timeline/culling';
 import {
+  LABEL_MAX_WIDTH,
+  LABEL_MIN_BAR_PX,
   MAX_EVENTS_PER_LANE,
   POPOVER_MAX_HEIGHT,
   POPOVER_MAX_WIDTH,
@@ -299,6 +301,9 @@ export function TimelineCanvasNative({
                     const barY = laneTop + LANE_PADDING_V + trackIdx * TRACK_HEIGHT + 4;
                     const barH = TRACK_HEIGHT - 8;
                     const labelTop = maxLines === 1 ? barY + barH / 2 - lblSize / 2 : barY + 4;
+                    // Point events render as a fixed-width dot (w=2) — give the
+                    // label a virtual slot to its right instead of clamping to 0.
+                    const labelSlotW = w < LABEL_MIN_BAR_PX ? LABEL_MAX_WIDTH : w;
                     return (
                       <View
                         key={`lbl-${ev.id}`}
@@ -307,7 +312,10 @@ export function TimelineCanvasNative({
                           position: 'absolute',
                           left: Math.max(x, 0) + 3,
                           top: labelTop,
-                          maxWidth: Math.max(0, Math.min(x + w, canvasWidth) - Math.max(x, 0) - 6),
+                          maxWidth: Math.max(
+                            0,
+                            Math.min(x + labelSlotW, canvasWidth) - Math.max(x, 0) - 6,
+                          ),
                         }}
                       >
                         <Text
