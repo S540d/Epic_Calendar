@@ -17,7 +17,8 @@
     "zivilisation": "Civilizations",
     "natur": "Nature & Science",
     "nation": "Nations & Politics",
-    "herrscher": "Rulers & Dynasties"
+    "herrscher": "Rulers & Dynasties",
+    "kultur": "Culture & Arts"
   },
   "continent": {
     "all": "All",
@@ -46,6 +47,7 @@
     "category": "Category",
     "continent": "Continent",
     "culture": "Culture",
+    "mnemonic": "Mnemonic",
     "billion": "Bn",
     "million": "M",
     "thousand": "k"

@@ -696,7 +696,8 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "römisch",
-    "minZoomLevel": 4
+    "minZoomLevel": 4,
+    "mnemonic": "753, Rom kroch aus dem Ei."
   },
   {
     "id": "eu-herr-numa",
@@ -1459,6 +1460,19 @@
     "tags": ["krieg", "griechenland", "persien"]
   },
   {
+    "id": "eu-schlacht-issos",
+    "title": "Schlacht bei Issos",
+    "description": "Alexander der Große besiegt den persischen Großkönig Dareios III. bei Issos in Kleinasien – der entscheidende Wendepunkt seines Feldzugs gegen das Perserreich.",
+    "startYear": -333,
+    "category": "zivilisation",
+    "continent": "europa",
+    "culture": "griechisch",
+    "importance": "core",
+    "minZoomLevel": 3,
+    "tags": ["krieg", "griechenland", "persien"],
+    "mnemonic": "333 v. Chr. – bei Issos besiegt Alexander der Große die Perser."
+  },
+  {
     "id": "eu-schlacht-thermopylae",
     "title": "Thermopylen und Salamis",
     "description": "König Leonidas und 300 Spartaner verteidigen den Thermopylen-Pass gegen das persische Heer. Kurz danach vernichtet die griechische Flotte bei Salamis die Perser und rettet Griechenland.",
@@ -2177,5 +2191,109 @@
     "minZoomLevel": 2,
     "tags": ["ungarn", "osteuropa", "mittelalter", "magyaren", "osmanen"],
     "regions": ["ungarn"]
+  },
+  {
+    "id": "eu-kultur-barock",
+    "title": "Barock",
+    "description": "Prunkvolle Kunst, Architektur und Musik als Ausdruck absolutistischer Macht und Gegenreformation. Schlossbauten (Versailles, Zwinger), Bach und Händel in der Musik, dramatische Malerei (Rubens, Caravaggio).",
+    "startYear": 1600,
+    "endYear": 1750,
+    "category": "kultur",
+    "continent": "europa",
+    "culture": "deutsch",
+    "importance": "core",
+    "minZoomLevel": 2,
+    "tags": ["kunst", "musik", "architektur", "barock"]
+  },
+  {
+    "id": "eu-kultur-wiener-klassik",
+    "title": "Wiener Klassik",
+    "description": "Höhepunkt der europäischen Musikgeschichte in Wien: Haydn, Mozart und Beethoven prägen Sinfonie, Streichquartett und Sonate mit klarer Form und ausgewogener Harmonie.",
+    "startYear": 1730,
+    "endYear": 1820,
+    "category": "kultur",
+    "continent": "europa",
+    "culture": "deutsch",
+    "importance": "extended",
+    "minZoomLevel": 2,
+    "tags": ["musik", "wien", "klassik"]
+  },
+  {
+    "id": "eu-kultur-weimarer-klassik",
+    "title": "Weimarer Klassik",
+    "description": "Goethe und Schiller prägen in Weimar ein humanistisches Ideal von Bildung, Harmonie und Menschlichkeit – der literarische Höhepunkt der deutschen Klassik.",
+    "startYear": 1786,
+    "endYear": 1805,
+    "category": "kultur",
+    "continent": "europa",
+    "culture": "deutsch",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "tags": ["literatur", "weimar", "goethe", "schiller"]
+  },
+  {
+    "id": "eu-kultur-romantik",
+    "title": "Romantik",
+    "description": "Gefühl, Natur und Fantasie gegen die Vernunft der Aufklärung. Caspar David Friedrich in der Malerei, die Brüder Grimm sammeln Märchen, Schubert und Schumann in der Musik.",
+    "startYear": 1795,
+    "endYear": 1848,
+    "category": "kultur",
+    "continent": "europa",
+    "culture": "deutsch",
+    "importance": "core",
+    "minZoomLevel": 2,
+    "tags": ["kunst", "literatur", "musik", "romantik"]
+  },
+  {
+    "id": "eu-kultur-biedermeier",
+    "title": "Biedermeier",
+    "description": "Bürgerlicher Rückzug ins Private nach den Napoleonischen Kriegen und der Restauration. Schlichte Möbel, häusliche Genremalerei, Idylle statt Politik.",
+    "startYear": 1815,
+    "endYear": 1848,
+    "category": "kultur",
+    "continent": "europa",
+    "culture": "deutsch",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "tags": ["kunst", "biedermeier", "bürgertum"]
+  },
+  {
+    "id": "eu-kultur-impressionismus",
+    "title": "Impressionismus",
+    "description": "Malerei des flüchtigen Augenblicks und wechselnden Lichts, ausgehend von Frankreich (Monet, Renoir). Bricht mit der akademischen Historienmalerei und öffnet den Weg zur Moderne.",
+    "startYear": 1860,
+    "endYear": 1900,
+    "category": "kultur",
+    "continent": "europa",
+    "culture": "europäisch",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "tags": ["kunst", "malerei", "impressionismus", "frankreich"]
+  },
+  {
+    "id": "eu-kultur-expressionismus",
+    "title": "Expressionismus",
+    "description": "Künstlergruppen wie \"Die Brücke\" und \"Der Blaue Reiter\" drücken innere Emotion statt äußerer Wirklichkeit aus – grelle Farben, verzerrte Formen, Großstadt- und Kriegsangst.",
+    "startYear": 1905,
+    "endYear": 1925,
+    "category": "kultur",
+    "continent": "europa",
+    "culture": "deutsch",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "tags": ["kunst", "expressionismus", "moderne"]
+  },
+  {
+    "id": "eu-kultur-bauhaus",
+    "title": "Bauhaus",
+    "description": "Walter Gropius gründet in Weimar die einflussreichste Design- und Architekturschule des 20. Jahrhunderts – \"Form follows function\" prägt bis heute Möbel, Gebäude und Alltagsgegenstände weltweit.",
+    "startYear": 1919,
+    "endYear": 1933,
+    "category": "kultur",
+    "continent": "europa",
+    "culture": "deutsch",
+    "importance": "core",
+    "minZoomLevel": 3,
+    "tags": ["design", "architektur", "bauhaus", "weimar", "dessau"]
   }
 ]

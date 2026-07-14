@@ -4,6 +4,10 @@
 
 ### Added
 
+- **Kinderdarstellung / Lernsprüche (Issue #171):** Neues optionales Event-Feld `mnemonic` für bekannte Eselsbrücken zu Jahreszahlen, im `EventDetailModal` unterhalb der Beschreibung hervorgehoben dargestellt (i18n-Label `event.mnemonic`). Ergänzt bei der Gründung Roms ("753, Rom kroch aus dem Ei.", `eu-herr-romulus`) und einem neuen Event für die Schlacht bei Issos 333 v. Chr. (`eu-schlacht-issos`, Alexander der Große gegen Dareios III.).
+- **Kategorie „Kultur & Kunst" (Issue #76):** Neue sechste Kategorie (`kultur`, `#A85FC2`, unterste Lane) für gesellschaftliche Strömungen und Kunstgeschichte. 8 neue Events in `europa.json`: Barock, Wiener Klassik, Weimarer Klassik, Romantik, Biedermeier, Impressionismus, Expressionismus, Bauhaus.
+- **Einschlagsereignisse unter „Erdzeitalter" (Issue #76):** 3 neue Events in `erdzeitalter.json` markieren wichtige Kometen-/Asteroideneinschläge direkt in der Erdzeitalter-Lane: Vredefort-Impakt (größter bekannter Einschlagkrater), Sudbury-Impakt und das Tunguska-Ereignis (1908).
+- **Zivilisation vs. Nation – konzeptionelle Abgrenzung (Issue #76):** `docs/event-flags.md` dokumentiert jetzt die semantische Trennung für neue Inhalte: `zivilisation` = Völker/Kulturkreise/Wanderungsbewegungen, `nation` = konkrete Staatsgebilde (Königreiche, Kaiserreiche, moderne Staaten). Gilt für neue/überarbeitete Events, keine rückwirkende Migration bestehender Daten.
 - **Wissenschaft-Erfindungen ergänzt (Issue #151):** 4 neue Meilensteine in `natur-wissenschaft.json`: Erfindung des Rades (-3500), Cai Lun/Papier (105), Magnetkompass (1040), Schießpulver (850).
 
 ### Fixed
