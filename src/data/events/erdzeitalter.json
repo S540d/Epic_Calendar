@@ -322,5 +322,41 @@
     "minZoomLevel": 2,
     "tags": ["göbekli", "heiligtum", "türkei"],
     "regions": ["türkei"]
+  },
+  {
+    "id": "geo-vredefort-impakt",
+    "title": "Vredefort-Impakt",
+    "description": "Ein Asteroid schlägt im heutigen Südafrika ein und hinterlässt mit rund 300 km Durchmesser den größten bekannten Einschlagkrater der Erdgeschichte.",
+    "startYear": -2023000000,
+    "category": "erdzeitalter",
+    "continent": "global",
+    "culture": "Einschlag",
+    "importance": "core",
+    "minZoomLevel": 1,
+    "tags": ["einschlag", "krater", "asteroid", "südafrika"]
+  },
+  {
+    "id": "geo-sudbury-impakt",
+    "title": "Sudbury-Impakt",
+    "description": "Einschlag eines Asteroiden oder Kometen im heutigen Kanada hinterlässt das Sudbury-Becken – nach Vredefort und Chicxulub einer der größten bestätigten Einschlagkrater der Erde.",
+    "startYear": -1849000000,
+    "category": "erdzeitalter",
+    "continent": "global",
+    "culture": "Einschlag",
+    "importance": "extended",
+    "minZoomLevel": 1,
+    "tags": ["einschlag", "krater", "asteroid", "kanada"]
+  },
+  {
+    "id": "geo-tunguska-ereignis",
+    "title": "Tunguska-Ereignis",
+    "description": "Ein Asteroid oder Komet explodiert über Sibirien in der Luft und knickt rund 80 Millionen Bäume auf 2.000 km² um – der größte beobachtete Einschlag der Neuzeit.",
+    "startYear": 1908,
+    "category": "erdzeitalter",
+    "continent": "global",
+    "culture": "Einschlag",
+    "importance": "extended",
+    "minZoomLevel": 4,
+    "tags": ["einschlag", "asteroid", "sibirien", "komet"]
   }
 ]
