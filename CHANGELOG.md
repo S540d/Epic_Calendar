@@ -4,6 +4,8 @@
 
 ### Added
 
+- **Schulwissen-Abdeckung über alle Kategorien (Issue #76/#121):** Der Detailgrad-Filter „Wesentliches" heißt jetzt **„Kinder / Schulwissen"** (EN: „Kids / school basics") und liefert typisches Schulwissen in **jeder** Kategorie. Bislang war die `core`-Stufe stark unausgewogen (herrscher 2, nation 7, erdzeitalter 1 core). 118 zentrale Ereignisse wurden auf `importance: 'core'` hochgestuft — u. a. die Erdzeitalter samt Dinosaurier-Ära (Mesozoikum) und Frühmenschen (Australopithecus → Homo sapiens, Feuer, Neolithikum), die bekanntesten Herrscher (Alexander, Caesar-Umfeld, Karl der Große, Napoleon, Bismarck, Kleopatra, Ramses II., Dschingis Khan, Mandela …) und Nationen/Epochen (Athen, Sparta, HRR, Kolumbus, US-Unabhängigkeit, Deutsches Kaiserreich, Mondlandung …). Ergebnis: erdzeitalter 10, herrscher 50, nation 35, zivilisation 86, natur 46 core. Zusätzlich 4 neue Schulwissen-Ereignisse ergänzt: Erste Olympische Spiele der Antike (-776), Varusschlacht (9), Entstehung des Christentums (30), Mauerfall & Deutsche Wiedervereinigung (1989/90).
+
 - **Wissenschaft-Erfindungen ergänzt (Issue #151):** 4 neue Meilensteine in `natur-wissenschaft.json`: Erfindung des Rades (-3500), Cai Lun/Papier (105), Magnetkompass (1040), Schießpulver (850).
 
 ### Fixed
