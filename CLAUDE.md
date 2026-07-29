@@ -82,7 +82,7 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 - **Stabile Track-Zuordnung (#146 B1):** `TimelineView` berechnet `stableTracksByLane` per `useMemo` mit Deps `[lanes, continent, maxImportanceRank]` (NICHT `jsOffsetX`/`jsPixelsPerUnit`) und reicht sie an `computeLaneData` durch. Damit bleibt die Zeilennummer eines Events beim Pannen/Zoomen konstant — vorher lief `assignTracks` pro Frame über die viewport-gecappte Menge, wodurch Events zwischen Zeilen sprangen. `computeLaneData` remappt die im Viewport sichtbaren globalen Tracknummern zusätzlich dicht auf 0..k (Reihenfolge bleibt erhalten, nur Lücken kollabieren), sonst würden global weit auseinanderliegende Zeilen die Lane-Höhe explodieren lassen. Ohne `stableTracksByLane` fällt `computeLaneData` auf das alte Verhalten zurück (von bestehenden Tests genutzt).
 - **Tier-Hierarchie für Zeilen-Ordnung (#70):** Optionales `tier`-Feld (`'epoche' | 'reich' | 'dynastie'`) im Schema; `TIER_RANK`/`tierRank()`-Helfer (epoche=0, reich=1, dynastie=2). `assignTracks` sortiert primär nach `tierRank` (via `byTierGlobalThenStart`), dann global-first, dann chronologisch — dadurch liegen `epoche`-Bänder oben, `reich` (Default bei fehlendem `tier`) in der Mitte, `dynastie` unten. Löst das Problem, dass langlaufende Reiche (Byzanz 330–1453) über zeitlich späteren Epochen-Phasen (Renaissance, Aufklärung) standen. 8 Epochen-Bänder in `europa.json` tragen `tier: 'epoche'`; `dynastie` ist vorbereitet, aber noch nicht bespielt. Kultur-Homogenität pro Zeile bleibt _innerhalb_ eines Tiers erhalten.
 - **Kultur-getrennte Zeilen (#146 B2):** Zeilen in `assignTracks` sind strikt kultur-homogen: Jede automatisch vergebene Zeile hat einen Besitzer (`culture`-String oder `null` für neutrale Events), fremde Kulturen dürfen sie **nie** belegen — auch nicht als Platz-Fallback. Ein Event ohne freie eigene Zeile öffnet eine neue Zeile seiner Kultur, statt in eine fremde zu mischen. Lineage-Gruppen beanspruchen die Zeile ihrer Kultur (Span-Reservierung bleibt); Singletons werden global-first + chronologisch platziert, wodurch neue Zeilen von oben nach unten in Reihenfolge ihres ersten Events entstehen. Manuelle `track`-Overrides pinnen weiterhin exakte Zeilennummern (Besitzer = Kultur des ersten Events). Mehr Zeilen als beim rein geometrischen Packen — akzeptiert, da B1s Dense-Remapping die sichtbare Höhe begrenzt.
-- **Detailgrad-Filter (`importance` verdrahtet):** `DetailLevelSelector` (Wesentliches/Standard/Alles) setzt `maxImportanceRank` als kumulativen Schwellwert in `filterVisible`/`queryVisible`. Default „Alles" (= alles sichtbar, abwärtskompatibel); Events ohne `importance` zählen als `extended`. Ergänzt den automatischen Zoom-LOD um eine manuelle Achse; persistiert als `detailLevel`. Einstellung jetzt im **Settings-Menü** (nicht mehr als Inline-Bar).
+- **Detailgrad-Filter (`importance` verdrahtet):** Der Detailgrad (Wesentliches/Standard/Alles) setzt `maxImportanceRank` als kumulativen Schwellwert in `filterVisible`/`queryVisible`. Default „Alles" (= alles sichtbar, abwärtskompatibel); Events ohne `importance` zählen als `extended`. Ergänzt den automatischen Zoom-LOD um eine manuelle Achse; persistiert als `detailLevel`. UI ist eine Segmented-Control direkt in `SettingsModal` (kein eigenständiges Component mehr — die frühere `DetailLevelSelector`-Komponente war verwaist und wurde entfernt).
 - **Settings-Menü (`SettingsModal`):** Bottom-Sheet-Modal, öffnet per ⚙-Icon im Header beider Screens. Drei Sections: Erscheinungsbild (Dark/Light-Mode-Toggle), Darstellung (Detailgrad, FPS-Monitor-Toggle), Sprache (DE/EN). Dark Mode via `ThemeContext`; Sprache via i18next + AsyncStorage-Persistenz.
 - **FPS-Monitor (#5):** `useFpsMonitor(enabled)` misst die Bildrate via Reanimated `useFrameCallback` (UI-Thread, 500ms-Sample-Fenster, `runOnJS` zurück zu React State); läuft nur bei `enabled=true` (kein Overhead im Default-Fall). `FpsMonitor`-Komponente rendert eine farbcodierte Pill (≥50 FPS grün, ≥30 gelb, sonst rot), non-interactive. In beiden Renderern (`TimelineCanvasWeb`/`TimelineCanvasNative`) zusammen mit `TimelineBreadcrumb` in einem gemeinsamen `topRightGroup`-Flex-Container (`timelineRenderShared.ts`) — beide Komponenten sind selbst **nicht** mehr `position: absolute` positioniert, sonst würden sie sich am selben Eck überlappen. Toggle „FPS-Monitor anzeigen" im Settings-Menü, persistiert als `showFpsMonitor` (Default: aus).
 - **ThemeContext (`useTheme()`):** `ThemeProvider` in `App.tsx` liefert `{ isDark, colors, toggleTheme }`. `darkColors`/`lightColors` in `src/theme/ThemeContext.tsx`. Alle UI-Chrome-Komponenten nutzen `useTheme()` mit `makeStyles(colors)`-Pattern (dynamisch, per `useMemo`). **Canvas-Renderer** (Skia/Canvas2D) und deren Overlays bleiben dunkel (statische `colors`-Importe).
@@ -133,7 +133,6 @@ src/
 │   ├── EpochNavArrows.tsx         # Quick-Jump-Pfeile (← Epoche / Epoche →) im Timeline-Header
 │   ├── EpochOverviewScreen.tsx    # Landing Page: Epochen-Kacheln als Einstieg (Props: onSelectEpoch, onShowFullTimeline, onOpenSettings, onOpenSearch)
 │   ├── FilterChipBar.tsx          # Kategorie-/Kontinent-Filter
-│   ├── DetailLevelSelector.tsx    # Detailgrad-Segmented-Control (wiederverwendbar; genutzt in SettingsModal)
 │   ├── SettingsModal.tsx          # Settings-Bottom-Sheet (Dark Mode, Detailgrad, FPS-Monitor, Sprache)
 │   ├── SearchModal.tsx            # Such-Bottom-Sheet (#146 A): Ereignis-/Jahr-Suche, Tap → jumpToEvent/jumpToYear
 │   ├── LandmarkTimeline.tsx       # Landmark-Zeitstrahl auf der Landing Page (linear; Urknall außerhalb der Skala)
@@ -254,13 +253,12 @@ Canvas-Overlay-Komponenten (ZoomLevelIndicator, EpochBand, …) nutzen weiterhin
 
 ## Offene Issues (legitim)
 
-| #    | Titel                                                  | Priorität      |
-| ---- | ------------------------------------------------------ | -------------- |
-| #5   | Performance-Optimierung (Skia + Reanimated)            | ongoing        |
-| #70  | Skalierbarkeit: mehr Events, Filter, Kategorien        | Epic / Tracker |
-| #76  | Mehr Inhalte (Wissenschaft, Zivilisationen, Kultur)    | P2 / Content   |
-| #85  | Folgeaufträge (Linear Scale Detail-Default, fullEarth) | P3             |
-| #121 | Content Coverage: Lückenanalyse Epochen × Kontinente   | P1 / Content   |
+| #    | Titel                            | Priorität |
+| ---- | --------------------------------- | --------- |
+| #76  | Mehr Inhalte (Wissenschaft, Zivilisationen, Kultur, Kategorie „Kultur und Kunst") | P2 / Content |
+| #162 | Farblogik für Spuren-Farben       | offen     |
+| #163 | Weitere Filterungen (Länder-Filter innerhalb Kontinent) | offen |
+| #171 | Kinderdarstellung („einfach") — Lernsprüche zu Events | offen |
 
 ## Referenzen
 

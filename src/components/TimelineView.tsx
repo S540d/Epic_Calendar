@@ -250,7 +250,7 @@ export function TimelineView({
       jsOffsetX,
       jsPixelsPerUnit,
     } = tapDataRef.current;
-    const candidates: Array<{ ev: TimelineEvent; dist: number }> = [];
+    const candidates: { ev: TimelineEvent; dist: number }[] = [];
     for (let i = 0; i < lanes.length; i++) {
       const cat = lanes[i];
       if (!cat) continue;

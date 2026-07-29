@@ -60,7 +60,7 @@ export function computeLabelVisibleIds(
       byTrack.get(t)!.push(ev);
     }
     for (const trackEvents of byTrack.values()) {
-      const placed: Array<{ l: number; r: number }> = [];
+      const placed: { l: number; r: number }[] = [];
       const sorted = [...trackEvents].sort((a, b) => {
         const wa = (yearToT(a.endYear ?? a.startYear) - yearToT(a.startYear)) * jsPixelsPerUnit;
         const wb = (yearToT(b.endYear ?? b.startYear) - yearToT(b.startYear)) * jsPixelsPerUnit;
