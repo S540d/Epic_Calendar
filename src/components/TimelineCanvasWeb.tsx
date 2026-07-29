@@ -147,12 +147,12 @@ export function TimelineCanvasWeb({
       } else {
         // Horizontal pan: prefer deltaX (trackpad swipe), fall back to deltaY (mouse wheel).
         const delta = Math.abs(e.deltaX) >= 1 ? e.deltaX : e.deltaY;
-        oX.value = clampOffsetX(oX.value + delta / wpp, ppu.value, cw); // eslint-disable-line react-hooks/immutability
+        oX.value = clampOffsetX(oX.value + delta / wpp, ppu.value, cw);
       }
     };
     el.addEventListener('wheel', handler, { passive: false });
     return () => el.removeEventListener('wheel', handler);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <View

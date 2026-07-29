@@ -1,4 +1,4 @@
-import { yearToT, tToYear, viewportYearRange, yearToPixel, pixelToYear } from '../scale';
+import { yearToT, tToYear, viewportYearRange, pixelToYear } from '../scale';
 
 describe('viewportYearRange', () => {
   it('startYear < endYear for any valid viewport', () => {
