@@ -17,7 +17,8 @@
     "zivilisation": "Zivilisationen",
     "natur": "Natur & Wissenschaft",
     "nation": "Nationen & Politik",
-    "herrscher": "Herrscher & Dynastien"
+    "herrscher": "Herrscher & Dynastien",
+    "kultur": "Kultur & Kunst"
   },
   "continent": {
     "all": "Alle",
@@ -33,7 +34,7 @@
   },
   "detailLevel": {
     "label": "Detailgrad",
-    "core": "Wesentliches",
+    "core": "Kinder / Schulwissen",
     "extended": "Standard",
     "detail": "Alles"
   },
@@ -46,6 +47,7 @@
     "category": "Kategorie",
     "continent": "Kontinent",
     "culture": "Kultur",
+    "mnemonic": "Lernspruch",
     "billion": "Mrd.",
     "million": "Mio.",
     "thousand": "Tsd."

@@ -89,6 +89,16 @@ const CATEGORY_LIST = [
     laneOrder: 4,
     enabled: true,
   },
+  {
+    id: 'kultur',
+    color: '#A85FC2',
+    laneBg: 'rgba(168, 95, 194, 0.10)',
+    palette: ['#9750B4', '#B876CC', '#7E3E9E', '#CC96DE', '#6A2E88', '#D8AAE8', '#5A2374'],
+    labelKey: 'category.kultur',
+    chipOrder: 5,
+    laneOrder: 5,
+    enabled: true,
+  },
 ] as const satisfies readonly CategoryConfigBase[];
 
 /** Category id union, derived from the registry. */

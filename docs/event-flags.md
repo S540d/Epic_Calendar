@@ -14,7 +14,7 @@ TimelineEvent
 ├── Klassifikation  category → culture, importance, tags
 ├── Geografie       continent → regions
 ├── Beziehung       lineageId
-└── Darstellung     minZoomLevel, color, iconKey, track
+└── Darstellung     minZoomLevel, color, iconKey, track, mnemonic
 ```
 
 ---
@@ -61,11 +61,21 @@ category  (Pflicht, Registry-gesteuert)
 | -------------- | --------- | ---- | ----------------- |
 | `erdzeitalter` | `#4A8FA8` | ✅   | ✅                |
 | `zivilisation` | `#C28B4A` | ✅   | ✅                |
+| `natur`        | `#4FA86A` | ✅   | ✅                |
 | `nation`       | `#7C9CFF` | ✅   | –                 |
-| `natur`        | `#4FA86A` | –    | – (soon)          |
-| `herrscher`    | `#CF8A30` | –    | – (kein Lane)     |
+| `herrscher`    | `#CF8A30` | ✅   | –                 |
+| `kultur`       | `#A85FC2` | ✅   | –                 |
 
 Quelle: `src/theme/categories.ts` (Single Source of Truth, PR #95).
+
+**`zivilisation` vs. `nation` (Issue #76):** Konzeptionelle Abgrenzung für neue Inhalte —
+`zivilisation` bildet **Völker, Kulturkreise und Wanderungsbewegungen** ab (z. B. Bantu-Expansion,
+Völkerwanderung, Ausbreitung des Homo sapiens), während `nation` **konkrete Staatsgebilde** meint
+(Königreiche, Kaiserreiche, moderne Staaten — auch "Königreich der …", sofern es sich um eine
+formale politische Einheit mit Herrschaftsapparat handelt, nicht nur um eine ethnische/kulturelle
+Gruppe). Ein Volk kann im Lauf der Zeit mehrere `nation`-Einträge hervorbringen (z. B. Franken als
+`zivilisation` → Merowinger-/Karolingerreich als `nation`-Einträge). Bestehende Events werden nicht
+rückwirkend migriert; die Regel gilt für neue/überarbeitete Inhalte.
 
 #### `culture`
 
@@ -142,6 +152,14 @@ beide Renderer (Skia/Web) unter den Balken zeichnen.
 | `iconKey`      | `string`                | –       | Schlüssel für ein Emoji/Icon-Set (noch kein globales Icon-Set definiert).    |
 | `track`        | `number` (0-basiert)    | –       | Manueller Track-Override. Fehlt → automatisch per `assignTracks()` vergeben. |
 
+#### `mnemonic` _(verdrahtet: Kinderdarstellung, Issue #171)_
+
+Optionaler kurzer Lernspruch/Eselsbrücke, der im Detail-Modal unterhalb der Beschreibung
+hervorgehoben angezeigt wird (z. B. `"753, Rom kroch aus dem Ei."`). Gedacht für bekannte,
+einprägsame Merksätze zu einzelnen Jahreszahlen — kein Ersatz für `description`, sondern eine
+zusätzliche, vereinfachte Eselsbrücke für Kinder/Einsteiger. Freier String, sprachlich meist
+deutsch (Wortspiele lassen sich nicht sinnvoll automatisch übersetzen).
+
 #### `minZoomLevel` — LOD-Bänder
 
 | Wert | Name         | Pixel/t-Einheit | Typische Inhalte                          |
@@ -163,7 +181,7 @@ validateEvent(event, validCategories)  ←  src/data/schema.ts
     prüft: id, title, startYear, endYear ≥ startYear,
            category ∈ VALID_CATEGORIES, continent ∈ VALID_CONTINENTS,
            minZoomLevel ∈ {0,1,2,3,4}
-    ignoriert: optionale Felder (culture, importance, tags, regions, lineageId, color, iconKey, track)
+    ignoriert: optionale Felder (culture, importance, tags, regions, lineageId, color, iconKey, track, mnemonic)
 ```
 
 Neue optionale Felder werden von `validateEvent` nur geprüft, wenn sie vorhanden sind (Phase 1.2). Bestehende Events bleiben unverändert valid.

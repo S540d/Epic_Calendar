@@ -23,6 +23,7 @@ describe('category registry — derived arrays match the previous hardcoded valu
       'zivilisation',
       'nation',
       'herrscher',
+      'kultur',
     ]);
   });
 
@@ -33,11 +34,19 @@ describe('category registry — derived arrays match the previous hardcoded valu
       'nation',
       'herrscher',
       'natur',
+      'kultur',
     ]);
   });
 
-  it('LANE_ORDER renders all five categories, herrscher as the bottom lane', () => {
-    expect(LANE_ORDER).toEqual(['erdzeitalter', 'zivilisation', 'natur', 'nation', 'herrscher']);
+  it('LANE_ORDER renders all six categories, kultur as the bottom lane', () => {
+    expect(LANE_ORDER).toEqual([
+      'erdzeitalter',
+      'zivilisation',
+      'natur',
+      'nation',
+      'herrscher',
+      'kultur',
+    ]);
   });
 
   it('DEFAULT_CATEGORIES includes erdzeitalter, natur, and zivilisation', () => {
@@ -57,6 +66,7 @@ describe('category registry — color/palette values match the previous tokens',
       zivilisation: '#C28B4A',
       nation: '#7C9CFF',
       herrscher: '#CF8A30',
+      kultur: '#A85FC2',
     });
   });
 
@@ -67,6 +77,7 @@ describe('category registry — color/palette values match the previous tokens',
       zivilisation: 'rgba(194, 139, 74, 0.10)',
       nation: 'rgba(124, 156, 255, 0.10)',
       herrscher: 'rgba(207, 138, 48, 0.10)',
+      kultur: 'rgba(168, 95, 194, 0.10)',
     });
   });
 
@@ -115,6 +126,15 @@ describe('category registry — color/palette values match the previous tokens',
       '#8C4808',
       '#F0B868',
       '#704000',
+    ]);
+    expect(CATEGORY_PALETTES.kultur).toEqual([
+      '#9750B4',
+      '#B876CC',
+      '#7E3E9E',
+      '#CC96DE',
+      '#6A2E88',
+      '#D8AAE8',
+      '#5A2374',
     ]);
   });
 });

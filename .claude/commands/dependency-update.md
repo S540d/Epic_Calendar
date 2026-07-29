@@ -4,13 +4,11 @@ Sichere Aktualisierung von Dependencies mit Security-Checks.
 Paketmanager: npm (Standard), yarn oder pnpm – Befehle ggf. anpassen.
 
 ## Ziel
-
 Dependencies aktualisieren, Security-Vulnerabilities fixen, Breaking Changes prüfen
 
 ## Workflow
 
 ### 1. Aktuellen Status analysieren
-
 - Zeige `npm outdated` Output
 - Gruppiere Updates nach Typ:
   - **Patch Updates** (1.2.3 → 1.2.4) - Bugfixes, sicher
@@ -20,7 +18,6 @@ Dependencies aktualisieren, Security-Vulnerabilities fixen, Breaking Changes pr�
 - Priorisiere Security-relevante Updates
 
 ### 2. Security Vulnerabilities fixen (PRIORITÄT!)
-
 - Zeige alle Vulnerabilities mit Severity (Critical, High, Medium, Low)
 - Für jede Vulnerability:
   - Zeige betroffenes Package
@@ -29,7 +26,6 @@ Dependencies aktualisieren, Security-Vulnerabilities fixen, Breaking Changes pr�
   - Falls Breaking Change: Manuell fixen mit `npm install package@version`
 
 ### 3. Patch & Minor Updates (meist sicher)
-
 - Frage: "Alle Patch/Minor Updates installieren? (empfohlen)"
 - Falls Ja:
   ```bash
@@ -38,7 +34,6 @@ Dependencies aktualisieren, Security-Vulnerabilities fixen, Breaking Changes pr�
 - Falls Nein: Gehe durch einzelne Packages und frage jeweils
 
 ### 4. Major Updates (Breaking Changes möglich)
-
 - Für jedes Major Update:
   - Zeige Package-Name, alte Version, neue Version
   - Suche nach CHANGELOG oder Breaking Changes:
@@ -49,9 +44,7 @@ Dependencies aktualisieren, Security-Vulnerabilities fixen, Breaking Changes pr�
   - Falls Ja: `npm install package@latest`
 
 ### 5. Dependencies Test-Run
-
 Nach jedem Update-Batch:
-
 - Führe `npm install` aus (um lock-file zu aktualisieren)
 - Führe Tests aus: `npm run test`
 - Führe Linting aus: `npm run lint`
@@ -65,31 +58,26 @@ Nach jedem Update-Batch:
 ### 6. Update-spezifische Fixes
 
 #### TypeScript Major Update
-
 - Prüfe `tsconfig.json` für deprecated Options
 - Aktualisiere `@types/*` Packages
 - Prüfe auf neue strict Checks
 
 #### React/React Native Major Update
-
 - Prüfe auf deprecated APIs
 - Aktualisiere React-Plugins (babel, etc.)
 - Teste App vollständig
 
 #### Expo Major Update
-
 - Folge Expo Upgrade Guide: `npx expo upgrade`
 - Prüfe `app.json` für neue Config-Optionen
 - Teste auf realen Devices
 
 #### Build Tools (Webpack, Vite, etc.)
-
 - Prüfe Config-Files für Breaking Changes
 - Teste Build-Output
 - Prüfe Bundle-Size
 
 ### 7. Lock-File aktualisieren
-
 - Stelle sicher dass `package-lock.json` committed wird
 - Prüfe auf ungewollte Dependency-Änderungen:
   ```bash
@@ -98,23 +86,17 @@ Nach jedem Update-Batch:
 - Falls zu viele Änderungen: Nutze `npm ci` statt `npm install` für sauberen State
 
 ### 8. Dokumentation
-
 - Aktualisiere CHANGELOG.md:
-
   ```markdown
   ## [Version] - YYYY-MM-DD
-
   ### Dependencies
-
   - Updated [package] from X.Y.Z to A.B.C
   - Fixed security vulnerability in [package]
   ```
-
 - Falls Major Updates: Dokumentiere Breaking Changes
 - Aktualisiere README falls Versions-Anforderungen ändern (z.B. Node.js Version)
 
 ### 9. Commit & PR erstellen
-
 - Erstelle Feature-Branch: `git checkout -b chore/dependency-update-[YYYY-MM-DD]`
 - Commit Änderungen:
   ```bash
@@ -122,7 +104,6 @@ Nach jedem Update-Batch:
   git commit -m "chore: Update dependencies and fix security vulnerabilities"
   ```
 - Erstelle PR:
-
   ```bash
   gh pr create --base testing --title "chore: Dependency Update [Date]" --body "$(cat <<EOF
   ## Dependency Updates
@@ -150,7 +131,6 @@ Nach jedem Update-Batch:
   ```
 
 ### 10. Post-Update Monitoring
-
 - Teste App gründlich (manuell und automatisiert)
 - Achte auf Performance-Regression
 - Monitore Error-Logs nach Deployment
@@ -159,14 +139,12 @@ Nach jedem Update-Batch:
 ## Sicherheitschecks
 
 **KRITISCH - Besondere Vorsicht bei:**
-
 - ❌ Major Updates von Core-Dependencies (React, TypeScript, etc.)
 - ❌ Updates die `node_modules` Struktur stark ändern
 - ❌ Dependencies mit vielen Downstream-Dependencies
 - ❌ Critical Security Fixes die Breaking Changes enthalten
 
 **Immer testen:**
-
 - ✅ Vollständiger Test-Suite Durchlauf
 - ✅ Build erfolgreich
 - ✅ App startet und funktioniert
@@ -175,7 +153,6 @@ Nach jedem Update-Batch:
 ## Rollback-Strategie
 
 Falls nach Update Probleme auftreten:
-
 ```bash
 # Rollback zu vorheriger Version
 git checkout HEAD~1 package.json package-lock.json
@@ -190,33 +167,30 @@ git commit -m "revert: Rollback dependency update due to [reason]"
 ## Automatisierung (Optional)
 
 ### Dependabot Configuration
-
 Erstelle `.github/dependabot.yml`:
-
 ```yaml
 version: 2
 updates:
-  - package-ecosystem: 'npm'
-    directory: '/'
+  - package-ecosystem: "npm"
+    directory: "/"
     schedule:
-      interval: 'weekly'
+      interval: "weekly"
     open-pull-requests-limit: 5
     reviewers:
-      - 'your-username'
+      - "your-username"
     labels:
-      - 'dependencies'
-      - 'automated'
+      - "dependencies"
+      - "automated"
     # Gruppiere Minor/Patch Updates
     groups:
       development-dependencies:
-        dependency-type: 'development'
+        dependency-type: "development"
         update-types:
-          - 'minor'
-          - 'patch'
+          - "minor"
+          - "patch"
 ```
 
 ### Renovate (Alternative zu Dependabot)
-
 - Mehr Konfigurationsmöglichkeiten
 - Automatische Merge für Patch-Updates möglich
 - Bessere Gruppierung von Updates
@@ -224,7 +198,6 @@ updates:
 ## Best Practices
 
 ✅ **Do:**
-
 - Regelmäßig updaten (mindestens monatlich)
 - Security-Updates sofort anwenden
 - CHANGELOG dokumentieren
@@ -232,7 +205,6 @@ updates:
 - Lock-Files committen
 
 ❌ **Don't:**
-
 - Nicht alle Updates blind installieren
 - Nicht ohne Tests updaten
 - Nicht Major Updates kurz vor Release
