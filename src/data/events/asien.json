@@ -8,6 +8,7 @@
     "category": "zivilisation",
     "continent": "asien",
     "culture": "indisch",
+    "importance": "core",
     "minZoomLevel": 0
   },
   {
@@ -19,6 +20,7 @@
     "category": "zivilisation",
     "continent": "asien",
     "culture": "mesopotamisch",
+    "importance": "core",
     "minZoomLevel": 0
   },
   {
@@ -30,6 +32,7 @@
     "category": "zivilisation",
     "continent": "asien",
     "culture": "sumerisch",
+    "importance": "core",
     "minZoomLevel": 1
   },
   {
@@ -63,6 +66,7 @@
     "category": "herrscher",
     "continent": "asien",
     "culture": "babylonisch",
+    "importance": "core",
     "minZoomLevel": 2
   },
   {
@@ -129,6 +133,7 @@
     "category": "herrscher",
     "continent": "asien",
     "culture": "indisch",
+    "importance": "core",
     "minZoomLevel": 2
   },
   {
@@ -140,6 +145,7 @@
     "category": "herrscher",
     "continent": "asien",
     "culture": "chinesisch",
+    "importance": "core",
     "minZoomLevel": 2
   },
   {
@@ -173,6 +179,7 @@
     "category": "zivilisation",
     "continent": "asien",
     "culture": "indisch",
+    "importance": "core",
     "minZoomLevel": 1
   },
   {
@@ -195,6 +202,7 @@
     "category": "herrscher",
     "continent": "asien",
     "culture": "chinesisch",
+    "importance": "core",
     "minZoomLevel": 1
   },
   {
@@ -206,6 +214,7 @@
     "category": "herrscher",
     "continent": "asien",
     "culture": "chinesisch",
+    "importance": "core",
     "minZoomLevel": 0
   },
   {
@@ -217,6 +226,7 @@
     "category": "zivilisation",
     "continent": "asien",
     "culture": "transkontinental",
+    "importance": "core",
     "minZoomLevel": 0
   },
   {
@@ -250,6 +260,7 @@
     "category": "herrscher",
     "continent": "asien",
     "culture": "chinesisch",
+    "importance": "core",
     "minZoomLevel": 1
   },
   {
@@ -305,6 +316,7 @@
     "category": "herrscher",
     "continent": "asien",
     "culture": "mongolisch",
+    "importance": "core",
     "minZoomLevel": 0
   },
   {
@@ -349,6 +361,7 @@
     "category": "zivilisation",
     "continent": "asien",
     "culture": "osmanisch",
+    "importance": "core",
     "minZoomLevel": 0
   },
   {
@@ -360,6 +373,7 @@
     "category": "herrscher",
     "continent": "asien",
     "culture": "chinesisch",
+    "importance": "core",
     "minZoomLevel": 1
   },
   {
@@ -371,6 +385,7 @@
     "category": "herrscher",
     "continent": "asien",
     "culture": "osmanisch",
+    "importance": "core",
     "minZoomLevel": 2
   },
   {
@@ -415,6 +430,7 @@
     "category": "herrscher",
     "continent": "asien",
     "culture": "chinesisch",
+    "importance": "core",
     "minZoomLevel": 1
   },
   {
@@ -437,6 +453,7 @@
     "category": "nation",
     "continent": "asien",
     "culture": "japanisch",
+    "importance": "core",
     "minZoomLevel": 2
   },
   {
@@ -470,6 +487,7 @@
     "category": "nation",
     "continent": "asien",
     "culture": "indisch",
+    "importance": "core",
     "minZoomLevel": 2
   },
   {
@@ -481,6 +499,7 @@
     "category": "nation",
     "continent": "asien",
     "culture": "chinesisch",
+    "importance": "core",
     "minZoomLevel": 2
   },
   {
@@ -503,6 +522,7 @@
     "category": "nation",
     "continent": "asien",
     "culture": "vietnamesisch",
+    "importance": "core",
     "minZoomLevel": 3
   },
   {
@@ -1082,5 +1102,17 @@
     "importance": "extended",
     "minZoomLevel": 3,
     "tags": ["israel", "arabien", "nahost", "krieg", "modern"]
+  },
+  {
+    "id": "as-christentum-gruendung",
+    "title": "Entstehung des Christentums",
+    "description": "Im römischen Judäa wirkt Jesus von Nazareth; nach seinem Tod verbreiten seine Anhänger die neue Lehre im Römischen Reich. Das Christentum wird zur Weltreligion mit über 2 Milliarden Gläubigen und prägt die abendländische Zeitrechnung.",
+    "startYear": 30,
+    "category": "zivilisation",
+    "continent": "asien",
+    "culture": "jüdisch-christlich",
+    "importance": "core",
+    "minZoomLevel": 2,
+    "tags": ["christentum", "religion", "jesus", "judäa"]
   }
 ]
