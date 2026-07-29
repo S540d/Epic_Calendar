@@ -61,6 +61,11 @@ export type TimelineEvent = {
   iconKey?: string;
   /** Manual track override within a lane (0-indexed). If absent, computed by assignTracks(). */
   track?: number;
+  /**
+   * Kid-friendly mnemonic / Eselsbrücke tied to this event's year, shown in
+   * the simplified "Kinderdarstellung" (#171). E.g. "753, Rom kroch aus dem Ei".
+   */
+  mnemonic?: string;
 };
 
 export type ImportanceLevel = 'core' | 'extended' | 'detail';
@@ -177,5 +182,7 @@ export function validateEvent(
     event.regions.some((r) => typeof r !== 'string')
   )
     errors.push('regions must be an array of strings');
+  if (event.mnemonic !== undefined && typeof event.mnemonic !== 'string')
+    errors.push('mnemonic must be a string');
   return errors;
 }
