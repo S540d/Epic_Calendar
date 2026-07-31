@@ -91,7 +91,6 @@ export function useTimelineGestures({
       Gesture.Tap()
         .maxDuration(250)
         .maxDistance(10)
-        // eslint-disable-next-line react-hooks/refs
         .onEnd((e) => {
           runOnJS(onTap)(e.x, e.y);
         }),

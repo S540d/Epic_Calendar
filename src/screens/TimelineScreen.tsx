@@ -88,7 +88,7 @@ export function TimelineScreen() {
     setEpochRange(undefined);
     jumpRequestIdRef.current += 1;
     setJumpToEvent({ event, requestId: jumpRequestIdRef.current });
-  }, []);
+  }, [setContinent, setPersistedCategories]);
 
   // Search result → bare year: just center the viewport, no filter changes.
   const handleSearchSelectYear = useCallback((year: number) => {
