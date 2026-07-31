@@ -77,18 +77,21 @@ export function TimelineScreen() {
   // Search result → event: ensure the event's category and continent are
   // active so the jump target is actually visible, then leave the overview
   // and trigger the zoom-to-fit + detail-modal jump in TimelineView (#146 A).
-  const handleSearchSelectEvent = useCallback((event: TimelineEvent) => {
-    setPersistedCategories((prev) =>
-      prev.includes(event.category) ? prev : [...prev, event.category],
-    );
-    if (event.continent !== 'global') {
-      setContinent(event.continent);
-    }
-    setShowOverview(false);
-    setEpochRange(undefined);
-    jumpRequestIdRef.current += 1;
-    setJumpToEvent({ event, requestId: jumpRequestIdRef.current });
-  }, [setContinent, setPersistedCategories]);
+  const handleSearchSelectEvent = useCallback(
+    (event: TimelineEvent) => {
+      setPersistedCategories((prev) =>
+        prev.includes(event.category) ? prev : [...prev, event.category],
+      );
+      if (event.continent !== 'global') {
+        setContinent(event.continent);
+      }
+      setShowOverview(false);
+      setEpochRange(undefined);
+      jumpRequestIdRef.current += 1;
+      setJumpToEvent({ event, requestId: jumpRequestIdRef.current });
+    },
+    [setContinent, setPersistedCategories],
+  );
 
   // Search result → bare year: just center the viewport, no filter changes.
   const handleSearchSelectYear = useCallback((year: number) => {
