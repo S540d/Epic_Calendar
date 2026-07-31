@@ -137,6 +137,32 @@
     "minZoomLevel": 1
   },
   {
+    "id": "frueh-phylo-super-archaisch-split",
+    "title": "Abspaltung: „Super-archaische“ Linie",
+    "description": "Populationsgenetische Rekonstruktionen datieren die Abspaltung einer tief divergenten, fossil bislang nicht identifizierten Homininen-Linie auf ca. 1,7 Mio. Jahre vor heute. Ihre Existenz ist ausschließlich über Spuren in späteren Genomen (Introgression in die Vorfahren der Denisovaner) nachweisbar.",
+    "startYear": -1700000,
+    "category": "zivilisation",
+    "continent": "global",
+    "culture": "Frühmenschen",
+    "importance": "detail",
+    "minZoomLevel": 3,
+    "lineageId": "fruehmenschen-phylogenie",
+    "tags": ["phylogenie", "introgression", "genetik", "super-archaisch"]
+  },
+  {
+    "id": "frueh-super-archaisch",
+    "title": "„Super-archaische“ Linie",
+    "description": "Unbekannte, tief divergente archaische Homininen-Population ohne bisher zugeordnete Fossilien. Ihre Spuren wurden erst durch den Vergleich moderner und archaischer Genome sichtbar – sie geht in den Vorfahren der Denisovaner auf (Introgression vor ca. 700.000–600.000 Jahren).",
+    "startYear": -1700000,
+    "endYear": -600000,
+    "category": "zivilisation",
+    "continent": "global",
+    "culture": "Frühmenschen",
+    "importance": "detail",
+    "minZoomLevel": 3,
+    "tags": ["phylogenie", "introgression", "genetik", "super-archaisch"]
+  },
+  {
     "id": "frueh-feuer",
     "title": "Kontrollierter Feuergebrauch",
     "description": "Älteste gesicherte Belege für kontrollierten Feuergebrauch durch Homo erectus (Wonderwerk Cave, Südafrika; Zhoukoudian, China).",
@@ -149,6 +175,32 @@
     "minZoomLevel": 2
   },
   {
+    "id": "frueh-phylo-ghost-split",
+    "title": "Abspaltung: „Ghost-Population“",
+    "description": "Vor ca. 830.000 Jahren trennt sich laut genomischer Rekonstruktion eine weitere unbekannte archaische Population von der Linie, die später zu Neandertalern und Denisovanern führt. Ihre genetischen Spuren tauchen erst Jahrhunderttausende später in Genomen westafrikanischer Bevölkerungen wieder auf.",
+    "startYear": -830000,
+    "category": "zivilisation",
+    "continent": "global",
+    "culture": "Frühmenschen",
+    "importance": "detail",
+    "minZoomLevel": 3,
+    "lineageId": "fruehmenschen-phylogenie",
+    "tags": ["phylogenie", "introgression", "genetik", "ghost-population"]
+  },
+  {
+    "id": "frueh-ghost-population",
+    "title": "„Ghost-Population“ Afrikas",
+    "description": "Bislang fossil nicht nachgewiesene archaische Population, die sich vor ca. 830.000 Jahren von der Vorfahrenlinie der Neandertaler und Denisovaner trennte. Ihre Existenz wird ausschließlich aus einem charakteristischen Introgressionssignal in den Genomen heutiger westafrikanischer Bevölkerungen erschlossen.",
+    "startYear": -830000,
+    "endYear": -70000,
+    "category": "zivilisation",
+    "continent": "afrika",
+    "culture": "Frühmenschen",
+    "importance": "detail",
+    "minZoomLevel": 3,
+    "tags": ["phylogenie", "introgression", "genetik", "ghost-population"]
+  },
+  {
     "id": "frueh-heidelbergensis",
     "title": "Homo heidelbergensis",
     "description": "Gemeinsamer Vorfahre von Neandertaler und Homo sapiens. Lebte in Afrika und Europa; erste Holzspeere (Schöningen, Deutschland, ca. 400.000 Jahre alt). Gehirnvolumen bis 1.400 cm³.",
@@ -158,6 +210,32 @@
     "continent": "global",
     "culture": "Frühmenschen",
     "minZoomLevel": 2
+  },
+  {
+    "id": "frueh-phylo-neandertaler-denisova-split",
+    "title": "Trennung: Neandertaler und Denisovaner",
+    "description": "Die gemeinsame Linie von Neandertalern und Denisovanern spaltet sich vor rund 450.000 Jahren in zwei eigenständige Schwesterpopulationen auf – vermutlich im Zuge einer erneuten Ausbreitung von Homo heidelbergensis aus Afrika nach Eurasien.",
+    "startYear": -450000,
+    "category": "zivilisation",
+    "continent": "global",
+    "culture": "Frühmenschen",
+    "importance": "detail",
+    "minZoomLevel": 3,
+    "lineageId": "fruehmenschen-phylogenie",
+    "tags": ["phylogenie", "neandertaler", "denisova"]
+  },
+  {
+    "id": "frueh-denisova-mensch",
+    "title": "Denisova-Mensch",
+    "description": "Schwesterlinie der Neandertaler, bekannt aus wenigen Fossilien der Denisova-Höhle (Altai-Gebirge, Sibirien) und der Baishiya-Karsthöhle (Tibet). Vermischte sich mit Homo sapiens beim Vorstoß nach Ostasien und Ozeanien – bis zu 5 % Denisova-DNA in heutigen melanesischen und aboriginalen Bevölkerungen.",
+    "startYear": -450000,
+    "endYear": -30000,
+    "category": "zivilisation",
+    "continent": "asien",
+    "culture": "Frühmenschen",
+    "importance": "core",
+    "minZoomLevel": 2,
+    "tags": ["denisova", "sibirien", "introgression"]
   },
   {
     "id": "frueh-neandertaler",
@@ -194,6 +272,20 @@
     "culture": "Frühmenschen",
     "importance": "core",
     "minZoomLevel": 2
+  },
+  {
+    "id": "frueh-phylo-archaische-introgression",
+    "title": "Vermischung: Archaische Beimischung in Homo sapiens",
+    "description": "Beim Auszug aus Afrika vermischt sich Homo sapiens mit Neandertalern (Nicht-Afrikaner, bis 4 % DNA-Anteil) und Denisovanern (Ozeanien/Ostasien, bis 5 %). Zeitgleich lässt sich in afrikanischen Genomen die Beimischung der „Ghost-Population“ nachweisen – ein Gesamtbild, das erst die moderne Populationsgenetik sichtbar macht.",
+    "startYear": -50000,
+    "endYear": -40000,
+    "category": "zivilisation",
+    "continent": "global",
+    "culture": "Frühmenschen",
+    "importance": "detail",
+    "minZoomLevel": 3,
+    "lineageId": "fruehmenschen-phylogenie",
+    "tags": ["phylogenie", "introgression", "neandertaler", "denisova", "ghost-population"]
   },
   {
     "id": "frueh-hoehlenmaler",
