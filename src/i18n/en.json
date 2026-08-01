@@ -70,7 +70,6 @@
     "title": "Time Journey",
     "subtitle": "Choose an epoch to explore",
     "allTime": "Full Timeline",
-    "back": "← Back",
     "durationBillion": "{{n}} Bn years",
     "durationMillion": "{{n}} M years",
     "durationThousand": "{{n}} k years",
@@ -94,7 +93,12 @@
     "modern": "Modern Era",
     "earlyModern": "Early Modern",
     "industrial": "Industrial Age",
-    "contemporary": "Contemporary"
+    "contemporary": "Contemporary",
+    "jumpHint": "Shows this epoch on the timeline",
+    "homeHint": "Back to the epoch overview",
+    "expand": "Show sub-epochs",
+    "collapse": "Hide sub-epochs",
+    "openTimeline": "Open on the timeline"
   },
   "landmark": {
     "bigBang": "Big Bang",

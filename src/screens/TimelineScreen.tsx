@@ -119,7 +119,8 @@ export function TimelineScreen() {
               style={styles.headerText}
               onPress={handleHomePress}
               accessibilityRole="button"
-              accessibilityLabel={t('app.title')}
+              accessibilityLabel={t('epochNav.title')}
+              accessibilityHint={t('epochNav.homeHint')}
             >
               <Text style={styles.title}>{t('app.title')}</Text>
               <Text style={styles.subtitle}>{t('app.subtitle')}</Text>
@@ -139,14 +140,6 @@ export function TimelineScreen() {
               accessibilityRole="button"
             >
               <Text style={styles.iconButtonText}>⚙</Text>
-            </Pressable>
-            <Pressable
-              style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
-              onPress={handleHomePress}
-              accessibilityLabel={t('epochNav.title')}
-              accessibilityRole="button"
-            >
-              <Text style={styles.iconButtonText}>⌂</Text>
             </Pressable>
           </View>
           <FilterChipBar active={activeCategories} onToggle={toggleCategory} />

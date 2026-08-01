@@ -70,7 +70,6 @@
     "title": "Zeitreise",
     "subtitle": "Wähle eine Epoche zum Erkunden",
     "allTime": "Ganzen Zeitstrahl",
-    "back": "← Zurück",
     "durationBillion": "{{n}} Mrd. Jahre",
     "durationMillion": "{{n}} Mio. Jahre",
     "durationThousand": "{{n}} Tsd. Jahre",
@@ -94,7 +93,12 @@
     "modern": "Neuzeit",
     "earlyModern": "Frühe Neuzeit",
     "industrial": "Industriezeitalter",
-    "contemporary": "Gegenwart"
+    "contemporary": "Gegenwart",
+    "jumpHint": "Zeigt diese Epoche im Zeitstrahl",
+    "homeHint": "Zurück zur Epochenübersicht",
+    "expand": "Unterepochen anzeigen",
+    "collapse": "Unterepochen ausblenden",
+    "openTimeline": "Im Zeitstrahl öffnen"
   },
   "landmark": {
     "bigBang": "Urknall",

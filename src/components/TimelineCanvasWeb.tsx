@@ -8,14 +8,10 @@ import {
 import { type SharedValue } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 import { EpochBand } from './EpochBand';
-import { EpochChipBar } from './EpochChipBar';
-import { EpochNavArrows } from './EpochNavArrows';
+import { EpochBreadcrumbBar } from './EpochBreadcrumbBar';
 import { FpsMonitor } from './FpsMonitor';
 import { TimeAxis } from './TimeAxis';
-import { TimelineBreadcrumb } from './TimelineBreadcrumb';
 import { TimelineMinimap } from './TimelineMinimap';
-import { ZoomLevelIndicator } from './ZoomLevelIndicator';
-import { dominantEpoch } from '@/timeline/epoch';
 import { clampOffsetX } from '@/timeline/lod';
 import { eventLabelFontSize, eventLabelMaxLines } from '@/timeline/lod';
 import { yearToT, T_PRESENT as T_HEUTE } from '@/timeline/scale';
@@ -63,8 +59,8 @@ type Props = {
   zoomIn: () => void;
   zoomOut: () => void;
   jumpToToday: () => void;
-  /** Whether the Erdzeitalter lane is active (epoch pill only meaningful then). */
-  showEpochLabel: boolean;
+  /** Visible year range, computed once in TimelineView so both renderers agree. */
+  viewportRange: { startYear: number; endYear: number };
   minimapHighlight?: { startT: number; endT: number } | null;
   /** Shows the live FPS overlay (#5 FPS-Monitoring, opt-in via Settings). */
   showFpsMonitor?: boolean;
@@ -99,18 +95,12 @@ export function TimelineCanvasWeb({
   zoomIn,
   zoomOut,
   jumpToToday,
-  showEpochLabel,
+  viewportRange,
   minimapHighlight,
   showFpsMonitor = false,
 }: Props) {
   const { t } = useTranslation();
   const WEB_PPU = jsPixelsPerUnit;
-
-  // Viewport-relative coordinates (identity transform: t = year).
-  const visibleStartYear = jsOffsetX;
-  const visibleEndYear = jsOffsetX + canvasWidth / WEB_PPU;
-  const centerYear = jsOffsetX + canvasWidth / (2 * WEB_PPU);
-  const webEpochLabel = showEpochLabel ? (dominantEpoch(centerYear)?.title ?? null) : null;
 
   const heutePx = (T_HEUTE - jsOffsetX) * WEB_PPU;
   const heuteVisible = heutePx >= -1 && heutePx <= canvasWidth + 1;
@@ -178,14 +168,8 @@ export function TimelineCanvasWeb({
           zoomLevel={zoomLevel}
         />
         <View style={StyleSheet.absoluteFill} pointerEvents="none">
-          <ZoomLevelIndicator zoomLevel={zoomLevel} />
           <View style={styles.topRightGroup}>
             <FpsMonitor enabled={showFpsMonitor} />
-            <TimelineBreadcrumb
-              startYear={visibleStartYear}
-              endYear={visibleEndYear}
-              epoch={webEpochLabel}
-            />
           </View>
         </View>
       </View>
@@ -207,7 +191,12 @@ export function TimelineCanvasWeb({
           />
         </View>
       </View>
-      <EpochChipBar onJump={zoomToFit} />
+      <EpochBreadcrumbBar
+        startYear={viewportRange.startYear}
+        endYear={viewportRange.endYear}
+        zoomLevel={zoomLevel}
+        onJump={zoomToFit}
+      />
       <View
         style={Platform.select({
           web: { flex: 1, overflowY: 'auto', overflowX: 'hidden' } as any,
@@ -400,13 +389,6 @@ export function TimelineCanvasWeb({
             </View>
           </GestureDetector>
         </View>
-      </View>
-      <View style={[StyleSheet.absoluteFill, { left: LANE_LABEL_WIDTH }]} pointerEvents="box-none">
-        <EpochNavArrows
-          visibleStartYear={visibleStartYear}
-          visibleEndYear={visibleEndYear}
-          onJump={zoomToFit}
-        />
       </View>
       <View
         style={[

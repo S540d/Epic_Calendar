@@ -1,5 +1,6 @@
 import de from '../de.json';
 import en from '../en.json';
+import { flattenEpochs } from '@/timeline/epoch';
 
 type Json = Record<string, unknown>;
 
@@ -63,6 +64,11 @@ describe('i18n resources', () => {
     'zoom.level.4',
     'epochNav.stoneAge',
     'epochNav.modern',
+    'epochNav.jumpHint',
+    'epochNav.homeHint',
+    'epochNav.expand',
+    'epochNav.collapse',
+    'epochNav.openTimeline',
     'minimap.label',
     'popover.title',
     'popover.dismiss',
@@ -72,5 +78,12 @@ describe('i18n resources', () => {
   it.each(REQUIRED_KEYS)('defines required key "%s" in both languages', (key) => {
     expect(deKeys).toContain(key);
     expect(enKeys).toContain(key);
+  });
+
+  // Ties the epoch tree to the translations permanently: adding a 21st epoch
+  // without labelling it now fails here rather than rendering a raw key.
+  it.each(flattenEpochs().map((e) => e.key))('labels epoch "%s" in both languages', (epochKey) => {
+    expect(deKeys).toContain(`epochNav.${epochKey}`);
+    expect(enKeys).toContain(`epochNav.${epochKey}`);
   });
 });
