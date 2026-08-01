@@ -82,14 +82,17 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 - **Stabile Track-Zuordnung (#146 B1):** `TimelineView` berechnet `stableTracksByLane` per `useMemo` mit Deps `[lanes, continent, maxImportanceRank]` (NICHT `jsOffsetX`/`jsPixelsPerUnit`) und reicht sie an `computeLaneData` durch. Damit bleibt die Zeilennummer eines Events beim Pannen/Zoomen konstant — vorher lief `assignTracks` pro Frame über die viewport-gecappte Menge, wodurch Events zwischen Zeilen sprangen. `computeLaneData` remappt die im Viewport sichtbaren globalen Tracknummern zusätzlich dicht auf 0..k (Reihenfolge bleibt erhalten, nur Lücken kollabieren), sonst würden global weit auseinanderliegende Zeilen die Lane-Höhe explodieren lassen. Ohne `stableTracksByLane` fällt `computeLaneData` auf das alte Verhalten zurück (von bestehenden Tests genutzt).
 - **Tier-Hierarchie für Zeilen-Ordnung (#70):** Optionales `tier`-Feld (`'epoche' | 'reich' | 'dynastie'`) im Schema; `TIER_RANK`/`tierRank()`-Helfer (epoche=0, reich=1, dynastie=2). `assignTracks` sortiert primär nach `tierRank` (via `byTierGlobalThenStart`), dann global-first, dann chronologisch — dadurch liegen `epoche`-Bänder oben, `reich` (Default bei fehlendem `tier`) in der Mitte, `dynastie` unten. Löst das Problem, dass langlaufende Reiche (Byzanz 330–1453) über zeitlich späteren Epochen-Phasen (Renaissance, Aufklärung) standen. 8 Epochen-Bänder in `europa.json` tragen `tier: 'epoche'`; `dynastie` ist vorbereitet, aber noch nicht bespielt. Kultur-Homogenität pro Zeile bleibt _innerhalb_ eines Tiers erhalten.
 - **Kultur-getrennte Zeilen (#146 B2):** Zeilen in `assignTracks` sind strikt kultur-homogen: Jede automatisch vergebene Zeile hat einen Besitzer (`culture`-String oder `null` für neutrale Events), fremde Kulturen dürfen sie **nie** belegen — auch nicht als Platz-Fallback. Ein Event ohne freie eigene Zeile öffnet eine neue Zeile seiner Kultur, statt in eine fremde zu mischen. Lineage-Gruppen beanspruchen die Zeile ihrer Kultur (Span-Reservierung bleibt); Singletons werden global-first + chronologisch platziert, wodurch neue Zeilen von oben nach unten in Reihenfolge ihres ersten Events entstehen. Manuelle `track`-Overrides pinnen weiterhin exakte Zeilennummern (Besitzer = Kultur des ersten Events). Mehr Zeilen als beim rein geometrischen Packen — akzeptiert, da B1s Dense-Remapping die sichtbare Höhe begrenzt.
-- **Detailgrad-Filter (`importance` verdrahtet):** `DetailLevelSelector` (Wesentliches/Standard/Alles) setzt `maxImportanceRank` als kumulativen Schwellwert in `filterVisible`/`queryVisible`. Default „Alles" (= alles sichtbar, abwärtskompatibel); Events ohne `importance` zählen als `extended`. Ergänzt den automatischen Zoom-LOD um eine manuelle Achse; persistiert als `detailLevel`. Einstellung jetzt im **Settings-Menü** (nicht mehr als Inline-Bar).
+- **Detailgrad-Filter (`importance` verdrahtet):** Der Detailgrad (**Kinder / Schulwissen** / Standard / Alles) setzt `maxImportanceRank` als kumulativen Schwellwert in `filterVisible`/`queryVisible`. Default „Alles" (= alles sichtbar, abwärtskompatibel); Events ohne `importance` zählen als `extended`. Ergänzt den automatischen Zoom-LOD um eine manuelle Achse; persistiert als `detailLevel`. UI ist eine Segmented-Control direkt in `SettingsModal` (kein eigenständiges Component mehr — die frühere `DetailLevelSelector`-Komponente war verwaist, duplizierte dieselbe UI und wurde entfernt). Die unterste Stufe `core` = **Kinder/Schulwissen** (i18n `detailLevel.core`, EN „Kids / school basics") ist systematisch über **alle** Kategorien mit typischem Schulwissen bespielt (Stand: erdzeitalter 10, herrscher 50, nation 35, zivilisation 86, natur 46 core) — beim Ergänzen neuer Events dieselbe Balance halten und offensichtliches Schulwissen `importance: 'core'` geben.
 - **Settings-Menü (`SettingsModal`):** Bottom-Sheet-Modal, öffnet per ⚙-Icon im Header beider Screens. Drei Sections: Erscheinungsbild (Dark/Light-Mode-Toggle), Darstellung (Detailgrad, FPS-Monitor-Toggle), Sprache (DE/EN). Dark Mode via `ThemeContext`; Sprache via i18next + AsyncStorage-Persistenz.
 - **FPS-Monitor (#5):** `useFpsMonitor(enabled)` misst die Bildrate via Reanimated `useFrameCallback` (UI-Thread, 500ms-Sample-Fenster, `runOnJS` zurück zu React State); läuft nur bei `enabled=true` (kein Overhead im Default-Fall). `FpsMonitor`-Komponente rendert eine farbcodierte Pill (≥50 FPS grün, ≥30 gelb, sonst rot), non-interactive. In beiden Renderern (`TimelineCanvasWeb`/`TimelineCanvasNative`) zusammen mit `TimelineBreadcrumb` in einem gemeinsamen `topRightGroup`-Flex-Container (`timelineRenderShared.ts`) — beide Komponenten sind selbst **nicht** mehr `position: absolute` positioniert, sonst würden sie sich am selben Eck überlappen. Toggle „FPS-Monitor anzeigen" im Settings-Menü, persistiert als `showFpsMonitor` (Default: aus).
+- **Kategorie „Kultur & Kunst" (`kultur`, Issue #76):** Sechste Kategorie in `src/theme/categories.ts` (Farbe `#A85FC2`, `laneOrder: 5` = unterste Lane) für gesellschaftliche Strömungen und Kunstgeschichte (Barock, Wiener Klassik, Weimarer Klassik, Romantik, Biedermeier, Impressionismus, Expressionismus, Bauhaus), vorerst aus deutscher/europäischer Perspektive in `europa.json`. Nicht `defaultActive` (wie `nation`/`herrscher`). **`zivilisation` vs. `nation`:** konzeptionelle Abgrenzung für neue Inhalte in `docs/event-flags.md` dokumentiert (`zivilisation` = Völker/Wanderungen, `nation` = Staatsgebilde) — bestehende Events werden nicht rückwirkend migriert.
+- **Kometen-/Asteroideneinschläge unter `erdzeitalter` (Issue #76):** `geo-vredefort-impakt`, `geo-sudbury-impakt`, `geo-tunguska-ereignis` in `erdzeitalter.json` markieren wichtige Einschlagsereignisse direkt in der Erdzeitalter-Lane (ergänzt den bereits vorhandenen Chicxulub-Eintrag unter `natur`).
+- **Kinderdarstellung / Lernsprüche (`mnemonic`, Issue #171):** Optionales Schema-Feld `mnemonic?: string` für bekannte Eselsbrücken zu einzelnen Jahreszahlen (z. B. „753, Rom kroch aus dem Ei." bei `eu-herr-romulus`, „333 v. Chr. – bei Issos besiegt Alexander der Große die Perser." beim neuen Event `eu-schlacht-issos`). Wird im `EventDetailModal` unterhalb der Beschreibung hervorgehoben angezeigt (i18n-Label `event.mnemonic`), sofern gesetzt.
 - **ThemeContext (`useTheme()`):** `ThemeProvider` in `App.tsx` liefert `{ isDark, colors, toggleTheme }`. `darkColors`/`lightColors` in `src/theme/ThemeContext.tsx`. Alle UI-Chrome-Komponenten nutzen `useTheme()` mit `makeStyles(colors)`-Pattern (dynamisch, per `useMemo`). **Canvas-Renderer** (Skia/Canvas2D) und deren Overlays bleiben dunkel (statische `colors`-Importe).
 
 ### Datenhaltung
 
-- `src/data/` – statische Daten: 7 JSON-Dateien, 543 Events gesamt (europa, asien, afrika, amerika, ozeanien, erdzeitalter, natur-wissenschaft)
+- `src/data/` – statische Daten: 7 JSON-Dateien, 568 Events gesamt (europa, asien, afrika, amerika, ozeanien, erdzeitalter, natur-wissenschaft)
 - `src/data/schema.ts` – gemeinsames Event-Schema (`TimelineEvent` mit optionalen Feldern: `importance`, `tags`, `lineageId`, `regions` seit Phase 1.2; `tier` seit #70). `importance`/`lineageId`/`tier` sind verdrahtet: `importanceRank`/`passesImportance`-Helfer + `IMPORTANCE_RANK` speisen den Detailgrad-Filter; `lineageId` steuert Track-Zuordnung + Verbindungslinien; `tier` (`tierRank`/`TIER_RANK`) ist die primäre Zeilen-Sortier-Achse in `assignTracks`. `tags`/`regions` bleiben Slots.
 - `src/data/regions.ts` – `RegionConfig`-Typ + `REGIONS`-Skelett für hierarchische Geo-Filter (Phase 1.4; kein UI bis Phase 3)
 - `docs/event-flags.md` – menschenlesbare Flag-Referenz: alle Event-Achsen mit Pflicht/optional, Werten, LOD-Tabelle (Phase 1.5)
@@ -133,7 +136,6 @@ src/
 │   ├── EpochNavArrows.tsx         # Quick-Jump-Pfeile (← Epoche / Epoche →) im Timeline-Header
 │   ├── EpochOverviewScreen.tsx    # Landing Page: Epochen-Kacheln als Einstieg (Props: onSelectEpoch, onShowFullTimeline, onOpenSettings, onOpenSearch)
 │   ├── FilterChipBar.tsx          # Kategorie-/Kontinent-Filter
-│   ├── DetailLevelSelector.tsx    # Detailgrad-Segmented-Control (wiederverwendbar; genutzt in SettingsModal)
 │   ├── SettingsModal.tsx          # Settings-Bottom-Sheet (Dark Mode, Detailgrad, FPS-Monitor, Sprache)
 │   ├── SearchModal.tsx            # Such-Bottom-Sheet (#146 A): Ereignis-/Jahr-Suche, Tap → jumpToEvent/jumpToYear
 │   ├── LandmarkTimeline.tsx       # Landmark-Zeitstrahl auf der Landing Page (linear; Urknall außerhalb der Skala)
@@ -143,7 +145,7 @@ src/
 ├── data/
 │   ├── schema.ts              # Event-Typen (inkl. optionale Slots: importance, tags, lineageId, regions)
 │   ├── regions.ts             # RegionConfig + REGIONS-Skelett (Phase 1.4, kein UI)
-│   ├── events/                # Statische JSON-Daten: europa (186), asien (90), afrika (65), amerika (70), ozeanien (40), erdzeitalter (28), natur-wissenschaft (64) → 543 Events gesamt
+│   ├── events/                # Statische JSON-Daten: europa (202), asien (91), afrika (66), amerika (70), ozeanien (40), erdzeitalter (31), natur-wissenschaft (68) → 568 Events gesamt
 │   └── ...
 ├── timeline/
 │   ├── culling.ts             # Viewport-Culling + computeLaneData() (opt. eventIndex, maxImportanceRank) + lineage-aware assignTracks + computeLineageConnectors
@@ -254,15 +256,42 @@ Canvas-Overlay-Komponenten (ZoomLevelIndicator, EpochBand, …) nutzen weiterhin
 
 ## Offene Issues (legitim)
 
-| #    | Titel                                                  | Priorität      |
-| ---- | ------------------------------------------------------ | -------------- |
-| #5   | Performance-Optimierung (Skia + Reanimated)            | ongoing        |
-| #70  | Skalierbarkeit: mehr Events, Filter, Kategorien        | Epic / Tracker |
-| #76  | Mehr Inhalte (Wissenschaft, Zivilisationen, Kultur)    | P2 / Content   |
-| #85  | Folgeaufträge (Linear Scale Detail-Default, fullEarth) | P3             |
-| #121 | Content Coverage: Lückenanalyse Epochen × Kontinente   | P1 / Content   |
+| #    | Titel                            | Priorität |
+| ---- | --------------------------------- | --------- |
+| #76  | Mehr Inhalte (Wissenschaft, Zivilisationen, Kultur, Kategorie „Kultur und Kunst") | P2 / Content |
+| #162 | Farblogik für Spuren-Farben       | offen     |
+| #163 | Weitere Filterungen (Länder-Filter innerhalb Kontinent) | offen |
+| #171 | Kinderdarstellung („einfach") — Lernsprüche zu Events | offen |
 
 ## Referenzen
 
 - [GitHub Issues](https://github.com/S540d/Epic_Calendar/issues)
 - [project-templates Standards](https://github.com/S540d/project-templates)
+
+<!-- GLOBAL POLICY:START -->
+## [GLOBAL POLICY]
+
+> Automatisch synchronisiert aus project-templates (Issue #7). Nicht manuell editieren –
+> Änderungen hier werden beim nächsten Sync überschrieben. Quelle anpassen statt lokal.
+
+- PRs immer gegen `testing`, nie direkt gegen `staging` oder `main`
+- Merge auf `main` nur mit expliziter schriftlicher Freigabe
+- `--delete-branch` nur für Feature-Branches (nie staging/testing)
+- **Lokales Branch-Cleanup:** `main` und `testing` NIE löschen — auch nicht beim Bulk-Delete verwaister `[gone]`-Branches. Ein fehlender `origin/main`/`origin/testing` ist ein **wiederherzustellender Defekt** (lokal behalten, nach origin zurückpushen), kein Aufräum-Signal.
+- `--no-verify` nur auf explizite Bitte
+- **Vor jedem Push: lokale Tests ausführen** (`npm test` bzw. projektspezifischer Test-Befehl) – kein Push ohne grüne lokale Tests
+- **Kein Merge bei CI-Fail** – Branch Protection erzwingt das technisch; nie mit `--admin` umgehen außer auf explizite Bitte
+
+## [ANDROID BUILD – PFLICHTREGELN]
+
+- **Git-Tag** nach jedem Play-Store-Upload setzen: `git tag vX.Y.Z && git push origin vX.Y.Z` – der Tag markiert den tatsächlich veröffentlichten Stand und dient als Changelog-Baseline für den nächsten Build
+- **EAS Local Build (DrawFromMemory):** Workingdir vor jedem Build leeren: `rm -rf ~/tmp/eas-build && mkdir -p ~/tmp/eas-build` – ein nicht-leeres Verzeichnis bricht den Build sofort ab
+- **Disk-Check vor EAS Build:** Skia-Libraries benötigen ~5–8 GB. Bei < 5 GB frei: `npm cache clean --force && rm -rf ~/.npm/_npx` (~13 GB, sicher löschbar)
+- **JAVA_HOME** für EAS/Expo-Builds explizit auf Android Studio JBR setzen: `export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"`
+- **Gradle-Lock nach Absturz:** Bei "Cannot lock file hash cache"-Fehler Daemons stoppen: `pkill -f GradleDaemon`, dann Workingdir leeren und neu starten
+- **AAB-Archiv:** Gebaute Release-AABs in einem **gitignored** `aab-archive/`-Verzeichnis im Repo-Root ablegen (in `.gitignore` aufnehmen – AABs sind 3–110 MB und gehören nie in die Git-History). Benennung: `<Projekt>-vX.Y.Z-vc<versionCode>-YYYY-MM-DD.aab`. **Retention: max. 2 Dateien** (aktuelles Release + ein Vorgänger für schnelles Rollback); ältere AABs löschen. Der Git-Tag `vX.Y.Z` ist die eigentliche Release-Baseline – ältere AABs lassen sich daraus jederzeit neu bauen.
+
+## [CI – CACHE-CLEANUP]
+
+- **Cache-Cleanup-Workflow** (`.github/workflows/cache-cleanup.yml`) in jedem Repo mit GitHub-Actions-Caches: löscht wöchentlich (So 03:00 UTC) bzw. on-demand alle Action-Caches älter als der jeweils letzte Lauf. GitHub-Limit ist 10 GB pro Repo – ohne Cleanup laufen Build-Caches (node_modules, Gradle, Expo) voll und verdrängen frische Einträge. Vorlage: `cache-cleanup.yml` in project-templates.
+<!-- GLOBAL POLICY:END -->

@@ -20,6 +20,7 @@
     "category": "zivilisation",
     "continent": "afrika",
     "culture": "ägyptisch",
+    "importance": "core",
     "minZoomLevel": 0,
     "color": "#D4AF37",
     "iconKey": "pyramid"
@@ -32,6 +33,7 @@
     "category": "herrscher",
     "continent": "afrika",
     "culture": "ägyptisch",
+    "importance": "core",
     "minZoomLevel": 3,
     "iconKey": "crown"
   },
@@ -44,6 +46,7 @@
     "category": "zivilisation",
     "continent": "afrika",
     "culture": "ägyptisch",
+    "importance": "core",
     "minZoomLevel": 2,
     "color": "#D4AF37",
     "iconKey": "pyramid"
@@ -95,6 +98,7 @@
     "category": "herrscher",
     "continent": "afrika",
     "culture": "ägyptisch",
+    "importance": "core",
     "minZoomLevel": 3,
     "iconKey": "crown"
   },
@@ -170,6 +174,7 @@
     "category": "herrscher",
     "continent": "afrika",
     "culture": "karthagisch",
+    "importance": "core",
     "minZoomLevel": 3,
     "iconKey": "sword"
   },
@@ -206,6 +211,7 @@
     "category": "herrscher",
     "continent": "afrika",
     "culture": "ägyptisch",
+    "importance": "core",
     "minZoomLevel": 3,
     "iconKey": "crown"
   },
@@ -293,6 +299,7 @@
     "category": "zivilisation",
     "continent": "afrika",
     "culture": "shona",
+    "importance": "core",
     "minZoomLevel": 2,
     "color": "#DAA520",
     "iconKey": "ruins"
@@ -306,6 +313,7 @@
     "category": "zivilisation",
     "continent": "afrika",
     "culture": "mandé",
+    "importance": "core",
     "minZoomLevel": 1,
     "color": "#DAA520",
     "iconKey": "trade"
@@ -330,6 +338,7 @@
     "category": "herrscher",
     "continent": "afrika",
     "culture": "mandé",
+    "importance": "core",
     "minZoomLevel": 3,
     "color": "#DAA520",
     "iconKey": "crown"
@@ -394,6 +403,7 @@
     "category": "zivilisation",
     "continent": "afrika",
     "culture": "kolonial",
+    "importance": "core",
     "minZoomLevel": 0,
     "color": "#4A0000",
     "iconKey": "chains"
@@ -407,6 +417,7 @@
     "category": "zivilisation",
     "continent": "afrika",
     "culture": "kolonial",
+    "importance": "core",
     "minZoomLevel": 0,
     "color": "#4A0000",
     "iconKey": "chains"
@@ -432,6 +443,7 @@
     "category": "zivilisation",
     "continent": "afrika",
     "culture": "kolonial",
+    "importance": "core",
     "minZoomLevel": 1,
     "color": "#4A0000",
     "iconKey": "document"
@@ -456,6 +468,7 @@
     "endYear": 1975,
     "category": "nation",
     "continent": "afrika",
+    "importance": "core",
     "minZoomLevel": 0,
     "color": "#006400",
     "iconKey": "flag"
@@ -469,6 +482,7 @@
     "category": "nation",
     "continent": "afrika",
     "culture": "südafrikanisch",
+    "importance": "core",
     "minZoomLevel": 1,
     "color": "#4A0000",
     "iconKey": "chains"
@@ -494,6 +508,7 @@
     "category": "herrscher",
     "continent": "afrika",
     "culture": "südafrikanisch",
+    "importance": "core",
     "minZoomLevel": 2,
     "color": "#006400",
     "iconKey": "crown"
@@ -684,7 +699,7 @@
     "category": "nation",
     "continent": "afrika",
     "culture": "zulu",
-    "importance": "extended",
+    "importance": "core",
     "minZoomLevel": 2,
     "tags": ["zulu", "südafrika", "shaka", "krieg"]
   },
@@ -799,7 +814,7 @@
     "category": "zivilisation",
     "continent": "afrika",
     "culture": "ägyptisch",
-    "importance": "extended",
+    "importance": "core",
     "minZoomLevel": 3,
     "tags": ["ägypten", "handel", "moderne", "suez"]
   },

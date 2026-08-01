@@ -96,6 +96,7 @@
     "category": "zivilisation",
     "continent": "amerika",
     "culture": "maya",
+    "importance": "core",
     "minZoomLevel": 0
   },
   {
@@ -184,6 +185,7 @@
     "category": "zivilisation",
     "continent": "amerika",
     "culture": "aztekisch",
+    "importance": "core",
     "minZoomLevel": 0
   },
   {
@@ -195,6 +197,7 @@
     "category": "zivilisation",
     "continent": "amerika",
     "culture": "inkaisch",
+    "importance": "core",
     "minZoomLevel": 0
   },
   {
@@ -204,6 +207,7 @@
     "startYear": 1492,
     "category": "nation",
     "continent": "amerika",
+    "importance": "core",
     "minZoomLevel": 0
   },
   {
@@ -214,6 +218,7 @@
     "endYear": 1888,
     "category": "nation",
     "continent": "amerika",
+    "importance": "core",
     "minZoomLevel": 1
   },
   {
@@ -225,6 +230,7 @@
     "category": "nation",
     "continent": "amerika",
     "culture": "spanisch-kolonial",
+    "importance": "core",
     "minZoomLevel": 1
   },
   {
@@ -236,6 +242,7 @@
     "category": "nation",
     "continent": "amerika",
     "culture": "spanisch-kolonial",
+    "importance": "core",
     "minZoomLevel": 1
   },
   {
@@ -247,6 +254,7 @@
     "category": "herrscher",
     "continent": "amerika",
     "culture": "inkaisch",
+    "importance": "core",
     "minZoomLevel": 3
   },
   {
@@ -287,6 +295,7 @@
     "startYear": 1773,
     "category": "nation",
     "continent": "amerika",
+    "importance": "core",
     "minZoomLevel": 2
   },
   {
@@ -297,6 +306,7 @@
     "endYear": 1783,
     "category": "nation",
     "continent": "amerika",
+    "importance": "core",
     "minZoomLevel": 0
   },
   {
@@ -307,6 +317,7 @@
     "endYear": 1797,
     "category": "herrscher",
     "continent": "amerika",
+    "importance": "core",
     "minZoomLevel": 2
   },
   {
@@ -328,6 +339,7 @@
     "category": "herrscher",
     "continent": "amerika",
     "culture": "lateinamerikanisch",
+    "importance": "core",
     "minZoomLevel": 1
   },
   {
@@ -368,6 +380,7 @@
     "endYear": 1865,
     "category": "herrscher",
     "continent": "amerika",
+    "importance": "core",
     "minZoomLevel": 2
   },
   {
@@ -450,6 +463,7 @@
     "endYear": 1991,
     "category": "nation",
     "continent": "amerika",
+    "importance": "core",
     "minZoomLevel": 1
   },
   {
@@ -470,6 +484,7 @@
     "endYear": 1968,
     "category": "herrscher",
     "continent": "amerika",
+    "importance": "core",
     "minZoomLevel": 2
   },
   {
@@ -489,6 +504,7 @@
     "startYear": 1969,
     "category": "nation",
     "continent": "amerika",
+    "importance": "core",
     "minZoomLevel": 1
   },
   {
@@ -508,6 +524,7 @@
     "startYear": 2001,
     "category": "nation",
     "continent": "amerika",
+    "importance": "core",
     "minZoomLevel": 1
   },
   {

@@ -41,6 +41,7 @@
     "category": "zivilisation",
     "continent": "europa",
     "culture": "griechisch",
+    "importance": "core",
     "minZoomLevel": 2
   },
   {
@@ -63,6 +64,7 @@
     "category": "zivilisation",
     "continent": "europa",
     "culture": "römisch",
+    "importance": "core",
     "minZoomLevel": 2
   },
   {
@@ -74,6 +76,7 @@
     "category": "zivilisation",
     "continent": "europa",
     "culture": "römisch",
+    "importance": "core",
     "minZoomLevel": 2
   },
   {
@@ -96,6 +99,7 @@
     "category": "zivilisation",
     "continent": "europa",
     "culture": "germanisch",
+    "importance": "core",
     "minZoomLevel": 2
   },
   {
@@ -107,6 +111,7 @@
     "category": "zivilisation",
     "continent": "europa",
     "culture": "byzantinisch",
+    "importance": "core",
     "minZoomLevel": 2
   },
   {
@@ -118,6 +123,7 @@
     "category": "zivilisation",
     "continent": "europa",
     "culture": "nordisch",
+    "importance": "core",
     "minZoomLevel": 2
   },
   {
@@ -166,6 +172,7 @@
     "continent": "europa",
     "culture": "neuzeitlich",
     "tier": "epoche",
+    "importance": "core",
     "minZoomLevel": 2
   },
   {
@@ -190,6 +197,7 @@
     "continent": "europa",
     "culture": "modern",
     "tier": "epoche",
+    "importance": "core",
     "minZoomLevel": 2
   },
   {
@@ -465,6 +473,7 @@
     "category": "nation",
     "continent": "europa",
     "culture": "griechisch",
+    "importance": "core",
     "minZoomLevel": 3
   },
   {
@@ -476,6 +485,7 @@
     "category": "nation",
     "continent": "europa",
     "culture": "griechisch",
+    "importance": "core",
     "minZoomLevel": 3
   },
   {
@@ -520,6 +530,7 @@
     "category": "nation",
     "continent": "europa",
     "culture": "fränkisch",
+    "importance": "core",
     "minZoomLevel": 3
   },
   {
@@ -542,6 +553,7 @@
     "category": "nation",
     "continent": "europa",
     "culture": "deutschrömisch",
+    "importance": "core",
     "minZoomLevel": 3
   },
   {
@@ -553,6 +565,7 @@
     "category": "nation",
     "continent": "europa",
     "culture": "englisch",
+    "importance": "core",
     "minZoomLevel": 3
   },
   {
@@ -564,6 +577,7 @@
     "category": "nation",
     "continent": "europa",
     "culture": "französisch",
+    "importance": "core",
     "minZoomLevel": 3
   },
   {
@@ -597,6 +611,7 @@
     "category": "nation",
     "continent": "europa",
     "culture": "spanisch",
+    "importance": "core",
     "minZoomLevel": 3
   },
   {
@@ -641,6 +656,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "griechisch",
+    "importance": "core",
     "minZoomLevel": 4
   },
   {
@@ -674,6 +690,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "makedonisch",
+    "importance": "core",
     "minZoomLevel": 4
   },
   {
@@ -696,7 +713,8 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "römisch",
-    "minZoomLevel": 4
+    "minZoomLevel": 4,
+    "mnemonic": "753, Rom kroch aus dem Ei."
   },
   {
     "id": "eu-herr-numa",
@@ -773,6 +791,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "römisch",
+    "importance": "core",
     "minZoomLevel": 4
   },
   {
@@ -817,6 +836,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "römisch",
+    "importance": "core",
     "minZoomLevel": 4
   },
   {
@@ -883,6 +903,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "römisch",
+    "importance": "core",
     "minZoomLevel": 4
   },
   {
@@ -927,6 +948,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "byzantinisch",
+    "importance": "core",
     "minZoomLevel": 4
   },
   {
@@ -1048,6 +1070,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "karolingisch",
+    "importance": "core",
     "minZoomLevel": 4
   },
   {
@@ -1081,6 +1104,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "deutschrömisch",
+    "importance": "core",
     "minZoomLevel": 4
   },
   {
@@ -1103,6 +1127,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "deutschrömisch",
+    "importance": "core",
     "minZoomLevel": 4
   },
   {
@@ -1114,6 +1139,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "deutschrömisch",
+    "importance": "core",
     "minZoomLevel": 4
   },
   {
@@ -1158,6 +1184,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "habsburgisch",
+    "importance": "core",
     "minZoomLevel": 4
   },
   {
@@ -1202,6 +1229,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "englisch",
+    "importance": "core",
     "minZoomLevel": 4
   },
   {
@@ -1224,6 +1252,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "englisch",
+    "importance": "core",
     "minZoomLevel": 4
   },
   {
@@ -1268,6 +1297,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "englisch",
+    "importance": "core",
     "minZoomLevel": 4
   },
   {
@@ -1279,6 +1309,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "englisch",
+    "importance": "core",
     "minZoomLevel": 4
   },
   {
@@ -1367,6 +1398,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "französisch",
+    "importance": "core",
     "minZoomLevel": 4
   },
   {
@@ -1457,6 +1489,19 @@
     "importance": "core",
     "minZoomLevel": 3,
     "tags": ["krieg", "griechenland", "persien"]
+  },
+  {
+    "id": "eu-schlacht-issos",
+    "title": "Schlacht bei Issos",
+    "description": "Alexander der Große besiegt den persischen Großkönig Dareios III. bei Issos in Kleinasien – der entscheidende Wendepunkt seines Feldzugs gegen das Perserreich.",
+    "startYear": -333,
+    "category": "zivilisation",
+    "continent": "europa",
+    "culture": "griechisch",
+    "importance": "core",
+    "minZoomLevel": 3,
+    "tags": ["krieg", "griechenland", "persien"],
+    "mnemonic": "333 v. Chr. – bei Issos besiegt Alexander der Große die Perser."
   },
   {
     "id": "eu-schlacht-thermopylae",
@@ -1756,7 +1801,7 @@
     "category": "nation",
     "continent": "europa",
     "culture": "deutsch",
-    "importance": "extended",
+    "importance": "core",
     "minZoomLevel": 3,
     "tags": ["demokratie", "deutschland", "modern"]
   },
@@ -1820,7 +1865,7 @@
     "category": "nation",
     "continent": "europa",
     "culture": "europäisch",
-    "importance": "extended",
+    "importance": "core",
     "minZoomLevel": 3,
     "tags": ["nato", "kalter-krieg", "verteidigung"]
   },
@@ -1894,7 +1939,7 @@
     "category": "nation",
     "continent": "europa",
     "culture": "russisch",
-    "importance": "extended",
+    "importance": "core",
     "minZoomLevel": 2
   },
   {
@@ -1906,7 +1951,7 @@
     "category": "nation",
     "continent": "europa",
     "culture": "deutsch",
-    "importance": "extended",
+    "importance": "core",
     "minZoomLevel": 3
   },
   {
@@ -1918,7 +1963,7 @@
     "category": "nation",
     "continent": "europa",
     "culture": "deutsch",
-    "importance": "extended",
+    "importance": "core",
     "minZoomLevel": 2
   },
   {
@@ -1954,6 +1999,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "russisch",
+    "importance": "core",
     "minZoomLevel": 3
   },
   {
@@ -1965,6 +2011,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "russisch",
+    "importance": "core",
     "minZoomLevel": 3
   },
   {
@@ -1976,6 +2023,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "deutsch",
+    "importance": "core",
     "minZoomLevel": 3
   },
   {
@@ -1987,6 +2035,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "österreichisch",
+    "importance": "core",
     "minZoomLevel": 3
   },
   {
@@ -1998,6 +2047,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "französisch",
+    "importance": "core",
     "minZoomLevel": 3
   },
   {
@@ -2009,6 +2059,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "englisch",
+    "importance": "core",
     "minZoomLevel": 3
   },
   {
@@ -2020,6 +2071,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "deutsch",
+    "importance": "core",
     "minZoomLevel": 3
   },
   {
@@ -2031,6 +2083,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "englisch",
+    "importance": "core",
     "minZoomLevel": 4
   },
   {
@@ -2042,6 +2095,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "russisch",
+    "importance": "core",
     "minZoomLevel": 3
   },
   {
@@ -2053,6 +2107,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "französisch",
+    "importance": "core",
     "minZoomLevel": 4
   },
   {
@@ -2064,6 +2119,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "russisch",
+    "importance": "core",
     "minZoomLevel": 4
   },
   {
@@ -2177,5 +2233,146 @@
     "minZoomLevel": 2,
     "tags": ["ungarn", "osteuropa", "mittelalter", "magyaren", "osmanen"],
     "regions": ["ungarn"]
+  },
+  {
+    "id": "eu-olympische-spiele-antike",
+    "title": "Erste Olympische Spiele der Antike",
+    "description": "In Olympia finden die ersten überlieferten Olympischen Spiele statt (776 v. Chr.). Alle vier Jahre treffen sich die griechischen Stadtstaaten zum sportlichen Wettkampf – Vorbild der modernen Olympischen Spiele.",
+    "startYear": -776,
+    "category": "zivilisation",
+    "continent": "europa",
+    "culture": "griechisch",
+    "importance": "core",
+    "minZoomLevel": 3,
+    "tags": ["olympia", "sport", "griechenland"]
+  },
+  {
+    "id": "eu-varusschlacht",
+    "title": "Varusschlacht (Schlacht im Teutoburger Wald)",
+    "description": "Germanische Stämme unter Arminius vernichten drei römische Legionen unter Varus. Die Niederlage stoppt die römische Expansion nach Germanien rechts des Rheins.",
+    "startYear": 9,
+    "category": "zivilisation",
+    "continent": "europa",
+    "culture": "germanisch",
+    "importance": "core",
+    "minZoomLevel": 3,
+    "tags": ["arminius", "rom", "germanen"]
+  },
+  {
+    "id": "eu-mauerfall-wiedervereinigung",
+    "title": "Mauerfall und Deutsche Wiedervereinigung",
+    "description": "Am 9. November 1989 fällt die Berliner Mauer, am 3. Oktober 1990 werden DDR und BRD wiedervereinigt. Das Ende der deutschen Teilung markiert zugleich das Ende des Kalten Krieges in Europa.",
+    "startYear": 1989,
+    "endYear": 1990,
+    "category": "zivilisation",
+    "continent": "europa",
+    "culture": "deutsch",
+    "importance": "core",
+    "minZoomLevel": 3,
+    "tags": ["mauerfall", "wiedervereinigung", "ddr", "kalter-krieg"]
+  },
+  {
+    "id": "eu-kultur-barock",
+    "title": "Barock",
+    "description": "Prunkvolle Kunst, Architektur und Musik als Ausdruck absolutistischer Macht und Gegenreformation. Schlossbauten (Versailles, Zwinger), Bach und Händel in der Musik, dramatische Malerei (Rubens, Caravaggio).",
+    "startYear": 1600,
+    "endYear": 1750,
+    "category": "kultur",
+    "continent": "europa",
+    "culture": "deutsch",
+    "importance": "core",
+    "minZoomLevel": 2,
+    "tags": ["kunst", "musik", "architektur", "barock"]
+  },
+  {
+    "id": "eu-kultur-wiener-klassik",
+    "title": "Wiener Klassik",
+    "description": "Höhepunkt der europäischen Musikgeschichte in Wien: Haydn, Mozart und Beethoven prägen Sinfonie, Streichquartett und Sonate mit klarer Form und ausgewogener Harmonie.",
+    "startYear": 1730,
+    "endYear": 1820,
+    "category": "kultur",
+    "continent": "europa",
+    "culture": "deutsch",
+    "importance": "extended",
+    "minZoomLevel": 2,
+    "tags": ["musik", "wien", "klassik"]
+  },
+  {
+    "id": "eu-kultur-weimarer-klassik",
+    "title": "Weimarer Klassik",
+    "description": "Goethe und Schiller prägen in Weimar ein humanistisches Ideal von Bildung, Harmonie und Menschlichkeit – der literarische Höhepunkt der deutschen Klassik.",
+    "startYear": 1786,
+    "endYear": 1805,
+    "category": "kultur",
+    "continent": "europa",
+    "culture": "deutsch",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "tags": ["literatur", "weimar", "goethe", "schiller"]
+  },
+  {
+    "id": "eu-kultur-romantik",
+    "title": "Romantik",
+    "description": "Gefühl, Natur und Fantasie gegen die Vernunft der Aufklärung. Caspar David Friedrich in der Malerei, die Brüder Grimm sammeln Märchen, Schubert und Schumann in der Musik.",
+    "startYear": 1795,
+    "endYear": 1848,
+    "category": "kultur",
+    "continent": "europa",
+    "culture": "deutsch",
+    "importance": "core",
+    "minZoomLevel": 2,
+    "tags": ["kunst", "literatur", "musik", "romantik"]
+  },
+  {
+    "id": "eu-kultur-biedermeier",
+    "title": "Biedermeier",
+    "description": "Bürgerlicher Rückzug ins Private nach den Napoleonischen Kriegen und der Restauration. Schlichte Möbel, häusliche Genremalerei, Idylle statt Politik.",
+    "startYear": 1815,
+    "endYear": 1848,
+    "category": "kultur",
+    "continent": "europa",
+    "culture": "deutsch",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "tags": ["kunst", "biedermeier", "bürgertum"]
+  },
+  {
+    "id": "eu-kultur-impressionismus",
+    "title": "Impressionismus",
+    "description": "Malerei des flüchtigen Augenblicks und wechselnden Lichts, ausgehend von Frankreich (Monet, Renoir). Bricht mit der akademischen Historienmalerei und öffnet den Weg zur Moderne.",
+    "startYear": 1860,
+    "endYear": 1900,
+    "category": "kultur",
+    "continent": "europa",
+    "culture": "europäisch",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "tags": ["kunst", "malerei", "impressionismus", "frankreich"]
+  },
+  {
+    "id": "eu-kultur-expressionismus",
+    "title": "Expressionismus",
+    "description": "Künstlergruppen wie \"Die Brücke\" und \"Der Blaue Reiter\" drücken innere Emotion statt äußerer Wirklichkeit aus – grelle Farben, verzerrte Formen, Großstadt- und Kriegsangst.",
+    "startYear": 1905,
+    "endYear": 1925,
+    "category": "kultur",
+    "continent": "europa",
+    "culture": "deutsch",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "tags": ["kunst", "expressionismus", "moderne"]
+  },
+  {
+    "id": "eu-kultur-bauhaus",
+    "title": "Bauhaus",
+    "description": "Walter Gropius gründet in Weimar die einflussreichste Design- und Architekturschule des 20. Jahrhunderts – \"Form follows function\" prägt bis heute Möbel, Gebäude und Alltagsgegenstände weltweit.",
+    "startYear": 1919,
+    "endYear": 1933,
+    "category": "kultur",
+    "continent": "europa",
+    "culture": "deutsch",
+    "importance": "core",
+    "minZoomLevel": 3,
+    "tags": ["design", "architektur", "bauhaus", "weimar", "dessau"]
   }
 ]
