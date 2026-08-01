@@ -7,13 +7,10 @@ import {
 } from 'react-native-gesture-handler';
 import { useTranslation } from 'react-i18next';
 import { EpochBand } from './EpochBand';
-import { EpochChipBar } from './EpochChipBar';
-import { EpochNavArrows } from './EpochNavArrows';
+import { EpochBreadcrumbBar } from './EpochBreadcrumbBar';
 import { FpsMonitor } from './FpsMonitor';
 import { TimeAxis } from './TimeAxis';
-import { TimelineBreadcrumb } from './TimelineBreadcrumb';
 import { TimelineMinimap } from './TimelineMinimap';
-import { ZoomLevelIndicator } from './ZoomLevelIndicator';
 import { eventLabelFontSize, eventLabelMaxLines } from '@/timeline/lod';
 import { yearToT } from '@/timeline/scale';
 import { type TimelineEvent, type ZoomLevel } from '@/data/schema';
@@ -71,7 +68,6 @@ type Props = {
   jsPixelsPerUnit: number;
   zoomLevel: ZoomLevel;
   viewportRange: { startYear: number; endYear: number };
-  epochLabel: string | null;
   heutePx: number;
   heuteVisible: boolean;
   gesture: ComposedGesture | GestureType;
@@ -108,7 +104,6 @@ export function TimelineCanvasNative({
   jsPixelsPerUnit,
   zoomLevel,
   viewportRange,
-  epochLabel,
   heutePx,
   heuteVisible,
   gesture,
@@ -136,14 +131,8 @@ export function TimelineCanvasNative({
           zoomLevel={zoomLevel}
         />
         <View style={StyleSheet.absoluteFill} pointerEvents="none">
-          <ZoomLevelIndicator zoomLevel={zoomLevel} />
           <View style={styles.topRightGroup}>
             <FpsMonitor enabled={showFpsMonitor} />
-            <TimelineBreadcrumb
-              startYear={viewportRange.startYear}
-              endYear={viewportRange.endYear}
-              epoch={epochLabel}
-            />
           </View>
         </View>
       </View>
@@ -166,7 +155,12 @@ export function TimelineCanvasNative({
           />
         </View>
       </View>
-      <EpochChipBar onJump={zoomToFit} />
+      <EpochBreadcrumbBar
+        startYear={viewportRange.startYear}
+        endYear={viewportRange.endYear}
+        zoomLevel={zoomLevel}
+        onJump={zoomToFit}
+      />
 
       <View style={[styles.container, { height: canvasHeight }]}>
         <View style={styles.labels}>
@@ -337,16 +331,6 @@ export function TimelineCanvasNative({
             </View>
           </View>
         </GestureDetector>
-        <View
-          style={[StyleSheet.absoluteFill, { left: LANE_LABEL_WIDTH }]}
-          pointerEvents="box-none"
-        >
-          <EpochNavArrows
-            visibleStartYear={viewportRange.startYear}
-            visibleEndYear={viewportRange.endYear}
-            onJump={zoomToFit}
-          />
-        </View>
       </View>
       <View style={styles.zoomButtons} pointerEvents="box-none">
         <TouchableOpacity

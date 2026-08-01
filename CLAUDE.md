@@ -73,7 +73,7 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 - `search.ts` (#146 A): `searchEvents(events, query)` — Präfix-/Substring-Suche über `title`/`culture`/`tags`, diakritik- und case-insensitiv, Score-basiertes Ranking (exakter Titel-Match zuerst). `parseYearQuery(query)` erkennt reine Jahreszahl-Eingaben (`"500"`, `"-500"`, `"500 v. Chr."`, `"3 Mio v. Chr."`) und liefert das Jahr oder `null`.
 - `lod.ts`: Level-of-Detail-Berechnung, exportiert `T_MIN`, `T_MAX`, `FULL_T_SPAN`; `PRESENT_RIGHT_BUFFER_YEARS = 200` + `clampOffsetX()` begrenzen Scroll nach rechts
 - `scale.ts`: `yearToT`, `tToYear`, `pixelToYear`, `viewportYearRange`
-- `epoch.ts`: Epoche-Mapping für Breadcrumb + `NavigationEpoch`-Typ + `NAVIGATION_EPOCHS`-Baum (kosmische Frühzeit → Neuzeit)
+- `epoch.ts`: **einzige Epochen-Quelle** — `NavigationEpoch`-Typ (inkl. `color`) + `NAVIGATION_EPOCHS`-Baum (kosmische Frühzeit → Neuzeit, 6 Wurzeln / 20 Knoten / 3 Ebenen). Helfer: `flattenEpochs()`, `epochsAtDepth(d)` / `epochsAtDepthCached(d)` (Baum auf Ebene `d` geschnitten mit Fill-Semantik → 6/10/16 Segmente, lückenlos), `epochBandDepth(spanYears)` (Bandtiefe aus sichtbarer Spanne), `epochPathAt(year)` (Vorfahrenkette) und `epochPathForViewport(start, end)` (Breadcrumb-Pfad mit `MIN_CRUMB_COVERAGE`-Guard). Ranges sind **rechts halboffen** (Jahr 1500 = Neuzeit), Ausnahme: die rechte Kante am Ende des Baums ist geschlossen, damit `PRESENT_YEAR` in `contemporary` fällt.
 - **MAX_EVENTS_PER_LANE = 40** (in `timelineRenderShared.ts`) – Skia-Loop, Hit-Test und Label-Overlay sind alle auf diesen Wert gecappt. Überschuss erscheint als Cluster-Badge.
 - **Lineare Skala (seit #93 Phase 2):** Die Zeitachse verwendet **viewport-lokal lineare** Abbildung (Modell B). `yearToT(year) = year` / `tToYear(t) = t` sind Identity-Funktionen; `pixelsPerUnit` = Pixel pro Jahr. LOD-Schwellen: 2e-6 / 5e-4 / 0.02 / 2 (ppu). Der Gesamtüberblick ist als `LandmarkTimeline` auf der Landing Page verfügbar.
 - **Landing-Page-Zeitstrahl linear (`LandmarkTimeline`):** Die **Erdgeschichte ist linear** skaliert (`linearPos()`, konsistent zu Modell B der interaktiven Timeline) — von der Erdentstehung (`EARTH_FORMATION_YEAR = -4.6 Mrd.`) bis heute (`PRESENT_YEAR = 2026`). Der **Urknall** liegt außerhalb dieser Skala (würde die Erdgeschichte sonst zu einem Punkt stauchen) und wird als fixer Marker links neben der Erdentstehung platziert (`BIG_BANG_FRAC = 0.05`, Achsenbeginn `AXIS_START_FRAC = 0.2`). Urknall **und** Erdentstehung zeigen ihren **Zeitpunkt** (`formatEventYear`, via `SHOW_YEAR`-Set) und sind durch einen Achsenbruch (gestrichelte Prelude-Linie + `//`-Glyph) getrennt. **Nicht mehr logarithmisch** (kein `logPos`/`Math.log10` mehr). Kuratierte Landmarks (von links nach rechts): Urknall (außerhalb) → Erde entsteht → Erstes Leben (-3,8 Mrd.) → [Annotation: „Milliarden Jahre nur Mikroben"] → Erste Säugetiere (-225 Mio.) → Dinos (-252–66 Mio., als Balken) → Erste Hominide (-2,5 Mio.). Mondentstehung entfernt (auf linearer Skala redundant zur Erdentstehung).
@@ -83,8 +83,9 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 - **Tier-Hierarchie für Zeilen-Ordnung (#70):** Optionales `tier`-Feld (`'epoche' | 'reich' | 'dynastie'`) im Schema; `TIER_RANK`/`tierRank()`-Helfer (epoche=0, reich=1, dynastie=2). `assignTracks` sortiert primär nach `tierRank` (via `byTierGlobalThenStart`), dann global-first, dann chronologisch — dadurch liegen `epoche`-Bänder oben, `reich` (Default bei fehlendem `tier`) in der Mitte, `dynastie` unten. Löst das Problem, dass langlaufende Reiche (Byzanz 330–1453) über zeitlich späteren Epochen-Phasen (Renaissance, Aufklärung) standen. 8 Epochen-Bänder in `europa.json` tragen `tier: 'epoche'`; `dynastie` ist vorbereitet, aber noch nicht bespielt. Kultur-Homogenität pro Zeile bleibt _innerhalb_ eines Tiers erhalten.
 - **Kultur-getrennte Zeilen (#146 B2):** Zeilen in `assignTracks` sind strikt kultur-homogen: Jede automatisch vergebene Zeile hat einen Besitzer (`culture`-String oder `null` für neutrale Events), fremde Kulturen dürfen sie **nie** belegen — auch nicht als Platz-Fallback. Ein Event ohne freie eigene Zeile öffnet eine neue Zeile seiner Kultur, statt in eine fremde zu mischen. Lineage-Gruppen beanspruchen die Zeile ihrer Kultur (Span-Reservierung bleibt); Singletons werden global-first + chronologisch platziert, wodurch neue Zeilen von oben nach unten in Reihenfolge ihres ersten Events entstehen. Manuelle `track`-Overrides pinnen weiterhin exakte Zeilennummern (Besitzer = Kultur des ersten Events). Mehr Zeilen als beim rein geometrischen Packen — akzeptiert, da B1s Dense-Remapping die sichtbare Höhe begrenzt.
 - **Detailgrad-Filter (`importance` verdrahtet):** Der Detailgrad (**Kinder / Schulwissen** / Standard / Alles) setzt `maxImportanceRank` als kumulativen Schwellwert in `filterVisible`/`queryVisible`. Default „Alles" (= alles sichtbar, abwärtskompatibel); Events ohne `importance` zählen als `extended`. Ergänzt den automatischen Zoom-LOD um eine manuelle Achse; persistiert als `detailLevel`. UI ist eine Segmented-Control direkt in `SettingsModal` (kein eigenständiges Component mehr — die frühere `DetailLevelSelector`-Komponente war verwaist, duplizierte dieselbe UI und wurde entfernt). Die unterste Stufe `core` = **Kinder/Schulwissen** (i18n `detailLevel.core`, EN „Kids / school basics") ist systematisch über **alle** Kategorien mit typischem Schulwissen bespielt (Stand: erdzeitalter 10, herrscher 50, nation 35, zivilisation 86, natur 46 core) — beim Ergänzen neuer Events dieselbe Balance halten und offensichtliches Schulwissen `importance: 'core'` geben.
+- **Navigation & Orientierung (konsolidiert):** Der Zeitstrahl hat **ein** primäres „Wo bin ich?"-Element: `EpochBreadcrumbBar` (eigene Zeile unter dem Epochenband) zeigt Zoom-Pille + antippbaren Epochenpfad („Menschheit › Antike › Hellenismus") + Zeitraum. Jeder Krümel ruft `zoomToFit` auf die Range seines Knotens — dadurch ersetzt die Leiste die früheren `EpochChipBar` (Drill-Down-Chips), `EpochNavArrows` (◀/▶ über dem Canvas), `TimelineBreadcrumb` und `ZoomLevelIndicator`. Verbleibende Sprung-Mechanismen: Breadcrumb (Epochen), `TimelineMinimap` (Position im Gesamtzeitstrahl), `EpochBand` (räumlicher Kontext, scrollt mit) und der Zoom-Cluster. Breadcrumb und Band lösen denselben Baum für denselben Viewport auf und zeigen daher immer dieselbe Ebene. Der Titelblock im Header ist das einzige Home-Control (der zusätzliche ⌂-Button ist entfallen).
 - **Settings-Menü (`SettingsModal`):** Bottom-Sheet-Modal, öffnet per ⚙-Icon im Header beider Screens. Drei Sections: Erscheinungsbild (Dark/Light-Mode-Toggle), Darstellung (Detailgrad, FPS-Monitor-Toggle), Sprache (DE/EN). Dark Mode via `ThemeContext`; Sprache via i18next + AsyncStorage-Persistenz.
-- **FPS-Monitor (#5):** `useFpsMonitor(enabled)` misst die Bildrate via Reanimated `useFrameCallback` (UI-Thread, 500ms-Sample-Fenster, `runOnJS` zurück zu React State); läuft nur bei `enabled=true` (kein Overhead im Default-Fall). `FpsMonitor`-Komponente rendert eine farbcodierte Pill (≥50 FPS grün, ≥30 gelb, sonst rot), non-interactive. In beiden Renderern (`TimelineCanvasWeb`/`TimelineCanvasNative`) zusammen mit `TimelineBreadcrumb` in einem gemeinsamen `topRightGroup`-Flex-Container (`timelineRenderShared.ts`) — beide Komponenten sind selbst **nicht** mehr `position: absolute` positioniert, sonst würden sie sich am selben Eck überlappen. Toggle „FPS-Monitor anzeigen" im Settings-Menü, persistiert als `showFpsMonitor` (Default: aus).
+- **FPS-Monitor (#5):** `useFpsMonitor(enabled)` misst die Bildrate via Reanimated `useFrameCallback` (UI-Thread, 500ms-Sample-Fenster, `runOnJS` zurück zu React State); läuft nur bei `enabled=true` (kein Overhead im Default-Fall). `FpsMonitor`-Komponente rendert eine farbcodierte Pill (≥50 FPS grün, ≥30 gelb, sonst rot), non-interactive. In beiden Renderern (`TimelineCanvasWeb`/`TimelineCanvasNative`) im `topRightGroup`-Flex-Container (`timelineRenderShared.ts`); Kinder dieses Containers dürfen **nicht** selbst `position: absolute` sein, sonst überlappen sie sich am selben Eck. Seit der Navigations-Konsolidierung ist der FPS-Monitor das einzige Kind. Toggle „FPS-Monitor anzeigen" im Settings-Menü, persistiert als `showFpsMonitor` (Default: aus).
 - **Kategorie „Kultur & Kunst" (`kultur`, Issue #76):** Sechste Kategorie in `src/theme/categories.ts` (Farbe `#A85FC2`, `laneOrder: 5` = unterste Lane) für gesellschaftliche Strömungen und Kunstgeschichte (Barock, Wiener Klassik, Weimarer Klassik, Romantik, Biedermeier, Impressionismus, Expressionismus, Bauhaus), vorerst aus deutscher/europäischer Perspektive in `europa.json`. Nicht `defaultActive` (wie `nation`/`herrscher`). **`zivilisation` vs. `nation`:** konzeptionelle Abgrenzung für neue Inhalte in `docs/event-flags.md` dokumentiert (`zivilisation` = Völker/Wanderungen, `nation` = Staatsgebilde) — bestehende Events werden nicht rückwirkend migriert.
 - **Kometen-/Asteroideneinschläge unter `erdzeitalter` (Issue #76):** `geo-vredefort-impakt`, `geo-sudbury-impakt`, `geo-tunguska-ereignis` in `erdzeitalter.json` markieren wichtige Einschlagsereignisse direkt in der Erdzeitalter-Lane (ergänzt den bereits vorhandenen Chicxulub-Eintrag unter `natur`).
 - **Kinderdarstellung / Lernsprüche (`mnemonic`, Issue #171):** Optionales Schema-Feld `mnemonic?: string` für bekannte Eselsbrücken zu einzelnen Jahreszahlen (z. B. „753, Rom kroch aus dem Ei." bei `eu-herr-romulus`, „333 v. Chr. – bei Issos besiegt Alexander der Große die Perser." beim neuen Event `eu-schlacht-issos`). Wird im `EventDetailModal` unterhalb der Beschreibung hervorgehoben angezeigt (i18n-Label `event.mnemonic`), sofern gesetzt.
@@ -127,20 +128,17 @@ src/
 │   ├── useTimelineViewport.ts     # Viewport-State + Zoom/Pan/Jump-Commands (unified web+native)
 │   ├── useTimelineGestures.ts     # RNGH Pan/Pinch/Tap-Gesten
 │   ├── TimeAxis.tsx               # Zeitachse
-│   ├── TimelineBreadcrumb.tsx     # Zoom-Breadcrumb mit Epochen-Kontext (Layout via topRightGroup, s.u.)
+│   ├── EpochBreadcrumbBar.tsx     # Primäre Orientierung: Zoom-Pille + antippbarer Epochenpfad + Zeitraum
 │   ├── FpsMonitor.tsx             # FPS-Overlay-Pill (#5, opt-in via Settings, Layout via topRightGroup)
 │   ├── useFpsMonitor.ts           # Reanimated useFrameCallback-Hook für FpsMonitor
 │   ├── TimelineMinimap.tsx        # Übersichtsleiste (Tap + a11y-Actions)
-│   ├── EpochBand.tsx              # Visuelles Epochen-Band (ersetzt EpochJumpBar)
-│   ├── EpochChipBar.tsx           # Zweistufige Chip-Leiste für schnelle Epochen-Navigation
-│   ├── EpochNavArrows.tsx         # Quick-Jump-Pfeile (← Epoche / Epoche →) im Timeline-Header
-│   ├── EpochOverviewScreen.tsx    # Landing Page: Epochen-Kacheln als Einstieg (Props: onSelectEpoch, onShowFullTimeline, onOpenSettings, onOpenSearch)
+│   ├── EpochBand.tsx              # Visuelles Epochen-Band, zoomabhängig verfeinert (Ebene via epochBandDepth)
+│   ├── EpochOverviewScreen.tsx    # Landing Page: aufklappbare Epochen-Kacheln (Props: onSelectEpoch, onShowFullTimeline, onOpenSettings, onOpenSearch)
 │   ├── FilterChipBar.tsx          # Kategorie-/Kontinent-Filter
 │   ├── SettingsModal.tsx          # Settings-Bottom-Sheet (Dark Mode, Detailgrad, FPS-Monitor, Sprache)
 │   ├── SearchModal.tsx            # Such-Bottom-Sheet (#146 A): Ereignis-/Jahr-Suche, Tap → jumpToEvent/jumpToYear
 │   ├── LandmarkTimeline.tsx       # Landmark-Zeitstrahl auf der Landing Page (linear; Urknall außerhalb der Skala)
 │   ├── ContinentTabBar.tsx        # Kontinent-Auswahl
-│   ├── ZoomLevelIndicator.tsx     # Persistenter LOD-Indikator
 │   └── ui/                        # Shared UI-Primitives
 ├── data/
 │   ├── schema.ts              # Event-Typen (inkl. optionale Slots: importance, tags, lineageId, regions)
@@ -152,7 +150,7 @@ src/
 │   ├── eventIndex.ts          # EventIndex: Kategorie-partitioniert, Binärsuche O(hits+log n)
 │   ├── lod.ts                 # Level of Detail + T_MIN/T_MAX/FULL_T_SPAN
 │   ├── scale.ts               # yearToT, tToYear, pixelToYear
-│   ├── epoch.ts               # Epoche-Mapping + NavigationEpoch + NAVIGATION_EPOCHS
+│   ├── epoch.ts               # Einzige Epochen-Quelle: NAVIGATION_EPOCHS-Baum + Pfad-/Tiefen-Helfer
 │   ├── formatYear.ts          # Jahr-Formatierung
 │   ├── search.ts              # searchEvents (title/culture/tags) + parseYearQuery (#146 A)
 │   └── __tests__/
@@ -214,7 +212,7 @@ function makeStyles(colors: ThemeColors) {
 }
 ```
 
-Canvas-Overlay-Komponenten (ZoomLevelIndicator, EpochBand, …) nutzen weiterhin statische `colors`-Imports aus `tokens.ts` — der Canvas-Hintergrund bleibt immer dunkel.
+Canvas-Overlay-Komponenten (EpochBand, EpochBreadcrumbBar, …) nutzen weiterhin statische `colors`-Imports aus `tokens.ts` — der Canvas-Hintergrund bleibt immer dunkel.
 
 ---
 
@@ -256,12 +254,12 @@ Canvas-Overlay-Komponenten (ZoomLevelIndicator, EpochBand, …) nutzen weiterhin
 
 ## Offene Issues (legitim)
 
-| #    | Titel                            | Priorität |
-| ---- | --------------------------------- | --------- |
+| #    | Titel                                                                             | Priorität    |
+| ---- | --------------------------------------------------------------------------------- | ------------ |
 | #76  | Mehr Inhalte (Wissenschaft, Zivilisationen, Kultur, Kategorie „Kultur und Kunst") | P2 / Content |
-| #162 | Farblogik für Spuren-Farben       | offen     |
-| #163 | Weitere Filterungen (Länder-Filter innerhalb Kontinent) | offen |
-| #171 | Kinderdarstellung („einfach") — Lernsprüche zu Events | offen |
+| #162 | Farblogik für Spuren-Farben                                                       | offen        |
+| #163 | Weitere Filterungen (Länder-Filter innerhalb Kontinent)                           | offen        |
+| #171 | Kinderdarstellung („einfach") — Lernsprüche zu Events                             | offen        |
 
 ## Referenzen
 
@@ -269,6 +267,7 @@ Canvas-Overlay-Komponenten (ZoomLevelIndicator, EpochBand, …) nutzen weiterhin
 - [project-templates Standards](https://github.com/S540d/project-templates)
 
 <!-- GLOBAL POLICY:START -->
+
 ## [GLOBAL POLICY]
 
 > Automatisch synchronisiert aus project-templates (Issue #7). Nicht manuell editieren –
