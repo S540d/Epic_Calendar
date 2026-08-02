@@ -1,27 +1,19 @@
 import React, { useEffect, useLayoutEffect, useRef } from 'react';
-import { StyleSheet, View, Text, Pressable, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, Pressable, Platform } from 'react-native';
 import {
   GestureDetector,
   type ComposedGesture,
   type GestureType,
 } from 'react-native-gesture-handler';
 import { type SharedValue } from 'react-native-reanimated';
-import { useTranslation } from 'react-i18next';
-import { EpochBand } from './EpochBand';
-import { EpochChipBar } from './EpochChipBar';
-import { EpochNavArrows } from './EpochNavArrows';
-import { FpsMonitor } from './FpsMonitor';
-import { TimeAxis } from './TimeAxis';
-import { TimelineBreadcrumb } from './TimelineBreadcrumb';
-import { TimelineMinimap } from './TimelineMinimap';
-import { ZoomLevelIndicator } from './ZoomLevelIndicator';
-import { dominantEpoch } from '@/timeline/epoch';
+import { TimelineChrome } from './TimelineChrome';
+import { TimelineLaneLabels } from './TimelineLaneLabels';
+import { TimelineZoomCluster } from './TimelineZoomCluster';
 import { clampOffsetX } from '@/timeline/lod';
 import { eventLabelFontSize, eventLabelMaxLines } from '@/timeline/lod';
 import { yearToT, T_PRESENT as T_HEUTE } from '@/timeline/scale';
 import { type TimelineEvent, type ZoomLevel } from '@/data/schema';
 import {
-  LANE_LABEL_WIDTH,
   LANE_PADDING_V,
   TRACK_HEIGHT,
   colors,
@@ -63,8 +55,8 @@ type Props = {
   zoomIn: () => void;
   zoomOut: () => void;
   jumpToToday: () => void;
-  /** Whether the Erdzeitalter lane is active (epoch pill only meaningful then). */
-  showEpochLabel: boolean;
+  /** Visible year range, computed once in TimelineView so both renderers agree. */
+  viewportRange: { startYear: number; endYear: number };
   minimapHighlight?: { startT: number; endT: number } | null;
   /** Shows the live FPS overlay (#5 FPS-Monitoring, opt-in via Settings). */
   showFpsMonitor?: boolean;
@@ -99,18 +91,11 @@ export function TimelineCanvasWeb({
   zoomIn,
   zoomOut,
   jumpToToday,
-  showEpochLabel,
+  viewportRange,
   minimapHighlight,
   showFpsMonitor = false,
 }: Props) {
-  const { t } = useTranslation();
   const WEB_PPU = jsPixelsPerUnit;
-
-  // Viewport-relative coordinates (identity transform: t = year).
-  const visibleStartYear = jsOffsetX;
-  const visibleEndYear = jsOffsetX + canvasWidth / WEB_PPU;
-  const centerYear = jsOffsetX + canvasWidth / (2 * WEB_PPU);
-  const webEpochLabel = showEpochLabel ? (dominantEpoch(centerYear)?.title ?? null) : null;
 
   const heutePx = (T_HEUTE - jsOffsetX) * WEB_PPU;
   const heuteVisible = heutePx >= -1 && heutePx <= canvasWidth + 1;
@@ -164,50 +149,17 @@ export function TimelineCanvasWeb({
         default: { flex: 1 },
       })}
     >
-      <View
-        style={[
-          styles.axisRow,
-          Platform.select({ web: { position: 'sticky', top: 0, zIndex: 10 } as any }),
-        ]}
-      >
-        <View style={{ width: LANE_LABEL_WIDTH }} />
-        <TimeAxis
-          offsetX={jsOffsetX}
-          pixelsPerUnit={WEB_PPU}
-          canvasWidth={canvasWidth}
-          zoomLevel={zoomLevel}
-        />
-        <View style={StyleSheet.absoluteFill} pointerEvents="none">
-          <ZoomLevelIndicator zoomLevel={zoomLevel} />
-          <View style={styles.topRightGroup}>
-            <FpsMonitor enabled={showFpsMonitor} />
-            <TimelineBreadcrumb
-              startYear={visibleStartYear}
-              endYear={visibleEndYear}
-              epoch={webEpochLabel}
-            />
-          </View>
-        </View>
-      </View>
-      <TimelineMinimap
-        offsetX={jsOffsetX}
-        pixelsPerUnit={WEB_PPU}
+      <TimelineChrome
+        jsOffsetX={jsOffsetX}
+        jsPixelsPerUnit={WEB_PPU}
         canvasWidth={canvasWidth}
-        onJump={handleMinimapJump}
-        highlightRange={minimapHighlight}
+        zoomLevel={zoomLevel}
+        viewportRange={viewportRange}
+        zoomToFit={zoomToFit}
+        handleMinimapJump={handleMinimapJump}
+        minimapHighlight={minimapHighlight}
+        showFpsMonitor={showFpsMonitor}
       />
-      <View style={styles.epochBandRow}>
-        <View style={{ width: LANE_LABEL_WIDTH }} />
-        <View style={{ width: canvasWidth, overflow: 'hidden' }}>
-          <EpochBand
-            offsetAtZero={jsOffsetX}
-            pixelsPerUnit={WEB_PPU}
-            width={canvasWidth}
-            onJump={zoomToFit}
-          />
-        </View>
-      </View>
-      <EpochChipBar onJump={zoomToFit} />
       <View
         style={Platform.select({
           web: { flex: 1, overflowY: 'auto', overflowX: 'hidden' } as any,
@@ -215,45 +167,12 @@ export function TimelineCanvasWeb({
         })}
       >
         <View style={[styles.container, { height: canvasHeight }]}>
-          <View
-            style={[
-              styles.labels,
-              Platform.select({ web: { position: 'sticky', left: 0, zIndex: 5 } as any }),
-            ]}
-          >
-            {lanes.map((cat, idx) => {
-              const overflow = overflowCounts.get(cat) ?? 0;
-              const laneH = laneHeightForTracks(laneTrackCounts.get(cat) ?? 1);
-              return (
-                <View
-                  key={cat}
-                  style={[
-                    styles.label,
-                    {
-                      top: laneTops[idx],
-                      height: laneH,
-                      borderLeftColor: colors.category[cat],
-                    },
-                  ]}
-                >
-                  <View
-                    style={{
-                      width: laneH,
-                      height: LANE_LABEL_WIDTH,
-                      transform: [{ rotate: '-90deg' }],
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Text style={styles.labelText} numberOfLines={1}>
-                      {t(`category.${cat}`)}
-                    </Text>
-                  </View>
-                  {overflow > 0 && <Text style={styles.clusterBadge}>+{overflow}</Text>}
-                </View>
-              );
-            })}
-          </View>
+          <TimelineLaneLabels
+            lanes={lanes}
+            laneTops={laneTops}
+            laneTrackCounts={laneTrackCounts}
+            overflowCounts={overflowCounts}
+          />
           <GestureDetector gesture={gesture}>
             <View
               style={{
@@ -401,34 +320,7 @@ export function TimelineCanvasWeb({
           </GestureDetector>
         </View>
       </View>
-      <View style={[StyleSheet.absoluteFill, { left: LANE_LABEL_WIDTH }]} pointerEvents="box-none">
-        <EpochNavArrows
-          visibleStartYear={visibleStartYear}
-          visibleEndYear={visibleEndYear}
-          onJump={zoomToFit}
-        />
-      </View>
-      <View
-        style={[
-          styles.zoomButtons,
-          Platform.select({ web: { position: 'absolute', right: 12, bottom: 12 } as any }),
-        ]}
-        pointerEvents="box-none"
-      >
-        <TouchableOpacity
-          style={styles.zoomBtn}
-          onPress={jumpToToday}
-          accessibilityLabel={t('axis.today')}
-        >
-          <Text style={styles.zoomBtnText}>⌖</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.zoomBtn} onPress={zoomIn} accessibilityLabel="Zoom in">
-          <Text style={styles.zoomBtnText}>+</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.zoomBtn} onPress={zoomOut} accessibilityLabel="Zoom out">
-          <Text style={styles.zoomBtnText}>−</Text>
-        </TouchableOpacity>
-      </View>
+      <TimelineZoomCluster jumpToToday={jumpToToday} zoomIn={zoomIn} zoomOut={zoomOut} />
     </View>
   );
 }

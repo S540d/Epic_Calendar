@@ -14,8 +14,7 @@ import {
   MAX_EVENTS_PER_LANE,
   MIN_HIT_PX,
 } from './timelineRenderShared';
-import { viewportYearRange, yearToT, pixelToYear, T_PRESENT as T_HEUTE } from '@/timeline/scale';
-import { dominantEpoch } from '@/timeline/epoch';
+import { viewportYearRange, yearToT, T_PRESENT as T_HEUTE } from '@/timeline/scale';
 import {
   IMPORTANCE_RANK,
   type Continent,
@@ -221,14 +220,6 @@ export function TimelineView({
     () => viewportYearRange(canvasWidth, jsOffsetX, jsPixelsPerUnit),
     [canvasWidth, jsOffsetX, jsPixelsPerUnit],
   );
-
-  // Geological era label is only meaningful when the Erdzeitalter lane is shown.
-  const showEpochLabel = activeCategories.has('erdzeitalter');
-  const epochLabel = useMemo(() => {
-    if (!showEpochLabel) return null;
-    const centerYear = pixelToYear(canvasWidth / 2, jsOffsetX, jsPixelsPerUnit);
-    return dominantEpoch(centerYear)?.title ?? null;
-  }, [showEpochLabel, canvasWidth, jsOffsetX, jsPixelsPerUnit]);
 
   const heutePx = useMemo(
     () => (T_HEUTE - jsOffsetX) * jsPixelsPerUnit,
@@ -451,7 +442,7 @@ export function TimelineView({
         zoomIn={zoomIn}
         zoomOut={zoomOut}
         jumpToToday={jumpToToday}
-        showEpochLabel={showEpochLabel}
+        viewportRange={viewportRange}
         minimapHighlight={minimapHighlight}
         showFpsMonitor={showFpsMonitor}
       />
@@ -474,7 +465,6 @@ export function TimelineView({
       jsPixelsPerUnit={jsPixelsPerUnit}
       zoomLevel={zoomLevel}
       viewportRange={viewportRange}
-      epochLabel={epochLabel}
       heutePx={heutePx}
       heuteVisible={heuteVisible}
       gesture={gesture}

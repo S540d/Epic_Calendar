@@ -1,5 +1,13 @@
-import React, { useCallback, useMemo } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import {
+  LayoutAnimation,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { LandmarkTimeline } from './LandmarkTimeline';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -14,29 +22,6 @@ type Props = {
   onShowFullTimeline: () => void;
   onOpenSettings: () => void;
   onOpenSearch: () => void;
-};
-
-const EPOCH_COLORS: Record<string, string> = {
-  cosmicDawn: '#6B4BB8',
-  earlyEarth: '#4A8FA8',
-  paleozoic: '#4FA86A',
-  mesozoic: '#B87C3A',
-  cenozoic: '#7C9CFF',
-  humanHistory: '#C28B4A',
-  stoneAge: '#8E9E6A',
-  ancientCiv: '#B88B4A',
-  antiquity: '#C28B4A',
-  earlyAntiquity: '#D4A055',
-  hellenism: '#C8955A',
-  lateAntiquity: '#B87848',
-  middleAges: '#A07040',
-  earlyMiddleAges: '#9A7A50',
-  highMiddleAges: '#907060',
-  lateMiddleAges: '#806050',
-  modern: '#CF8A30',
-  earlyModern: '#D4943A',
-  industrial: '#C48030',
-  contemporary: '#BA7020',
 };
 
 function formatDuration(startYear: number, endYear: number, t: TFunction): string {
@@ -71,28 +56,48 @@ function formatYearLabel(year: number, t: TFunction): string {
 type EpochTileProps = {
   epoch: NavigationEpoch;
   onPress: (startYear: number, endYear: number) => void;
+  onToggle: (key: string) => void;
+  isExpanded: boolean;
   level?: 0 | 1 | 2;
   colors: ThemeColors;
 };
 
-function EpochTile({ epoch, onPress, level = 0, colors }: EpochTileProps) {
+/**
+ * One epoch row. Epochs that have sub-epochs carry two separate affordances:
+ * tapping the body expands them inline (non-destructive, keeps you on the page),
+ * while the trailing → button jumps straight to the timeline. Leaf epochs have
+ * nothing to expand, so their body jumps directly.
+ */
+function EpochTile({ epoch, onPress, onToggle, isExpanded, level = 0, colors }: EpochTileProps) {
   const { t } = useTranslation();
-  const color = EPOCH_COLORS[epoch.key] ?? colors.accent;
-  const handlePress = useCallback(() => onPress(epoch.startYear, epoch.endYear), [onPress, epoch]);
+  const color = epoch.color;
+  const hasChildren = (epoch.children?.length ?? 0) > 0;
   const styles = useMemo(() => makeTileStyles(colors), [colors]);
   const indentStyle =
     level === 1 ? styles.tileIndent : level === 2 ? styles.tileIndent2 : undefined;
 
+  const handleJump = useCallback(() => onPress(epoch.startYear, epoch.endYear), [onPress, epoch]);
+  const handleToggle = useCallback(() => onToggle(epoch.key), [onToggle, epoch.key]);
+
+  const name = t(`epochNav.${epoch.key}`);
+
   return (
-    <Pressable
-      style={({ pressed }) => [styles.tile, indentStyle, pressed && styles.tilePressed]}
-      onPress={handlePress}
-      accessibilityRole="button"
-      accessibilityLabel={t(`epochNav.${epoch.key}`)}
-    >
+    <View style={[styles.tile, indentStyle]}>
       <View style={[styles.tileAccent, { backgroundColor: color }]} />
-      <View style={styles.tileContent}>
-        <Text style={styles.tileName}>{t(`epochNav.${epoch.key}`)}</Text>
+      <Pressable
+        style={({ pressed }) => [styles.tileBody, pressed && styles.tilePressed]}
+        onPress={hasChildren ? handleToggle : handleJump}
+        accessibilityRole="button"
+        accessibilityLabel={name}
+        accessibilityState={hasChildren ? { expanded: isExpanded } : undefined}
+        accessibilityHint={
+          hasChildren ? t(isExpanded ? 'epochNav.collapse' : 'epochNav.expand') : undefined
+        }
+      >
+        <View style={styles.tileNameRow}>
+          {hasChildren && <Text style={styles.chevron}>{isExpanded ? '▾' : '▸'}</Text>}
+          <Text style={styles.tileName}>{name}</Text>
+        </View>
         <Text style={styles.tileRange}>
           {formatYearLabel(epoch.startYear, t)} – {formatYearLabel(epoch.endYear, t)}
         </Text>
@@ -101,9 +106,20 @@ function EpochTile({ epoch, onPress, level = 0, colors }: EpochTileProps) {
             {formatDuration(epoch.startYear, epoch.endYear, t)}
           </Text>
         </View>
-      </View>
-      <Text style={styles.tileArrow}>›</Text>
-    </Pressable>
+      </Pressable>
+      {hasChildren ? (
+        <Pressable
+          style={({ pressed }) => [styles.jumpButton, pressed && styles.tilePressed]}
+          onPress={handleJump}
+          accessibilityRole="button"
+          accessibilityLabel={`${name} – ${t('epochNav.openTimeline')}`}
+        >
+          <Text style={styles.jumpArrow}>→</Text>
+        </Pressable>
+      ) : (
+        <Text style={styles.tileArrow}>›</Text>
+      )}
+    </View>
   );
 }
 
@@ -123,6 +139,46 @@ export function EpochOverviewScreen({
     },
     [onSelectEpoch],
   );
+
+  // A Set rather than a single open key: two levels can be open at once
+  // (humanHistory expanded, and antiquity expanded inside it). Starts empty, so
+  // the page always opens on the six main epochs; deliberately not persisted.
+  const [expandedKeys, setExpandedKeys] = useState<ReadonlySet<string>>(() => new Set());
+
+  const handleToggle = useCallback((key: string) => {
+    if (Platform.OS !== 'web') {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    }
+    setExpandedKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
+
+  // Flattens the visible part of the tree into a single tile list: a node's
+  // children only follow it while that node is expanded.
+  const tiles = useMemo(() => {
+    const render = (epochs: readonly NavigationEpoch[], level: 0 | 1 | 2): React.ReactNode[] =>
+      epochs.flatMap((epoch) => {
+        const isExpanded = expandedKeys.has(epoch.key);
+        const tile = (
+          <EpochTile
+            key={epoch.key}
+            epoch={epoch}
+            onPress={handleEpochPress}
+            onToggle={handleToggle}
+            isExpanded={isExpanded}
+            level={level}
+            colors={colors}
+          />
+        );
+        if (!isExpanded || !epoch.children?.length || level >= 2) return [tile];
+        return [tile, ...render(epoch.children, (level + 1) as 0 | 1 | 2)];
+      });
+    return render(NAVIGATION_EPOCHS, 0);
+  }, [expandedKeys, handleEpochPress, handleToggle, colors]);
 
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
@@ -156,25 +212,7 @@ export function EpochOverviewScreen({
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {NAVIGATION_EPOCHS.map((epoch) => (
-          <View key={epoch.key}>
-            <EpochTile epoch={epoch} onPress={handleEpochPress} level={0} colors={colors} />
-            {epoch.children?.map((child) => (
-              <View key={child.key}>
-                <EpochTile epoch={child} onPress={handleEpochPress} level={1} colors={colors} />
-                {child.children?.map((grandchild) => (
-                  <EpochTile
-                    key={grandchild.key}
-                    epoch={grandchild}
-                    onPress={handleEpochPress}
-                    level={2}
-                    colors={colors}
-                  />
-                ))}
-              </View>
-            ))}
-          </View>
-        ))}
+        {tiles}
 
         <Pressable
           style={({ pressed }) => [
@@ -218,10 +256,19 @@ function makeTileStyles(colors: ThemeColors) {
       width: 4,
       alignSelf: 'stretch',
     },
-    tileContent: {
+    tileBody: {
       flex: 1,
       paddingHorizontal: spacing.sm,
       paddingVertical: spacing.sm,
+    },
+    tileNameRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+    },
+    chevron: {
+      fontSize: 12,
+      color: colors.textMuted,
     },
     tileName: {
       ...typography.subtitle,
@@ -244,6 +291,16 @@ function makeTileStyles(colors: ThemeColors) {
     durationText: {
       fontSize: 11,
       fontWeight: '600',
+    },
+    jumpButton: {
+      minWidth: 44,
+      minHeight: 44,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    jumpArrow: {
+      fontSize: 18,
+      color: colors.accent,
     },
     tileArrow: {
       fontSize: 20,

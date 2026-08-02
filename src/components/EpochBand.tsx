@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { yearToT } from '@/timeline/scale';
-import { EPOCHS } from '@/timeline/epochs';
+import { epochBandDepth, epochsAtDepthCached } from '@/timeline/epoch';
 import { colors, typography } from '@/theme/tokens';
 
 export const EPOCH_BAND_HEIGHT = 22;
@@ -21,13 +21,24 @@ type Props = {
  * Coloured, clickable epoch segments rendered just below the time axis, inside
  * the horizontally-scrolling canvas so they line up with the events and scroll
  * along. Tapping a segment zooms the viewport to that epoch.
+ *
+ * The band refines itself with the zoom: it renders the deepest level of the
+ * epoch tree whose segments are still wide enough to read, so panning through
+ * the Middle Ages shows its sub-epochs while a view of the whole Earth's
+ * history shows only the eras. This keeps it in step with the breadcrumb bar,
+ * which resolves the same tree for the same viewport.
  */
 export function EpochBand({ offsetAtZero, pixelsPerUnit, width, onJump }: Props) {
   const { t } = useTranslation();
 
+  const epochs = useMemo(
+    () => epochsAtDepthCached(epochBandDepth(width / pixelsPerUnit)),
+    [width, pixelsPerUnit],
+  );
+
   return (
     <View style={[styles.band, { width }]} pointerEvents="box-none">
-      {EPOCHS.map((ep) => {
+      {epochs.map((ep) => {
         const x = (yearToT(ep.startYear) - offsetAtZero) * pixelsPerUnit;
         const w = Math.max(2, (yearToT(ep.endYear) - yearToT(ep.startYear)) * pixelsPerUnit);
         // Skip segments fully off-canvas to keep the DOM light.

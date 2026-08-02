@@ -1,19 +1,14 @@
 import React from 'react';
-import { StyleSheet, View, Text, Pressable, TouchableOpacity, Platform } from 'react-native';
+import { StyleSheet, View, Text, Pressable, Platform } from 'react-native';
 import {
   GestureDetector,
   type ComposedGesture,
   type GestureType,
 } from 'react-native-gesture-handler';
 import { useTranslation } from 'react-i18next';
-import { EpochBand } from './EpochBand';
-import { EpochChipBar } from './EpochChipBar';
-import { EpochNavArrows } from './EpochNavArrows';
-import { FpsMonitor } from './FpsMonitor';
-import { TimeAxis } from './TimeAxis';
-import { TimelineBreadcrumb } from './TimelineBreadcrumb';
-import { TimelineMinimap } from './TimelineMinimap';
-import { ZoomLevelIndicator } from './ZoomLevelIndicator';
+import { TimelineChrome } from './TimelineChrome';
+import { TimelineLaneLabels } from './TimelineLaneLabels';
+import { TimelineZoomCluster } from './TimelineZoomCluster';
 import { eventLabelFontSize, eventLabelMaxLines } from '@/timeline/lod';
 import { yearToT } from '@/timeline/scale';
 import { type TimelineEvent, type ZoomLevel } from '@/data/schema';
@@ -71,7 +66,6 @@ type Props = {
   jsPixelsPerUnit: number;
   zoomLevel: ZoomLevel;
   viewportRange: { startYear: number; endYear: number };
-  epochLabel: string | null;
   heutePx: number;
   heuteVisible: boolean;
   gesture: ComposedGesture | GestureType;
@@ -108,7 +102,6 @@ export function TimelineCanvasNative({
   jsPixelsPerUnit,
   zoomLevel,
   viewportRange,
-  epochLabel,
   heutePx,
   heuteVisible,
   gesture,
@@ -127,82 +120,25 @@ export function TimelineCanvasNative({
 
   return (
     <View>
-      <View style={styles.axisRow}>
-        <View style={{ width: LANE_LABEL_WIDTH }} />
-        <TimeAxis
-          offsetX={jsOffsetX}
-          pixelsPerUnit={jsPixelsPerUnit}
-          canvasWidth={canvasWidth}
-          zoomLevel={zoomLevel}
-        />
-        <View style={StyleSheet.absoluteFill} pointerEvents="none">
-          <ZoomLevelIndicator zoomLevel={zoomLevel} />
-          <View style={styles.topRightGroup}>
-            <FpsMonitor enabled={showFpsMonitor} />
-            <TimelineBreadcrumb
-              startYear={viewportRange.startYear}
-              endYear={viewportRange.endYear}
-              epoch={epochLabel}
-            />
-          </View>
-        </View>
-      </View>
-
-      <TimelineMinimap
-        offsetX={jsOffsetX}
-        pixelsPerUnit={jsPixelsPerUnit}
+      <TimelineChrome
+        jsOffsetX={jsOffsetX}
+        jsPixelsPerUnit={jsPixelsPerUnit}
         canvasWidth={canvasWidth}
-        onJump={handleMinimapJump}
-        highlightRange={minimapHighlight}
+        zoomLevel={zoomLevel}
+        viewportRange={viewportRange}
+        zoomToFit={zoomToFit}
+        handleMinimapJump={handleMinimapJump}
+        minimapHighlight={minimapHighlight}
+        showFpsMonitor={showFpsMonitor}
       />
-      <View style={styles.epochBandRow}>
-        <View style={{ width: LANE_LABEL_WIDTH }} />
-        <View style={{ width: canvasWidth, overflow: 'hidden' }}>
-          <EpochBand
-            offsetAtZero={jsOffsetX}
-            pixelsPerUnit={jsPixelsPerUnit}
-            width={canvasWidth}
-            onJump={zoomToFit}
-          />
-        </View>
-      </View>
-      <EpochChipBar onJump={zoomToFit} />
 
       <View style={[styles.container, { height: canvasHeight }]}>
-        <View style={styles.labels}>
-          {lanes.map((cat, idx) => {
-            const overflow = overflowCounts.get(cat) ?? 0;
-            const laneH = laneHeightForTracks(laneTrackCounts.get(cat) ?? 1);
-            return (
-              <View
-                key={cat}
-                style={[
-                  styles.label,
-                  {
-                    top: laneTops[idx],
-                    height: laneH,
-                    borderLeftColor: colors.category[cat],
-                  },
-                ]}
-              >
-                <View
-                  style={{
-                    width: laneH,
-                    height: LANE_LABEL_WIDTH,
-                    transform: [{ rotate: '-90deg' }],
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Text style={styles.labelText} numberOfLines={1}>
-                    {t(`category.${cat}`)}
-                  </Text>
-                </View>
-                {overflow > 0 && <Text style={styles.clusterBadge}>+{overflow}</Text>}
-              </View>
-            );
-          })}
-        </View>
+        <TimelineLaneLabels
+          lanes={lanes}
+          laneTops={laneTops}
+          laneTrackCounts={laneTrackCounts}
+          overflowCounts={overflowCounts}
+        />
 
         <GestureDetector gesture={gesture}>
           <View style={{ width: canvasWidth, height: canvasHeight }}>
@@ -337,32 +273,8 @@ export function TimelineCanvasNative({
             </View>
           </View>
         </GestureDetector>
-        <View
-          style={[StyleSheet.absoluteFill, { left: LANE_LABEL_WIDTH }]}
-          pointerEvents="box-none"
-        >
-          <EpochNavArrows
-            visibleStartYear={viewportRange.startYear}
-            visibleEndYear={viewportRange.endYear}
-            onJump={zoomToFit}
-          />
-        </View>
       </View>
-      <View style={styles.zoomButtons} pointerEvents="box-none">
-        <TouchableOpacity
-          style={styles.zoomBtn}
-          onPress={jumpToToday}
-          accessibilityLabel={t('axis.today')}
-        >
-          <Text style={styles.zoomBtnText}>⌖</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.zoomBtn} onPress={zoomIn} accessibilityLabel="Zoom in">
-          <Text style={styles.zoomBtnText}>+</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.zoomBtn} onPress={zoomOut} accessibilityLabel="Zoom out">
-          <Text style={styles.zoomBtnText}>−</Text>
-        </TouchableOpacity>
-      </View>
+      <TimelineZoomCluster jumpToToday={jumpToToday} zoomIn={zoomIn} zoomOut={zoomOut} />
 
       {popoverState && (
         <>
