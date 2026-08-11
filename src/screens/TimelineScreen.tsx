@@ -81,9 +81,10 @@ export function TimelineScreen() {
   const handleOpenSearch = useCallback(() => setSearchVisible(true), []);
   const handleCloseSearch = useCallback(() => setSearchVisible(false), []);
 
-  const handleDismissDetailPrompt = useCallback(() => setDetailPromptSeen(true), [
-    setDetailPromptSeen,
-  ]);
+  const handleDismissDetailPrompt = useCallback(
+    () => setDetailPromptSeen(true),
+    [setDetailPromptSeen],
+  );
   const handleOpenSettingsFromPrompt = useCallback(() => {
     setDetailPromptSeen(true);
     setSettingsVisible(true);
