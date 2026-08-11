@@ -96,7 +96,7 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 
 ### Datenhaltung
 
-- `src/data/` – statische Daten: 7 JSON-Dateien, 594 Events gesamt (europa, asien, afrika, amerika, ozeanien, erdzeitalter, natur-wissenschaft)
+- `src/data/` – statische Daten: 7 JSON-Dateien, 605 Events gesamt (europa, asien, afrika, amerika, ozeanien, erdzeitalter, natur-wissenschaft)
 - `src/data/schema.ts` – gemeinsames Event-Schema (`TimelineEvent` mit optionalen Feldern: `importance`, `tags`, `lineageId`, `regions` seit Phase 1.2; `tier` seit #70). `importance`/`lineageId`/`tier` sind verdrahtet: `importanceRank`/`passesImportance`-Helfer + `IMPORTANCE_RANK` speisen den Detailgrad-Filter; `lineageId` steuert Track-Zuordnung + Verbindungslinien; `tier` (`tierRank`/`TIER_RANK`) ist die primäre Zeilen-Sortier-Achse in `assignTracks`. `tags`/`regions` bleiben Slots.
 - `src/data/regions.ts` – `RegionConfig`-Typ + `REGIONS`-Skelett für hierarchische Geo-Filter (Phase 1.4; kein UI bis Phase 3)
 - `docs/event-flags.md` – menschenlesbare Flag-Referenz: alle Event-Achsen mit Pflicht/optional, Werten, LOD-Tabelle (Phase 1.5)
@@ -153,7 +153,7 @@ src/
 ├── data/
 │   ├── schema.ts              # Event-Typen (inkl. optionale Slots: importance, tags, lineageId, regions)
 │   ├── regions.ts             # RegionConfig + REGIONS-Skelett (Phase 1.4, kein UI)
-│   ├── events/                # Statische JSON-Daten: europa (202), asien (94), afrika (71), amerika (76), ozeanien (45), erdzeitalter (38), natur-wissenschaft (68) → 594 Events gesamt
+│   ├── events/                # Statische JSON-Daten: europa (213), asien (94), afrika (71), amerika (76), ozeanien (45), erdzeitalter (38), natur-wissenschaft (68) → 605 Events gesamt
 │   └── ...
 ├── timeline/
 │   ├── culling.ts             # Viewport-Culling + computeLaneData() (opt. eventIndex, maxImportanceRank) + lineage-aware assignTracks + computeLineageConnectors
