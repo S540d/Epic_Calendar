@@ -838,5 +838,44 @@
     "importance": "extended",
     "minZoomLevel": 3,
     "iconKey": "crown"
+  },
+  {
+    "id": "am-kultur-mexikanischer-muralismus",
+    "title": "Mexikanischer Muralismus",
+    "description": "Nach der Mexikanischen Revolution malen Diego Rivera, José Clemente Orozco und David Alfaro Siqueiros (\"Los Tres Grandes\") monumentale Wandbilder an öffentlichen Gebäuden – eine neue nationale Bildsprache aus indigener Geschichte und sozialem Kampf.",
+    "startYear": 1921,
+    "endYear": 1957,
+    "category": "kultur",
+    "continent": "amerika",
+    "culture": "mexikanisch",
+    "importance": "core",
+    "minZoomLevel": 2,
+    "tags": ["kunst", "muralismus", "mexiko", "rivera"]
+  },
+  {
+    "id": "am-kultur-harlem-renaissance",
+    "title": "Harlem Renaissance",
+    "description": "Afroamerikanische Literatur, Musik und Kunst blühen in New Yorks Stadtteil Harlem auf. Langston Hughes, Zora Neale Hurston und der Jazz von Duke Ellington prägen ein neues afroamerikanisches Selbstbewusstsein.",
+    "startYear": 1918,
+    "endYear": 1937,
+    "category": "kultur",
+    "continent": "amerika",
+    "culture": "nordamerikanisch",
+    "importance": "core",
+    "minZoomLevel": 2,
+    "tags": ["literatur", "musik", "jazz", "harlem"]
+  },
+  {
+    "id": "am-kultur-lateinamerikanischer-boom",
+    "title": "Lateinamerikanischer Boom",
+    "description": "Autoren wie Gabriel García Márquez, Julio Cortázar, Carlos Fuentes und Mario Vargas Llosa erlangen mit dem Magischen Realismus internationale Anerkennung. García Márquez' \"Hundert Jahre Einsamkeit\" (1967) wird zum Welterfolg.",
+    "startYear": 1960,
+    "endYear": 1975,
+    "category": "kultur",
+    "continent": "amerika",
+    "culture": "lateinamerikanisch",
+    "importance": "extended",
+    "minZoomLevel": 2,
+    "tags": ["literatur", "magischer-realismus", "boom", "garcía-márquez"]
   }
 ]

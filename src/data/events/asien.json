@@ -1114,5 +1114,44 @@
     "importance": "core",
     "minZoomLevel": 2,
     "tags": ["christentum", "religion", "jesus", "judäa"]
+  },
+  {
+    "id": "as-kultur-ukiyo-e",
+    "title": "Ukiyo-e – Japanische Holzschnittkunst",
+    "description": "Farbholzschnitte des \"schwebenden Lebens\" erreichen mit der Erfindung des Vielfarbendrucks (Nishiki-e, 1765) ihre Blütezeit. Hokusai (\"Die große Welle\") und Hiroshige prägen mit Landschaftsserien die japanische Kunst – und später den europäischen Impressionismus.",
+    "startYear": 1765,
+    "endYear": 1868,
+    "category": "kultur",
+    "continent": "asien",
+    "culture": "japanisch",
+    "importance": "core",
+    "minZoomLevel": 2,
+    "tags": ["kunst", "holzschnitt", "ukiyo-e", "japan"]
+  },
+  {
+    "id": "as-kultur-persische-miniaturmalerei",
+    "title": "Persische Miniaturmalerei – Herat- und Safawidenschule",
+    "description": "Unter timuridischer und safawidischer Herrschaft entsteht in Herat und später Täbris/Isfahan eine der raffiniertesten Buchmalereitraditionen der Welt. Meister wie Bihzad illustrieren Manuskripte mit leuchtenden Farben und komplexer Komposition.",
+    "startYear": 1400,
+    "endYear": 1600,
+    "category": "kultur",
+    "continent": "asien",
+    "culture": "persisch",
+    "importance": "extended",
+    "minZoomLevel": 2,
+    "tags": ["kunst", "miniaturmalerei", "persien", "buchmalerei"]
+  },
+  {
+    "id": "as-kultur-mogul-malerei",
+    "title": "Mogulmalerei am indischen Hof",
+    "description": "Unter den Kaisern Akbar, Jahangir und Shah Jahan verschmelzen persische und indische Maltraditionen zu einem eigenständigen Stil höfischer Miniaturmalerei mit naturalistischen Porträts und Hofszenen.",
+    "startYear": 1556,
+    "endYear": 1658,
+    "category": "kultur",
+    "continent": "asien",
+    "culture": "indisch",
+    "importance": "extended",
+    "minZoomLevel": 2,
+    "tags": ["kunst", "miniaturmalerei", "mogulreich", "indien"]
   }
 ]
