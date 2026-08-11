@@ -4,6 +4,7 @@
 
 ### Added
 
+- **Dev-Tool: Content-Coverage-Report (`npm run coverage`):** Neues Script `scripts/coverage.js` zeigt, wie gut jede Kategorie pro Kontinent und pro Detailgrad (Kinder/Standard/Alles) mit Events gefüllt ist — als Tabelle in der Konsole, leere Kombinationen markiert mit „·". Reines Autoring-Werkzeug ohne App-UI, da die Frage „wo haben wir noch Lücken?" ein Content-Pflege-Anliegen ist, kein Nutzer-Feature.
 - **Detailgrad-Hinweis beim ersten App-Start:** Zentraler, einmaliger Dialog auf der Startseite fragt neue Nutzer:innen nach dem gewünschten Detailgrad und verweist auf die Einstellungen (`DetailLevelPrompt`, persistiert als `detailLevelPromptSeen`). Der Dialog wählt den Detailgrad nicht selbst — „Zu den Einstellungen" öffnet direkt das bestehende `SettingsModal`, „Später" blendet den Hinweis dauerhaft aus.
 
 ### Changed

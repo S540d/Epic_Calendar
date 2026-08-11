@@ -12,6 +12,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
     "type-check": "tsc --noEmit",
     "test": "jest --passWithNoTests",
+    "coverage": "node scripts/coverage.js",
     "build:web": "expo export --platform web",
     "prepare": "husky"
   },
