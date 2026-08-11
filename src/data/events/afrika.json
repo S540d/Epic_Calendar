@@ -856,5 +856,43 @@
     "importance": "extended",
     "minZoomLevel": 2,
     "tags": ["mamluk", "ägypten", "islam", "mongolen", "kreuzzüge"]
+  },
+  {
+    "id": "af-sundiata-keita",
+    "title": "Sundiata Keita – Gründer des Mali-Reiches",
+    "description": "Nach dem Sieg über den Herrscher Sumanguru Kanté in der Schlacht von Kirina (um 1235) begründet Sundiata Keita das Mali-Reich und wird dessen erster Mansa (Kaiser).",
+    "startYear": 1235,
+    "endYear": 1255,
+    "category": "herrscher",
+    "continent": "afrika",
+    "culture": "mandé",
+    "minZoomLevel": 3,
+    "iconKey": "crown"
+  },
+  {
+    "id": "af-nzinga-mbandi",
+    "title": "Königin Nzinga von Ndongo und Matamba",
+    "description": "Nzinga Mbandi regiert Ndongo und gründet in Matamba einen eigenen Machtsitz. Über Jahrzehnte organisiert sie militärischen und diplomatischen Widerstand gegen die portugiesische Kolonialisierung und den Sklavenhandel in Zentralafrika.",
+    "startYear": 1624,
+    "endYear": 1663,
+    "category": "herrscher",
+    "continent": "afrika",
+    "culture": "mbundu",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "iconKey": "crown"
+  },
+  {
+    "id": "af-haile-selassie",
+    "title": "Haile Selassie I. – Kaiser von Äthiopien",
+    "description": "Als letzter Kaiser Äthiopiens führt Haile Selassie sein Land während der italienischen Besatzung (1936–1941) im Exil an und gehört 1963 zu den Gründern der Organisation für Afrikanische Einheit. 1974 wird er durch einen Militärputsch gestürzt.",
+    "startYear": 1930,
+    "endYear": 1974,
+    "category": "herrscher",
+    "continent": "afrika",
+    "culture": "äthiopisch",
+    "importance": "core",
+    "minZoomLevel": 3,
+    "iconKey": "crown"
   }
 ]

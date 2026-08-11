@@ -4,6 +4,8 @@
 
 ### Added
 
+- **Herrscher-Kategorie außerhalb Europa/Asien ausgebaut (Content-Coverage-Gap):** Der neue `npm run coverage`-Report zeigte ein starkes Ungleichgewicht bei `herrscher` (Ozeanien 2, Amerika 5, Afrika 8 vs. Europa 85). 9 neue Events ergänzen bislang fehlende Herrscher-Persönlichkeiten: Afrika +3 (Sundiata Keita – Gründer des Mali-Reiches, Königin Nzinga von Ndongo/Matamba, Haile Selassie I.), Amerika +3 (Moctezuma II., Toussaint Louverture, Tecumseh), Ozeanien +3 (Kamehameha I., George Tupou I. von Tonga, Cakobau von Fidschi). `herrscher` wächst dadurch von 116 auf 125 Events; Ozeanien/Amerika/Afrika verlassen den Bereich reiner Kolonial-/Entdecker-Perspektive (bisher u. a. nur Magellan/Cook für Ozeanien).
+
 - **Detailgrad-Hinweis beim ersten App-Start:** Zentraler, einmaliger Dialog auf der Startseite fragt neue Nutzer:innen nach dem gewünschten Detailgrad und verweist auf die Einstellungen (`DetailLevelPrompt`, persistiert als `detailLevelPromptSeen`). Der Dialog wählt den Detailgrad nicht selbst — „Zu den Einstellungen" öffnet direkt das bestehende `SettingsModal`, „Später" blendet den Hinweis dauerhaft aus.
 
 ### Changed

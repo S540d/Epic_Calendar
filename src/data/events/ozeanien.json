@@ -532,5 +532,44 @@
     "importance": "detail",
     "minZoomLevel": 4,
     "tags": ["polynesien", "nachhaltigkeit", "umwelt", "tikopia"]
+  },
+  {
+    "id": "oz-kamehameha-i",
+    "title": "Kamehameha I. – Vereiniger Hawaiis",
+    "description": "Kamehameha der Große eint ab 1795 die hawaiischen Inseln unter einer Herrschaft; 1810 schließen sich Kauai und Niihau freiwillig an. Er begründet die Kamehameha-Dynastie, die erste Dynastie des vereinten Königreichs Hawaii.",
+    "startYear": 1795,
+    "endYear": 1819,
+    "category": "herrscher",
+    "continent": "ozeanien",
+    "culture": "hawaiisch",
+    "importance": "core",
+    "minZoomLevel": 3,
+    "iconKey": "crown"
+  },
+  {
+    "id": "oz-george-tupou-i",
+    "title": "George Tupou I. – Vereiniger Tongas",
+    "description": "Taufaʻahau Tupou I. eint die tongaischen Inseln, wird 1845 erster König des vereinten Tonga und erlässt 1875 eine Verfassung, die Tonga bis heute prägt.",
+    "startYear": 1845,
+    "endYear": 1893,
+    "category": "herrscher",
+    "continent": "ozeanien",
+    "culture": "tongaisch",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "iconKey": "crown"
+  },
+  {
+    "id": "oz-cakobau",
+    "title": "Cakobau – König von Fidschi",
+    "description": "Ratu Seru Cakobau ruft sich 1871 als Tui Viti zum König von Fidschi aus. Angesichts innerer Rivalitäten und europäischen Drucks übergibt er die Souveränität 1874 an Großbritannien.",
+    "startYear": 1871,
+    "endYear": 1874,
+    "category": "herrscher",
+    "continent": "ozeanien",
+    "culture": "fidschianisch",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "iconKey": "crown"
   }
 ]
