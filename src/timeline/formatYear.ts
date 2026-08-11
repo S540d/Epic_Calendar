@@ -17,5 +17,9 @@ export function formatEventYear(y: number, t: (key: string) => string): string {
     return `${n} ${t('event.billion')}${suffix}`;
   }
   if (a >= 1_000_000) return `${Math.round(a / 1_000_000)} ${t('event.million')}${suffix}`;
+  if (a >= 100_000) {
+    const n = (a / 1_000_000).toFixed(1).replace(/\.0$/, '');
+    return `${n} ${t('event.million')}${suffix}`;
+  }
   return `${withThousandsSep(a)}${suffix}`;
 }

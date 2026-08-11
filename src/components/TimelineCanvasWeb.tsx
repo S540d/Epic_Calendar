@@ -8,7 +8,6 @@ import {
 import { type SharedValue } from 'react-native-reanimated';
 import { TimelineChrome } from './TimelineChrome';
 import { TimelineLaneLabels } from './TimelineLaneLabels';
-import { TimelineZoomCluster } from './TimelineZoomCluster';
 import { clampOffsetX } from '@/timeline/lod';
 import { eventLabelFontSize, eventLabelMaxLines } from '@/timeline/lod';
 import { yearToT, T_PRESENT as T_HEUTE } from '@/timeline/scale';
@@ -52,9 +51,6 @@ type Props = {
   onEventTap: (event: TimelineEvent) => void;
   zoomToFit: (startYear: number, endYear: number | null | undefined) => void;
   handleMinimapJump: (newOffsetX: number) => void;
-  zoomIn: () => void;
-  zoomOut: () => void;
-  jumpToToday: () => void;
   /** Visible year range, computed once in TimelineView so both renderers agree. */
   viewportRange: { startYear: number; endYear: number };
   minimapHighlight?: { startT: number; endT: number } | null;
@@ -88,9 +84,6 @@ export function TimelineCanvasWeb({
   onEventTap,
   zoomToFit,
   handleMinimapJump,
-  zoomIn,
-  zoomOut,
-  jumpToToday,
   viewportRange,
   minimapHighlight,
   showFpsMonitor = false,
@@ -320,7 +313,6 @@ export function TimelineCanvasWeb({
           </GestureDetector>
         </View>
       </View>
-      <TimelineZoomCluster jumpToToday={jumpToToday} zoomIn={zoomIn} zoomOut={zoomOut} />
     </View>
   );
 }

@@ -30,6 +30,14 @@ describe('formatEventYear', () => {
     expect(formatEventYear(65_400_000, t)).toBe('65 Mio. CE');
   });
 
+  it('formats six-digit years as Mio. instead of a raw thousands number', () => {
+    expect(formatEventYear(-555_596, t)).toBe('0.6 Mio. BCE');
+  });
+
+  it('formats exactly 100,000 as Mio.', () => {
+    expect(formatEventYear(100_000, t)).toBe('0.1 Mio. CE');
+  });
+
   it('formats billions with one decimal', () => {
     expect(formatEventYear(-4_500_000_000, t)).toBe('4.5 Bn BCE');
   });

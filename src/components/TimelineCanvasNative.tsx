@@ -8,7 +8,6 @@ import {
 import { useTranslation } from 'react-i18next';
 import { TimelineChrome } from './TimelineChrome';
 import { TimelineLaneLabels } from './TimelineLaneLabels';
-import { TimelineZoomCluster } from './TimelineZoomCluster';
 import { eventLabelFontSize, eventLabelMaxLines } from '@/timeline/lod';
 import { yearToT } from '@/timeline/scale';
 import { type TimelineEvent, type ZoomLevel } from '@/data/schema';
@@ -71,9 +70,6 @@ type Props = {
   gesture: ComposedGesture | GestureType;
   zoomToFit: (startYear: number, endYear: number | null | undefined) => void;
   handleMinimapJump: (newOffsetX: number) => void;
-  zoomIn: () => void;
-  zoomOut: () => void;
-  jumpToToday: () => void;
   popoverState: PopoverState | null;
   onPopoverClose: () => void;
   onPopoverSelect: (event: TimelineEvent) => void;
@@ -107,9 +103,6 @@ export function TimelineCanvasNative({
   gesture,
   zoomToFit,
   handleMinimapJump,
-  zoomIn,
-  zoomOut,
-  jumpToToday,
   popoverState,
   onPopoverClose,
   onPopoverSelect,
@@ -274,7 +267,6 @@ export function TimelineCanvasNative({
           </View>
         </GestureDetector>
       </View>
-      <TimelineZoomCluster jumpToToday={jumpToToday} zoomIn={zoomIn} zoomOut={zoomOut} />
 
       {popoverState && (
         <>

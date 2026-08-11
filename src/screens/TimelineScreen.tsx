@@ -4,11 +4,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import { ContinentTabBar } from '@/components/ContinentTabBar';
+import { DetailLevelPrompt } from '@/components/DetailLevelPrompt';
 import { EpochOverviewScreen } from '@/components/EpochOverviewScreen';
 import { FilterChipBar } from '@/components/FilterChipBar';
 import { SearchModal } from '@/components/SearchModal';
 import { SettingsModal } from '@/components/SettingsModal';
-import { TimelineView } from '@/components/TimelineView';
+import { TimelineView, type TimelineViewHandle } from '@/components/TimelineView';
+import { TimelineZoomCluster } from '@/components/TimelineZoomCluster';
 import { EventDetailModal } from '@/screens/EventDetailModal';
 import { usePersistedState } from '@/hooks/usePersistedState';
 import type { Continent, ImportanceLevel, TimelineEvent } from '@/data/schema';
@@ -33,10 +35,15 @@ export function TimelineScreen() {
   const [showOverview, setShowOverview] = useState(true);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
+  const [detailPromptSeen, setDetailPromptSeen] = usePersistedState<boolean>(
+    'detailLevelPromptSeen',
+    false,
+  );
   const [epochRange, setEpochRange] = useState<{ startYear: number; endYear: number } | undefined>(
     undefined,
   );
   const canvasScrollRef = useRef<ScrollView>(null);
+  const timelineViewRef = useRef<TimelineViewHandle>(null);
   const [jumpToEvent, setJumpToEvent] = useState<
     { event: TimelineEvent; requestId: number } | undefined
   >(undefined);
@@ -74,6 +81,14 @@ export function TimelineScreen() {
   const handleOpenSearch = useCallback(() => setSearchVisible(true), []);
   const handleCloseSearch = useCallback(() => setSearchVisible(false), []);
 
+  const handleDismissDetailPrompt = useCallback(() => setDetailPromptSeen(true), [
+    setDetailPromptSeen,
+  ]);
+  const handleOpenSettingsFromPrompt = useCallback(() => {
+    setDetailPromptSeen(true);
+    setSettingsVisible(true);
+  }, [setDetailPromptSeen]);
+
   // Search result → event: ensure the event's category and continent are
   // active so the jump target is actually visible, then leave the overview
   // and trigger the zoom-to-fit + detail-modal jump in TimelineView (#146 A).
@@ -106,12 +121,19 @@ export function TimelineScreen() {
   return (
     <>
       {showOverview ? (
-        <EpochOverviewScreen
-          onSelectEpoch={handleSelectEpoch}
-          onShowFullTimeline={handleShowFullTimeline}
-          onOpenSettings={handleOpenSettings}
-          onOpenSearch={handleOpenSearch}
-        />
+        <>
+          <EpochOverviewScreen
+            onSelectEpoch={handleSelectEpoch}
+            onShowFullTimeline={handleShowFullTimeline}
+            onOpenSettings={handleOpenSettings}
+            onOpenSearch={handleOpenSearch}
+          />
+          <DetailLevelPrompt
+            visible={!detailPromptSeen}
+            onOpenSettings={handleOpenSettingsFromPrompt}
+            onDismiss={handleDismissDetailPrompt}
+          />
+        </>
       ) : (
         <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
           <View style={styles.header}>
@@ -143,23 +165,33 @@ export function TimelineScreen() {
             </Pressable>
           </View>
           <FilterChipBar active={activeCategories} onToggle={toggleCategory} />
-          <ScrollView
-            ref={canvasScrollRef}
-            style={styles.canvasWrap}
-            contentContainerStyle={styles.canvasContent}
-          >
-            <TimelineView
-              activeCategories={activeCategories}
-              continent={continent}
-              detailLevel={detailLevel}
-              onSelectEvent={setSelected}
-              epochRange={epochRange}
-              jumpToEvent={jumpToEvent}
-              jumpToYear={jumpToYear}
-              showFpsMonitor={showFpsMonitor}
-              scrollRef={canvasScrollRef}
+          <View style={styles.canvasOuter}>
+            <ScrollView
+              ref={canvasScrollRef}
+              style={styles.canvasWrap}
+              contentContainerStyle={styles.canvasContent}
+            >
+              <TimelineView
+                ref={timelineViewRef}
+                activeCategories={activeCategories}
+                continent={continent}
+                detailLevel={detailLevel}
+                onSelectEvent={setSelected}
+                epochRange={epochRange}
+                jumpToEvent={jumpToEvent}
+                jumpToYear={jumpToYear}
+                showFpsMonitor={showFpsMonitor}
+                scrollRef={canvasScrollRef}
+              />
+            </ScrollView>
+            {/* Rendered outside the ScrollView so the buttons stay pinned to the
+                viewport instead of scrolling away with tall lane content. */}
+            <TimelineZoomCluster
+              jumpToToday={() => timelineViewRef.current?.jumpToToday()}
+              zoomIn={() => timelineViewRef.current?.zoomIn()}
+              zoomOut={() => timelineViewRef.current?.zoomOut()}
             />
-          </ScrollView>
+          </View>
           <ContinentTabBar active={continent} onChange={setContinent} />
           <EventDetailModal event={selected} onClose={() => setSelected(null)} />
         </SafeAreaView>
@@ -225,6 +257,9 @@ function makeStyles(colors: ThemeColors) {
     iconButtonText: {
       fontSize: 20,
       color: colors.textSecondary,
+    },
+    canvasOuter: {
+      flex: 1,
     },
     canvasWrap: {
       flex: 1,

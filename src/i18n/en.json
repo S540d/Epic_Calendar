@@ -38,6 +38,12 @@
     "extended": "Standard",
     "detail": "All"
   },
+  "detailPrompt": {
+    "title": "How much detail would you like to see?",
+    "message": "Choose your preferred detail level. You can change this anytime in Settings.",
+    "openSettings": "Go to Settings",
+    "later": "Later"
+  },
   "event": {
     "unknownDate": "Date unknown",
     "present": "present",
