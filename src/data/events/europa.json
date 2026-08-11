@@ -736,6 +736,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "römisch",
+    "importance": "detail",
     "minZoomLevel": 4
   },
   {
@@ -1476,6 +1477,7 @@
     "category": "herrscher",
     "continent": "europa",
     "culture": "nordisch",
+    "importance": "detail",
     "minZoomLevel": 4
   },
   {
@@ -2306,7 +2308,7 @@
     "category": "kultur",
     "continent": "europa",
     "culture": "deutsch",
-    "importance": "extended",
+    "importance": "detail",
     "minZoomLevel": 3,
     "tags": ["literatur", "weimar", "goethe", "schiller"]
   },
@@ -2332,7 +2334,7 @@
     "category": "kultur",
     "continent": "europa",
     "culture": "deutsch",
-    "importance": "extended",
+    "importance": "detail",
     "minZoomLevel": 3,
     "tags": ["kunst", "biedermeier", "bürgertum"]
   },
