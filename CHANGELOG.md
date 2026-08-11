@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Detailgrad-Hinweis beim ersten App-Start:** Zentraler, einmaliger Dialog auf der Startseite fragt neue Nutzer:innen nach dem gewünschten Detailgrad und verweist auf die Einstellungen (`DetailLevelPrompt`, persistiert als `detailLevelPromptSeen`). Der Dialog wählt den Detailgrad nicht selbst — „Zu den Einstellungen" öffnet direkt das bestehende `SettingsModal`, „Später" blendet den Hinweis dauerhaft aus.
+
 ### Changed
+
+- **Zoom-Buttons (⌖/+/−) bleiben immer sichtbar:** Sie lagen bisher als Teil des scrollbaren Zeitstrahl-Inhalts vor und rutschten bei vielen aktiven Lanes unten aus dem Bildschirm, sobald man in der `ScrollView` nach unten scrollte. `TimelineZoomCluster` wird jetzt in `TimelineScreen` außerhalb der `ScrollView` als fixes Overlay gerendert; `TimelineView` stellt die Zoom-Kommandos dafür über ein `forwardRef`/`useImperativeHandle`-Handle (`TimelineViewHandle`) bereit.
 
 - **Doppelten Renderer-Code in gemeinsame Komponenten gezogen:** Web- und Native-Renderer enthielten den kompletten Chrome-Stack (Achsenzeile inkl. FPS-Overlay, Minimap, Epochenband, Breadcrumb), die Lane-Label-Spalte und den Zoom-Button-Cluster **zeichengleich doppelt** — jede Änderung daran musste in zwei ~400-Zeilen-Dateien parallel gemacht werden, abgesichert nur durch den Type-Check. Neu als `TimelineChrome`, `TimelineLaneLabels` und `TimelineZoomCluster`; in den Renderern bleibt nur, was echt divergiert (Skia-Canvas vs. RN-Views, nativer Multi-Hit-Popover, Web-Scroll-Wrapper und Mausrad-Shim). Rein interner Umbau ohne sichtbare Änderung. Nebenbei entfernt: ein `Platform.select` am Zoom-Cluster, das exakt die drei Positionswerte setzte, die `styles.zoomButtons` ohnehin schon hatte, sowie vier tote Imports.
 - **Orientierung nach der Startseite vereinfacht:** Der Zeitstrahl zeigte bislang **fünf konkurrierende Sprung-Mechanismen** gleichzeitig (Minimap, Epochenband, Epochen-Chipleiste, Vor-/Zurück-Pfeile, Zoom-Cluster), dazu zwei Status-Pillen, zwei Home-Buttons und zwei Filterleisten — rund zehn Bedienstreifen um den Canvas, von denen keiner die eigentliche Frage „In welcher Epoche bin ich gerade?" beantwortete. Neu gibt es **ein** primäres Orientierungselement: die `EpochBreadcrumbBar` zeigt Zoomstufe, den Epochenpfad („Menschheit › Antike › Hellenismus") und den sichtbaren Zeitraum in einer Zeile; jeder Pfad-Eintrag ist antippbar und zoomt auf diese Ebene zurück. Damit entfallen `EpochChipBar`, `EpochNavArrows`, `TimelineBreadcrumb` und `ZoomLevelIndicator` ersatzlos, ebenso der doppelte ⌂-Button im Header (der Titel bleibt Home-Control).
@@ -17,6 +23,7 @@
 
 ### Fixed
 
+- **Sechsstellige Jahreszahlen zeigten irreführende Scheingenauigkeit:** `formatEventYear` formatierte Jahre unter 1 Mio. weiterhin mit Tausender-Trennzeichen, z. B. „555,596 v. Chr." statt einer sinnvoll gerundeten Angabe. Ab 100.000 wird jetzt wie bei den Millionen-/Milliarden-Stufen mit einer Nachkommastelle als „Mio." formatiert (z. B. „0,6 Mio. v. Chr.").
 - **Drei widersprüchliche Epochen-Datensätze vereinheitlicht:** Epochengrenzen existierten in drei Varianten nebeneinander — `epochs.ts` (flach, 10 Einträge) definierte die Antike als −500…500, der Navigationsbaum in `epoch.ts` als −800…600, und die Pfeil-Navigation nutzte eine dritte abgeflachte Teilmenge. Dieselbe Epoche begann also je nach Bedienelement in einem anderen Jahr. `epoch.ts` ist jetzt die einzige Quelle: Die Grenzen des Baums gewinnen, weil nur sie in sich stimmig sind (die Werte aus `epochs.ts` ließen `earlyAntiquity` aus seinem Elternknoten herauslaufen). Neue Tests sichern die Deckungs-Invariante ab — jede Baumebene deckt den Zeitstrahl lückenlos und überschneidungsfrei ab, Kinder kacheln ihre Eltern exakt. Ebenso zusammengeführt: drei duplizierte Farbtabellen (20/11/10 Einträge) → `color` am Baumknoten.
 - **Web- und Native-Renderer verwenden denselben Viewport-Bereich:** Der Web-Renderer berechnete `visibleStartYear`/`visibleEndYear` lokal, während Native den bereits in `TimelineView` berechneten `viewportRange` bekam — zwei Quellen für denselben Wert. Web erhält den Bereich jetzt ebenfalls als Prop.
 

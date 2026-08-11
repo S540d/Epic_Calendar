@@ -38,6 +38,12 @@
     "extended": "Standard",
     "detail": "Alles"
   },
+  "detailPrompt": {
+    "title": "Wie viel Detail möchtest du sehen?",
+    "message": "Wähle deinen bevorzugten Detailgrad. Du kannst das jederzeit in den Einstellungen ändern.",
+    "openSettings": "Zu den Einstellungen",
+    "later": "Später"
+  },
   "event": {
     "unknownDate": "Datum unbekannt",
     "present": "heute",
