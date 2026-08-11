@@ -11,6 +11,8 @@
 
 ### Added
 
+- **SEO: Social-Preview-Bild, Favicons und crawlbarer Inhalt:** `public/index.html` verlinkte weder ein `og:image`/`twitter:image` (Link-Vorschau bei Slack/Twitter/WhatsApp blieb leer) noch einen Favicon-Link/`theme-color`. Neu: `public/og-image.png` (1200×630, Timeline-Motiv) für Open-Graph/Twitter-Card (`summary_large_image`), `public/favicon.png` + `public/apple-touch-icon.png`, `theme-color`. Zusätzlich: Da die Zeitachse als Canvas gerendert wird, enthielt die Seite unabhängig von JS-Ausführung **keinerlei crawlbaren Text** — ein visuell verstecktes, aber im DOM vorhandenes `#seo-content`-Element (h1 + Beschreibung + Kategorien-Liste) gibt Suchmaschinen jetzt echten Seiteninhalt.
+
 - **Erste Komponenten-Tests im Projekt:** Bisher gab es ausschließlich Logik-Tests; `src/components/` war komplett ungetestet, obwohl dort die gesamte Renderer-Duplizierung lag. 10 Render-Tests für die neuen geteilten Komponenten (`@testing-library/react-native` war bereits installiert, Jest matcht `*.test.tsx` — es waren keinerlei Setup-Änderungen nötig). Sie prüfen unter anderem, dass ein Breadcrumb-Tap auf die Range **seiner Epoche** zoomt und nicht auf den aktuellen Viewport, dass der Coverage-Guard beim Herauszoomen greift und dass Cluster-Badges nur bei echtem Überlauf erscheinen.
 
 ### Fixed
