@@ -136,6 +136,7 @@
     "category": "herrscher",
     "continent": "afrika",
     "culture": "nubisch",
+    "importance": "detail",
     "minZoomLevel": 3,
     "iconKey": "crown"
   },
