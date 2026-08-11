@@ -571,5 +571,31 @@
     "importance": "extended",
     "minZoomLevel": 3,
     "iconKey": "crown"
+  },
+  {
+    "id": "oz-kultur-papunya-tula",
+    "title": "Papunya Tula – Western-Desert-Kunstbewegung",
+    "description": "In der Aborigine-Siedlung Papunya übertragen Künstler wie Kaapa Tjampitjinpa traditionelle Sandzeichnungen erstmals auf Leinwand. Die Punktmalerei der Western Desert wird zur international anerkannten zeitgenössischen Aboriginal-Kunst.",
+    "startYear": 1971,
+    "endYear": 1980,
+    "category": "kultur",
+    "continent": "ozeanien",
+    "culture": "australisch",
+    "importance": "extended",
+    "minZoomLevel": 2,
+    "tags": ["kunst", "punktmalerei", "aborigines", "papunya"]
+  },
+  {
+    "id": "oz-kultur-hawaiianische-renaissance",
+    "title": "Hawaiianische Kulturrenaissance",
+    "description": "Eine Bewegung zur Wiederbelebung hawaiischer Sprache, Hula und traditioneller Navigation erfasst die Inseln. Die Jungfernfahrt des Doppelrumpf-Kanus Hōkūleʻa nach Tahiti (1976) ohne moderne Instrumente wird zu ihrem Symbol.",
+    "startYear": 1970,
+    "endYear": 1980,
+    "category": "kultur",
+    "continent": "ozeanien",
+    "culture": "hawaiisch",
+    "importance": "extended",
+    "minZoomLevel": 2,
+    "tags": ["hula", "sprache", "hokulea", "hawaii"]
   }
 ]

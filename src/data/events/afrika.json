@@ -894,5 +894,31 @@
     "importance": "core",
     "minZoomLevel": 3,
     "iconKey": "crown"
+  },
+  {
+    "id": "af-kultur-negritude",
+    "title": "Négritude-Bewegung",
+    "description": "Léopold Sédar Senghor, Aimé Césaire und Léon-Gontran Damas begründen in Paris eine literarisch-politische Bewegung, die afrikanisches und afrodiasporisches kulturelles Selbstbewusstsein gegen den französischen Kolonialismus behauptet.",
+    "startYear": 1931,
+    "endYear": 1960,
+    "category": "kultur",
+    "continent": "afrika",
+    "culture": "afrikanisch",
+    "importance": "extended",
+    "minZoomLevel": 2,
+    "tags": ["literatur", "négritude", "senghor", "césaire"]
+  },
+  {
+    "id": "af-kultur-afrobeat",
+    "title": "Afrobeat – Fela Kutis Musikbewegung",
+    "description": "Fela Kuti verschmilzt Highlife, Jazz, Funk und Yoruba-Rhythmen zu Afrobeat und macht die Musik zum Sprachrohr politischen Protests gegen Militärdiktatur und Korruption in Nigeria.",
+    "startYear": 1970,
+    "endYear": 1997,
+    "category": "kultur",
+    "continent": "afrika",
+    "culture": "nigerianisch",
+    "importance": "extended",
+    "minZoomLevel": 2,
+    "tags": ["musik", "afrobeat", "fela-kuti", "nigeria"]
   }
 ]
