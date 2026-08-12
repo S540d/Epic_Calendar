@@ -69,7 +69,7 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 - LOD-Bänder steuern welche Events bei welchem Zoom sichtbar sind (ppu-Schwellen: `2e-6` / `5e-4` / `0.02` / `2` → Level 0–4)
 - `culling.ts`: filtert Events außerhalb des Viewports; `computeLaneData` akzeptiert optionales `eventIndex?` für O(hits+log n)-Queries sowie `maxImportanceRank?` (Detailgrad-Filter) und liefert zusätzlich `connectorsByLane`. `assignTracks` ist lineage-aware (gleiche `lineageId` bevorzugt dieselbe Zeile); `computeLineageConnectors(events, trackMap)` baut die Verbindungslinien zwischen aufeinanderfolgenden Lineage-Events. `buildStableTracksByLane(lanes, continent, maxImportanceRank, eventIndex)` berechnet Tracks einmal viewport-unabhängig über die volle gefilterte Kategorie (siehe #146 B1 unten); wird optional als `stableTracksByLane` an `computeLaneData` übergeben.
 - `eventIndex.ts`: `EventIndex`-Klasse — Kategorie-partitioniert, startYear-sortiert; `buildEventIndex(events)` + `queryVisible(query)` (Binärsuche) + `getFilteredCategory({category, continent, maxImportanceRank})` (alle Events einer Kategorie ohne Zeitraum-/Zoom-Filter, Basis für `buildStableTracksByLane`); in `TimelineView` verdrahtet via `computeLaneData`
-- `formatYear.ts`: formatiert Jahreszahlen (v. Chr., Mio., Mrd.). Ab **100.000** (nicht erst ab 1 Mio.) wird als „Mio." mit einer Nachkommastelle formatiert, um Scheingenauigkeit wie „555,596 v. Chr." zu vermeiden (`0,6 Mio. v. Chr.`); darunter weiterhin Tausender-Trennzeichen ohne Nachkommastelle.
+- `formatYear.ts`: **einzige Quelle für Event-/Screen-Jahreszahlen** — `formatEventYear(year, t)` formatiert Jahreszahlen (v. Chr., Mio., Mrd.). Ab **100.000** (nicht erst ab 1 Mio.) wird als „Mio." mit einer Nachkommastelle formatiert, um Scheingenauigkeit wie „555,596 v. Chr." zu vermeiden (`0,6 Mio. v. Chr.`); darunter weiterhin Tausender-Trennzeichen ohne Nachkommastelle. Genutzt u. a. von `EpochOverviewScreen.formatYearLabel` (Wrapper mit zusätzlichem `year >= 2020 → "heute"`-Fall) — **nicht** erneut duplizieren, sondern delegieren. Ausnahme: `TimeAxis.formatYear` bleibt bewusst eine eigene, kompaktere Implementierung (eigene `axis.*`-i18n-Keys, andere Schwellenwerte) für schmale Tick-Labels (`TICK_LABEL_WIDTH = 90px`) — das ist keine zu bereinigende Redundanz.
 - `search.ts` (#146 A): `searchEvents(events, query)` — Präfix-/Substring-Suche über `title`/`culture`/`tags`, diakritik- und case-insensitiv, Score-basiertes Ranking (exakter Titel-Match zuerst). `parseYearQuery(query)` erkennt reine Jahreszahl-Eingaben (`"500"`, `"-500"`, `"500 v. Chr."`, `"3 Mio v. Chr."`) und liefert das Jahr oder `null`.
 - `lod.ts`: Level-of-Detail-Berechnung, exportiert `T_MIN`, `T_MAX`, `FULL_T_SPAN`; `PRESENT_RIGHT_BUFFER_YEARS = 200` + `clampOffsetX()` begrenzen Scroll nach rechts
 - `scale.ts`: `yearToT`, `tToYear`, `pixelToYear`, `viewportYearRange`
@@ -164,6 +164,7 @@ src/
 │   ├── formatYear.ts          # Jahr-Formatierung
 │   ├── search.ts              # searchEvents (title/culture/tags) + parseYearQuery (#146 A)
 │   └── __tests__/
+│       └── testUtils.ts       # makeEvent() + baseVisibilityFilter — geteilte Fixtures für Timeline-Logik-Tests
 ├── theme/
 │   ├── tokens.ts              # Design-Tokens (statisch; canvas-Komponenten nutzen dies direkt)
 │   └── ThemeContext.tsx       # ThemeProvider + useTheme() + darkColors/lightColors
@@ -229,6 +230,7 @@ Canvas-Overlay-Komponenten (EpochBand, EpochBreadcrumbBar, …) nutzen weiterhin
 ## Bekannte Eigenheiten
 
 - `baseUrl: '/Epic_Calendar'` in `app.json` – für GitHub Pages nötig
+- **GitHub „Automatically delete head branches"** löscht `testing` nach einem testing→main-PR-Merge, auch bei echtem Merge-Commit (kein Squash) – das Repo-Setting greift branch-agnostisch. Nach jedem testing→main-Merge prüfen, ob `origin/testing` noch existiert; falls nicht, sofort wiederherstellen: `git push origin origin/main:refs/heads/testing` (siehe Policy oben: fehlender `testing`/`main`-Branch ist ein Defekt, kein Aufräum-Signal). Langfristige Lösung wäre das Repo-Setting für `testing`/`main` zu deaktivieren.
 - **Web-HTML-Template (#149):** Bei Metro-Web (kein Expo Router) wird das HTML-Template aus `public/index.html` gelesen (nicht `web/index.html` – das ist der alte `@expo/webpack-config`-Pfad und wird von Metro ignoriert). `public/` wird von `expo export --platform web` 1:1 nach `dist/` kopiert – auch `robots.txt`/`sitemap.xml` liegen dort.
 - Skia auf Web: kein `WithSkiaWeb` – weiße Seite → Standard-ScrollView-Fallback
 - `react-native-reanimated` 3.x (nicht 4.x) – Expo SDK 52 Kompatibilität
@@ -254,6 +256,7 @@ Canvas-Overlay-Komponenten (EpochBand, EpochBreadcrumbBar, …) nutzen weiterhin
 - Tests für Timeline-Logik schreiben
 - Komponenten-Tests via `@testing-library/react-native` in `src/components/__tests__/` (Jest matcht `*.test.tsx`; `import '@/i18n'` liefert echte Übersetzungen, da i18next synchron initialisiert)
 - Hit-Test und Skia-Loop immer auf `MAX_EVENTS_PER_LANE` cappen
+- `src/timeline/__tests__/testUtils.ts` für neue Timeline-Logik-Tests nutzen: `makeEvent(partial)` (Event-Factory, `title` defaultet auf `id`) + `baseVisibilityFilter` (Standard-`VisibilityFilter`, Jahr 0–1000/Zoom 4/Europa) — nicht erneut lokal duplizieren (vormals dreifach in `culling.test.ts`/`eventIndex.test.ts`/`search.test.ts`)
 
 ### ❌ Don't:
 
