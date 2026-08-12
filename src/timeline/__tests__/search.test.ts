@@ -1,16 +1,5 @@
 import { parseYearQuery, searchEvents } from '../search';
-import type { TimelineEvent } from '@/data/schema';
-
-function ev(
-  partial: Partial<TimelineEvent> & Pick<TimelineEvent, 'id' | 'title' | 'startYear'>,
-): TimelineEvent {
-  return {
-    category: 'zivilisation',
-    continent: 'europa',
-    minZoomLevel: 0,
-    ...partial,
-  } as TimelineEvent;
-}
+import { makeEvent as ev } from './testUtils';
 
 describe('searchEvents', () => {
   const events = [

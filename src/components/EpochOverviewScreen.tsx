@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import type { NavigationEpoch } from '@/timeline/epoch';
 import { NAVIGATION_EPOCHS } from '@/timeline/epoch';
+import { formatEventYear } from '@/timeline/formatYear';
 import { radii, spacing, typography } from '@/theme/tokens';
 import { useTheme, type ThemeColors } from '@/theme/ThemeContext';
 
@@ -40,17 +41,7 @@ function formatDuration(startYear: number, endYear: number, t: TFunction): strin
 
 function formatYearLabel(year: number, t: TFunction): string {
   if (year >= 2020) return t('event.present');
-  const abs = Math.abs(year);
-  const suffix = year < 0 ? ` ${t('event.bce')}` : ` ${t('event.ce')}`;
-  if (abs >= 1_000_000_000) {
-    const n = (abs / 1_000_000_000).toFixed(1).replace(/\.0$/, '');
-    return `${n} ${t('axis.billion')}${suffix}`;
-  }
-  if (abs >= 1_000_000) return `${Math.round(abs / 1_000_000)} ${t('event.million')}${suffix}`;
-  const formatted = Math.round(abs)
-    .toString()
-    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  return `${formatted}${suffix}`;
+  return formatEventYear(year, t);
 }
 
 type EpochTileProps = {
