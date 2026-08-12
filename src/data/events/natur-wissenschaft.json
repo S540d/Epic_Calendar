@@ -76,7 +76,7 @@
     "category": "natur",
     "continent": "global",
     "culture": "Wissenschaftsgeschichte",
-    "importance": "extended",
+    "importance": "detail",
     "minZoomLevel": 3,
     "tags": ["astronomie", "antike"]
   },
@@ -155,7 +155,7 @@
     "category": "natur",
     "continent": "global",
     "culture": "Medizingeschichte",
-    "importance": "extended",
+    "importance": "detail",
     "minZoomLevel": 2,
     "tags": ["medizin", "islam", "mittelalter"]
   },

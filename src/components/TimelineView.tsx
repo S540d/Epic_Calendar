@@ -1,4 +1,13 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { Platform, useWindowDimensions, type ScrollView } from 'react-native';
 
 import { ALL_EVENTS } from '@/data/events';
@@ -63,24 +72,35 @@ type Props = {
   scrollRef?: React.RefObject<ScrollView | null>;
 };
 
+/** Imperative zoom/pan commands exposed to the parent (e.g. a fixed zoom-button overlay
+ *  rendered outside the scrolling container — see TimelineScreen). */
+export type TimelineViewHandle = {
+  zoomIn: () => void;
+  zoomOut: () => void;
+  jumpToToday: () => void;
+};
+
 // Built once at module load from the static event set — avoids O(n) full scans per frame.
 const eventIndex = buildEventIndex(ALL_EVENTS);
 
 /** Delay before opening the detail modal after the zoom-to-fit animation (600 ms). */
 const ZOOM_MODAL_DELAY_MS = 650;
 
-export function TimelineView({
-  activeCategories,
-  continent,
-  detailLevel = 'detail',
-  onSelectEvent,
-  resetKey = 0,
-  showFpsMonitor = false,
-  epochRange,
-  jumpToEvent,
-  jumpToYear,
-  scrollRef,
-}: Props) {
+export const TimelineView = forwardRef<TimelineViewHandle, Props>(function TimelineView(
+  {
+    activeCategories,
+    continent,
+    detailLevel = 'detail',
+    onSelectEvent,
+    resetKey = 0,
+    showFpsMonitor = false,
+    epochRange,
+    jumpToEvent,
+    jumpToYear,
+    scrollRef,
+  }: Props,
+  ref,
+) {
   const { width: screenWidth } = useWindowDimensions();
   const canvasWidth = Math.max(0, screenWidth - LANE_LABEL_WIDTH);
 
@@ -110,6 +130,12 @@ export function TimelineView({
     resetKey,
     onViewportMove: closePopover,
   });
+
+  useImperativeHandle(ref, () => ({ zoomIn, zoomOut, jumpToToday }), [
+    zoomIn,
+    zoomOut,
+    jumpToToday,
+  ]);
 
   // Event queued to open after the zoom-to-fit animation completes (#44).
   const [pendingSelectEvent, setPendingSelectEvent] = useState<TimelineEvent | null>(null);
@@ -439,9 +465,6 @@ export function TimelineView({
         onEventTap={handleEventTap}
         zoomToFit={zoomToFit}
         handleMinimapJump={handleMinimapJump}
-        zoomIn={zoomIn}
-        zoomOut={zoomOut}
-        jumpToToday={jumpToToday}
         viewportRange={viewportRange}
         minimapHighlight={minimapHighlight}
         showFpsMonitor={showFpsMonitor}
@@ -470,9 +493,6 @@ export function TimelineView({
       gesture={gesture}
       zoomToFit={zoomToFit}
       handleMinimapJump={handleMinimapJump}
-      zoomIn={zoomIn}
-      zoomOut={zoomOut}
-      jumpToToday={jumpToToday}
       popoverState={popoverState}
       onPopoverClose={closePopover}
       onPopoverSelect={handlePopoverSelect}
@@ -480,4 +500,4 @@ export function TimelineView({
       showFpsMonitor={showFpsMonitor}
     />
   );
-}
+});

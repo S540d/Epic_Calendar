@@ -452,7 +452,7 @@
     "category": "erdzeitalter",
     "continent": "global",
     "culture": "Einschlag",
-    "importance": "extended",
+    "importance": "detail",
     "minZoomLevel": 1,
     "tags": ["einschlag", "krater", "asteroid", "kanada"]
   },
@@ -464,7 +464,7 @@
     "category": "erdzeitalter",
     "continent": "global",
     "culture": "Einschlag",
-    "importance": "extended",
+    "importance": "detail",
     "minZoomLevel": 4,
     "tags": ["einschlag", "asteroid", "sibirien", "komet"]
   }

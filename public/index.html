@@ -14,6 +14,11 @@
     <meta name="author" content="S540d" />
     <link rel="canonical" href="https://s540d.github.io/Epic_Calendar/" />
 
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" href="/Epic_Calendar/favicon.png" />
+    <link rel="apple-touch-icon" href="/Epic_Calendar/apple-touch-icon.png" />
+    <meta name="theme-color" content="#0E1116" />
+
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Epic Calendar – Interaktiver Zeitstrahl der Geschichte" />
@@ -23,14 +28,20 @@
     />
     <meta property="og:url" content="https://s540d.github.io/Epic_Calendar/" />
     <meta property="og:site_name" content="Epic Calendar" />
+    <meta property="og:image" content="https://s540d.github.io/Epic_Calendar/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Epic Calendar – interaktiver Zeitstrahl vom Urknall bis heute" />
+    <meta property="og:locale" content="de_DE" />
 
     <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Epic Calendar – Interaktiver Zeitstrahl der Geschichte" />
     <meta
       name="twitter:description"
       content="Vom Urknall bis heute: interaktiver, zoom- und scrollbarer Zeitstrahl mit Erdzeitaltern, Hochkulturen und historischen Ereignissen aus aller Welt."
     />
+    <meta name="twitter:image" content="https://s540d.github.io/Epic_Calendar/og-image.png" />
 
     <!-- Structured Data (Schema.org) -->
     <script type="application/ld+json">
@@ -66,11 +77,42 @@
         height: 100%;
         flex: 1;
       }
+      /* Static SEO content: describes the app for crawlers/screen readers.
+         The canvas-based timeline renders no text of its own, so this block
+         is the only place search engines find real page content. Kept
+         visually off-screen once JS mounts the app in #root. */
+      #seo-content {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
     </style>
   </head>
 
   <body>
-    <!-- Use static rendering with Expo Router to support running without JavaScript. -->
+    <!-- Static content for search engines and crawlers without JS: the interactive
+         timeline itself is rendered on a canvas and produces no crawlable text. -->
+    <div id="seo-content">
+      <h1>Epic Calendar – Interaktiver Zeitstrahl der Geschichte</h1>
+      <p>
+        Epic Calendar ist ein interaktiver, zoom- und scrollbarer Zeitstrahl durch die Geschichte:
+        vom Urknall bis heute, mit Erdzeitaltern, Hochkulturen und historischen Ereignissen aus
+        Europa, Asien, Afrika, Amerika und Ozeanien.
+      </p>
+      <ul>
+        <li>Erdzeitalter: von der Entstehung der Erde bis zu großen Einschlagsereignissen</li>
+        <li>Hochkulturen und Nationen: Herrscher, Reiche und Dynastien aus aller Welt</li>
+        <li>Natur &amp; Wissenschaft: Klima, Evolution und wissenschaftliche Meilensteine</li>
+        <li>Kultur &amp; Kunst: gesellschaftliche Strömungen und Kunstgeschichte</li>
+      </ul>
+      <p>Pinch-Zoom und Filter nach Kategorie und Kontinent, verfügbar auf Deutsch und Englisch.</p>
+    </div>
     <noscript>
       You need to enable JavaScript to run this app.
     </noscript>

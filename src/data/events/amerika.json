@@ -799,5 +799,83 @@
     "importance": "core",
     "minZoomLevel": 3,
     "tags": ["usa", "bürgerrechte", "rassismus", "demokratie"]
+  },
+  {
+    "id": "am-moctezuma-ii",
+    "title": "Moctezuma II. – letzter mächtiger Aztekenherrscher",
+    "description": "Als neunter Tlatoani führt Moctezuma II. das Aztekenreich auf den Höhepunkt seiner Macht. 1519 empfängt er Hernán Cortés in Tenochtitlán; 1520 kommt er während des Aufstands gegen die Spanier ums Leben.",
+    "startYear": 1502,
+    "endYear": 1520,
+    "category": "herrscher",
+    "continent": "amerika",
+    "culture": "aztekisch",
+    "importance": "core",
+    "minZoomLevel": 3,
+    "iconKey": "crown"
+  },
+  {
+    "id": "am-toussaint-louverture",
+    "title": "Toussaint Louverture – Anführer der Haitianischen Revolution",
+    "description": "Der ehemalige Sklave wird zum militärischen und politischen Anführer des Sklavenaufstands in Saint-Domingue. Als Gouverneur (1797–1802) schafft er die Sklaverei ab, bevor er 1802 von Napoleons Truppen gefangen genommen wird und 1803 im französischen Exil stirbt.",
+    "startYear": 1791,
+    "endYear": 1803,
+    "category": "herrscher",
+    "continent": "amerika",
+    "culture": "haitianisch",
+    "importance": "core",
+    "minZoomLevel": 3,
+    "iconKey": "crown"
+  },
+  {
+    "id": "am-tecumseh",
+    "title": "Tecumseh – Shawnee-Anführer",
+    "description": "Tecumseh baut ab 1808 ein Bündnis indigener Nationen im Nordwesten der USA gegen die Landabtretungen an die Vereinigten Staaten auf. Nach der Niederlage von Tippecanoe (1811) fällt er 1813 in der Schlacht am Thames.",
+    "startYear": 1808,
+    "endYear": 1813,
+    "category": "herrscher",
+    "continent": "amerika",
+    "culture": "shawnee",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "iconKey": "crown"
+  },
+  {
+    "id": "am-kultur-mexikanischer-muralismus",
+    "title": "Mexikanischer Muralismus",
+    "description": "Nach der Mexikanischen Revolution malen Diego Rivera, José Clemente Orozco und David Alfaro Siqueiros (\"Los Tres Grandes\") monumentale Wandbilder an öffentlichen Gebäuden – eine neue nationale Bildsprache aus indigener Geschichte und sozialem Kampf.",
+    "startYear": 1921,
+    "endYear": 1957,
+    "category": "kultur",
+    "continent": "amerika",
+    "culture": "mexikanisch",
+    "importance": "core",
+    "minZoomLevel": 2,
+    "tags": ["kunst", "muralismus", "mexiko", "rivera"]
+  },
+  {
+    "id": "am-kultur-harlem-renaissance",
+    "title": "Harlem Renaissance",
+    "description": "Afroamerikanische Literatur, Musik und Kunst blühen in New Yorks Stadtteil Harlem auf. Langston Hughes, Zora Neale Hurston und der Jazz von Duke Ellington prägen ein neues afroamerikanisches Selbstbewusstsein.",
+    "startYear": 1918,
+    "endYear": 1937,
+    "category": "kultur",
+    "continent": "amerika",
+    "culture": "nordamerikanisch",
+    "importance": "core",
+    "minZoomLevel": 2,
+    "tags": ["literatur", "musik", "jazz", "harlem"]
+  },
+  {
+    "id": "am-kultur-lateinamerikanischer-boom",
+    "title": "Lateinamerikanischer Boom",
+    "description": "Autoren wie Gabriel García Márquez, Julio Cortázar, Carlos Fuentes und Mario Vargas Llosa erlangen mit dem Magischen Realismus internationale Anerkennung. García Márquez' \"Hundert Jahre Einsamkeit\" (1967) wird zum Welterfolg.",
+    "startYear": 1960,
+    "endYear": 1975,
+    "category": "kultur",
+    "continent": "amerika",
+    "culture": "lateinamerikanisch",
+    "importance": "extended",
+    "minZoomLevel": 2,
+    "tags": ["literatur", "magischer-realismus", "boom", "garcía-márquez"]
   }
 ]
