@@ -3,26 +3,7 @@ import { filterVisible, type VisibilityFilter } from '../culling';
 import type { TimelineEvent } from '@/data/schema';
 import type { Category } from '@/theme/tokens';
 import { ALL_EVENTS } from '@/data/events';
-
-function ev(
-  partial: Partial<TimelineEvent> & Pick<TimelineEvent, 'id' | 'startYear'>,
-): TimelineEvent {
-  return {
-    title: partial.id,
-    category: 'zivilisation' as Category,
-    continent: 'europa',
-    minZoomLevel: 0,
-    ...partial,
-  } as TimelineEvent;
-}
-
-const baseFilter: VisibilityFilter = {
-  startYear: 0,
-  endYear: 1000,
-  zoomLevel: 4,
-  categories: new Set<Category>(['erdzeitalter', 'natur', 'zivilisation', 'nation']),
-  continent: 'europa',
-};
+import { makeEvent as ev, baseVisibilityFilter as baseFilter } from './testUtils';
 
 function sortedIds(events: TimelineEvent[]): string[] {
   return events.map((e) => e.id).sort();
