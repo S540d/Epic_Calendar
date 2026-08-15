@@ -214,7 +214,11 @@ describe('EventIndex.getFilteredCategory', () => {
     const index = buildEventIndex(events);
     expect(
       sortedIds(
-        index.getFilteredCategory({ category: 'zivilisation', continent: 'europa', culture: 'römisch' }),
+        index.getFilteredCategory({
+          category: 'zivilisation',
+          continent: 'europa',
+          culture: 'römisch',
+        }),
       ),
     ).toEqual(['roma']);
   });
