@@ -44,6 +44,36 @@
     "openSettings": "Zu den Einstellungen",
     "later": "Später"
   },
+  "learning": {
+    "sectionTitle": "Lernreisen",
+    "sectionHint": "Geführte Touren – Station für Station durch die Zeit",
+    "stations": "{{count}} Stationen",
+    "progress": "Station {{current}} von {{total}}",
+    "start": "Starten",
+    "continue": "Fortsetzen",
+    "restart": "Von vorn beginnen",
+    "next": "Weiter",
+    "prev": "Zurück",
+    "exit": "Reise beenden",
+    "exitHint": "Beendet die Lernreise und zeigt wieder den freien Zeitstrahl",
+    "finish": "Reise abschließen",
+    "doneTitle": "Geschafft!",
+    "doneMessage": "Du hast alle Stationen dieser Lernreise besucht.",
+    "journey": {
+      "grosse-reise": {
+        "label": "Die große Reise",
+        "description": "Vom Urknall bis zum World Wide Web – die wichtigsten Stationen der Geschichte in einem Durchgang."
+      },
+      "beruehmte-geschichten": {
+        "label": "Berühmte Geschichten",
+        "description": "Von „Störe meine Kreise nicht!“ bis zu Newtons Apfel – Anekdoten, die man sich seit Jahrhunderten erzählt."
+      },
+      "erfindungen": {
+        "label": "Erfindungen, die alles verändert haben",
+        "description": "Vom Rad über den Buchdruck bis zum Internet – Ideen, die die Welt umgebaut haben."
+      }
+    }
+  },
   "event": {
     "unknownDate": "Datum unbekannt",
     "present": "heute",
