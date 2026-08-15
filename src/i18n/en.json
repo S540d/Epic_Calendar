@@ -132,6 +132,15 @@
     "noResults": "No results",
     "jumpToYear": "Jump to year {{year}}"
   },
+  "cultureFilter": {
+    "title": "Filter {{continent}}",
+    "all": "Show all",
+    "noCultures": "No cultures available for this continent",
+    "activeLabel": "Filtered: {{culture}} · tap to clear",
+    "activeShort": "filtered",
+    "openHint": "tap again to filter",
+    "clear": "Clear filter"
+  },
   "axis": {
     "billion": "Bn",
     "million": "M",

@@ -12,7 +12,7 @@ import { Platform, useWindowDimensions, type ScrollView } from 'react-native';
 
 import { ALL_EVENTS } from '@/data/events';
 import { buildStableTracksByLane, computeLaneData, type TrackMap } from '@/timeline/culling';
-import { buildEventIndex } from '@/timeline/eventIndex';
+import { globalEventIndex } from '@/timeline/globalEventIndex';
 import { useTimelineViewport } from './useTimelineViewport';
 import { useTimelineGestures } from './useTimelineGestures';
 import { TimelineCanvasWeb } from './TimelineCanvasWeb';
@@ -42,6 +42,8 @@ import { LANE_ORDER } from '@/theme/categories';
 type Props = {
   activeCategories: Set<Category>;
   continent: Continent;
+  /** When set, only events with this exact `culture` value are shown (#163 country/culture filter). */
+  culture?: string | null;
   /** Cumulative detail tier; higher tiers reveal more events. */
   detailLevel?: ImportanceLevel;
   onSelectEvent: (event: TimelineEvent) => void;
@@ -80,8 +82,8 @@ export type TimelineViewHandle = {
   jumpToToday: () => void;
 };
 
-// Built once at module load from the static event set — avoids O(n) full scans per frame.
-const eventIndex = buildEventIndex(ALL_EVENTS);
+// Shared index built once at module load from the static event set — avoids O(n) full scans per frame.
+const eventIndex = globalEventIndex;
 
 /** Delay before opening the detail modal after the zoom-to-fit animation (600 ms). */
 const ZOOM_MODAL_DELAY_MS = 650;
@@ -90,6 +92,7 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
   {
     activeCategories,
     continent,
+    culture = null,
     detailLevel = 'detail',
     onSelectEvent,
     resetKey = 0,
@@ -186,8 +189,8 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
   // when the filtered event set changes (continent/detail/active lanes), NOT on
   // every pan/zoom frame. Keeps an event's row stable while scrolling.
   const stableTracksByLane = useMemo(
-    () => buildStableTracksByLane(lanes, continent, maxImportanceRank, eventIndex),
-    [lanes, continent, maxImportanceRank],
+    () => buildStableTracksByLane(lanes, continent, maxImportanceRank, eventIndex, culture),
+    [lanes, continent, maxImportanceRank, culture],
   );
 
   // Lane data for both web and native — driven by jsOffsetX (viewport-relative).
@@ -202,6 +205,7 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
       continent,
       maxEventsPerLane: MAX_EVENTS_PER_LANE,
       maxImportanceRank,
+      culture,
       eventIndex,
       stableTracksByLane,
     });
@@ -213,6 +217,7 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
     zoomLevel,
     continent,
     maxImportanceRank,
+    culture,
     stableTracksByLane,
   ]);
   const { visibleByLane, overflowCounts, tracksByLane, connectorsByLane } = laneData;

@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import { ContinentTabBar } from '@/components/ContinentTabBar';
+import { CultureFilterModal } from '@/components/CultureFilterModal';
 import { DetailLevelPrompt } from '@/components/DetailLevelPrompt';
 import { EpochOverviewScreen } from '@/components/EpochOverviewScreen';
 import { FilterChipBar } from '@/components/FilterChipBar';
@@ -14,6 +15,7 @@ import { TimelineZoomCluster } from '@/components/TimelineZoomCluster';
 import { EventDetailModal } from '@/screens/EventDetailModal';
 import { usePersistedState } from '@/hooks/usePersistedState';
 import type { Continent, ImportanceLevel, TimelineEvent } from '@/data/schema';
+import { globalEventIndex } from '@/timeline/globalEventIndex';
 import { spacing, typography, type Category } from '@/theme/tokens';
 import { DEFAULT_CATEGORIES } from '@/theme/categories';
 import { useTheme, type ThemeColors } from '@/theme/ThemeContext';
@@ -29,6 +31,8 @@ export function TimelineScreen() {
   const activeCategories = new Set<Category>(persistedCategories);
 
   const [continent, setContinent] = usePersistedState<Continent>('selectedContinent', 'europa');
+  const [cultureFilter, setCultureFilter] = useState<string | null>(null);
+  const [cultureFilterVisible, setCultureFilterVisible] = useState(false);
   const [detailLevel, setDetailLevel] = usePersistedState<ImportanceLevel>('detailLevel', 'detail');
   const [showFpsMonitor, setShowFpsMonitor] = usePersistedState<boolean>('showFpsMonitor', false);
   const [selected, setSelected] = useState<TimelineEvent | null>(null);
@@ -81,6 +85,25 @@ export function TimelineScreen() {
   const handleOpenSearch = useCallback(() => setSearchVisible(true), []);
   const handleCloseSearch = useCallback(() => setSearchVisible(false), []);
 
+  // Switching continents invalidates the culture filter — cultures are scoped
+  // per continent, so a stale filter would silently hide everything (#163).
+  const handleContinentChange = useCallback(
+    (c: Continent) => {
+      setContinent(c);
+      setCultureFilter(null);
+    },
+    [setContinent],
+  );
+  const handleOpenCultureFilter = useCallback(() => setCultureFilterVisible(true), []);
+  const handleCloseCultureFilter = useCallback(() => setCultureFilterVisible(false), []);
+  const handleClearCultureFilter = useCallback(() => setCultureFilter(null), []);
+
+  // Cultures available for the current continent, for the #163 filter sheet.
+  const availableCultures = useMemo(
+    () => (continent === 'global' ? [] : globalEventIndex.culturesForContinent(continent)),
+    [continent],
+  );
+
   const handleDismissDetailPrompt = useCallback(
     () => setDetailPromptSeen(true),
     [setDetailPromptSeen],
@@ -100,6 +123,7 @@ export function TimelineScreen() {
       );
       if (event.continent !== 'global') {
         setContinent(event.continent);
+        setCultureFilter(null);
       }
       setShowOverview(false);
       setEpochRange(undefined);
@@ -166,6 +190,20 @@ export function TimelineScreen() {
             </Pressable>
           </View>
           <FilterChipBar active={activeCategories} onToggle={toggleCategory} />
+          {cultureFilter && (
+            <Pressable
+              style={styles.cultureFilterBanner}
+              onPress={handleClearCultureFilter}
+              accessibilityRole="button"
+              accessibilityLabel={t('cultureFilter.activeLabel', { culture: cultureFilter })}
+              accessibilityHint={t('cultureFilter.clear')}
+            >
+              <Text style={styles.cultureFilterBannerText} numberOfLines={1}>
+                {t('cultureFilter.activeLabel', { culture: cultureFilter })}
+              </Text>
+              <Text style={styles.cultureFilterBannerClose}>✕</Text>
+            </Pressable>
+          )}
           <View style={styles.canvasOuter}>
             <ScrollView
               ref={canvasScrollRef}
@@ -176,6 +214,7 @@ export function TimelineScreen() {
                 ref={timelineViewRef}
                 activeCategories={activeCategories}
                 continent={continent}
+                culture={cultureFilter}
                 detailLevel={detailLevel}
                 onSelectEvent={setSelected}
                 epochRange={epochRange}
@@ -193,7 +232,12 @@ export function TimelineScreen() {
               zoomOut={() => timelineViewRef.current?.zoomOut()}
             />
           </View>
-          <ContinentTabBar active={continent} onChange={setContinent} />
+          <ContinentTabBar
+            active={continent}
+            onChange={handleContinentChange}
+            onPressActive={handleOpenCultureFilter}
+            cultureFilterActive={cultureFilter !== null}
+          />
           <EventDetailModal event={selected} onClose={() => setSelected(null)} />
         </SafeAreaView>
       )}
@@ -210,6 +254,14 @@ export function TimelineScreen() {
         onClose={handleCloseSearch}
         onSelectEvent={handleSearchSelectEvent}
         onSelectYear={handleSearchSelectYear}
+      />
+      <CultureFilterModal
+        visible={cultureFilterVisible}
+        continent={continent}
+        cultures={availableCultures}
+        active={cultureFilter}
+        onSelect={setCultureFilter}
+        onClose={handleCloseCultureFilter}
       />
     </>
   );
@@ -258,6 +310,31 @@ function makeStyles(colors: ThemeColors) {
     iconButtonText: {
       fontSize: 20,
       color: colors.textSecondary,
+    },
+    cultureFilterBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginHorizontal: spacing.md,
+      marginBottom: spacing.xs,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.xs,
+      borderRadius: 8,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.accent,
+    },
+    cultureFilterBannerText: {
+      ...typography.caption,
+      color: colors.accent,
+      fontWeight: '700',
+      flex: 1,
+    },
+    cultureFilterBannerClose: {
+      ...typography.caption,
+      color: colors.accent,
+      fontWeight: '700',
+      marginLeft: spacing.sm,
     },
     canvasOuter: {
       flex: 1,

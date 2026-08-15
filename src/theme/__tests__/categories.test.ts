@@ -12,6 +12,7 @@ import {
   categoryLaneBg,
   categoryPalette,
   categoryConfig,
+  generatePalette,
   type Category,
 } from '../categories';
 
@@ -81,60 +82,41 @@ describe('category registry — color/palette values match the previous tokens',
     });
   });
 
-  it('palettes are unchanged', () => {
-    expect(CATEGORY_PALETTES.erdzeitalter).toEqual([
-      '#3D7A90',
-      '#4E8FA8',
-      '#2E6A7A',
-      '#5FA5C2',
-      '#1E5568',
-      '#6BBAD4',
-      '#357088',
-    ]);
-    expect(CATEGORY_PALETTES.natur).toEqual([
-      '#3D9957',
-      '#5ABF72',
-      '#2E7A45',
-      '#7AD68A',
-      '#4FB06A',
-      '#236634',
-      '#8FD4A0',
-    ]);
-    expect(CATEGORY_PALETTES.zivilisation).toEqual([
-      '#B87C3A',
-      '#D49A52',
-      '#C86030',
-      '#E8B468',
-      '#A05C28',
-      '#F0C878',
-      '#7A4420',
-    ]);
-    expect(CATEGORY_PALETTES.nation).toEqual([
-      '#5A7AE8',
-      '#8AACFF',
-      '#3A5CC4',
-      '#7090D8',
-      '#A0C0FF',
-      '#4468B0',
-      '#C0D4FF',
-    ]);
-    expect(CATEGORY_PALETTES.herrscher).toEqual([
-      '#BF7020',
-      '#D98C38',
-      '#A05810',
-      '#E8A050',
-      '#8C4808',
-      '#F0B868',
-      '#704000',
-    ]);
-    expect(CATEGORY_PALETTES.kultur).toEqual([
-      '#9750B4',
-      '#B876CC',
-      '#7E3E9E',
-      '#CC96DE',
-      '#6A2E88',
-      '#D8AAE8',
-      '#5A2374',
+  it('palettes are derived from the accent color via generatePalette (#162)', () => {
+    for (const c of CATEGORIES) {
+      expect(CATEGORY_PALETTES[c.id]).toEqual(generatePalette(c.color));
+    }
+  });
+});
+
+describe('generatePalette (#162 — deterministic, traceable color logic)', () => {
+  it('index 0 is always the base color itself', () => {
+    expect(generatePalette('#4A8FA8')[0]).toBe('#4A8FA8');
+    expect(generatePalette('#A85FC2')[0]).toBe('#A85FC2');
+  });
+
+  it('is deterministic (same input → same output)', () => {
+    expect(generatePalette('#C28B4A')).toEqual(generatePalette('#C28B4A'));
+  });
+
+  it('returns 7 distinct, valid hex colors', () => {
+    const palette = generatePalette('#7C9CFF');
+    expect(palette).toHaveLength(7);
+    expect(new Set(palette).size).toBe(7);
+    for (const hex of palette) {
+      expect(hex).toMatch(/^#[0-9A-F]{6}$/);
+    }
+  });
+
+  it('produces a fixed, pinned palette for a known base color', () => {
+    expect(generatePalette('#4A8FA8')).toEqual([
+      '#4A8FA8',
+      '#659CBB',
+      '#3C7B88',
+      '#85A9C9',
+      '#2E6468',
+      '#A5BBD7',
+      '#204847',
     ]);
   });
 });
