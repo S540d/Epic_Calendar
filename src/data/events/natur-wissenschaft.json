@@ -234,6 +234,19 @@
     "tags": ["astronomie", "physik", "wissenschaftliche-revolution"]
   },
   {
+    "id": "galileo-inquisition",
+    "title": "Galilei vor der Inquisition",
+    "description": "Die römische Inquisition zwingt Galileo Galilei, dem kopernikanischen Weltbild öffentlich abzuschwören. Er verbringt den Rest seines Lebens unter Hausarrest, gilt aber als Begründer der modernen Naturwissenschaft.",
+    "startYear": 1633,
+    "category": "natur",
+    "continent": "global",
+    "culture": "Wissenschaftsgeschichte",
+    "importance": "core",
+    "minZoomLevel": 3,
+    "tags": ["astronomie", "kirche", "inquisition"],
+    "story": "Nachdem Galilei vor Gericht schwören musste, dass sich die Erde nicht bewegt, soll er der Legende nach leise gemurmelt haben: „Eppur si muove“ – „Und sie bewegt sich doch.“ Belegt ist der Satz erst rund 100 Jahre später, doch er wurde zum Sinnbild dafür, dass Wahrheit sich nicht per Dekret abschaffen lässt."
+  },
+  {
     "id": "kepler-planetengesetze",
     "title": "Kepler – Planetengesetze",
     "description": "Johannes Kepler formuliert seine drei Planetengesetze. Erstmals wird nachgewiesen, dass Planeten auf elliptischen Bahnen die Sonne umkreisen.",
@@ -267,7 +280,21 @@
     "culture": "Wissenschaftsgeschichte",
     "importance": "core",
     "minZoomLevel": 2,
-    "tags": ["physik", "mathematik", "aufklärung"]
+    "tags": ["physik", "mathematik", "aufklärung"],
+    "story": "Der Legende nach sah Newton um 1666 einen Apfel von einem Baum fallen und fragte sich, warum er senkrecht zu Boden fällt statt seitwärts oder aufwärts zu fliegen – der Ausgangspunkt seiner Überlegungen zur Gravitation, die Jahrzehnte später in die Principia mündeten."
+  },
+  {
+    "id": "franklin-blitzableiter",
+    "title": "Franklin – Elektrizität und Blitzableiter",
+    "description": "Benjamin Franklin weist die elektrische Natur von Blitzen nach und erfindet den Blitzableiter. Seine Arbeiten begründen wichtige Grundbegriffe der Elektrizitätslehre.",
+    "startYear": 1752,
+    "category": "natur",
+    "continent": "global",
+    "culture": "Wissenschaftsgeschichte",
+    "importance": "core",
+    "minZoomLevel": 3,
+    "tags": ["physik", "elektrizität"],
+    "story": "Franklin soll bei einem Gewitter über Philadelphia einen Drachen mit einem Metallschlüssel am Ende der nassen Schnur steigen gelassen haben. Als sich der Schlüssel auflud, konnte er Funken daraus ziehen – ein gefährlicher Beweis dafür, dass Blitze elektrischer Natur sind. Das Experiment gilt heute als Legende mit wahrem Kern; nachweislich baute Franklin daraufhin den ersten funktionierenden Blitzableiter."
   },
   {
     "id": "jenner-pockenschutzimpfung",
@@ -447,7 +474,8 @@
     "culture": "Wissenschaftsgeschichte",
     "importance": "core",
     "minZoomLevel": 2,
-    "tags": ["physik", "radioaktivität"]
+    "tags": ["physik", "radioaktivität"],
+    "story": "Marie Curie trug Radiumproben in ihren Kitteltaschen und bewahrte Notizbücher voller Messwerte auf – sie leuchteten im Dunkeln sanft grünlich. Diese Notizbücher sind bis heute radioaktiv verstrahlt und werden im Pariser Nationalarchiv in bleiausgekleideten Kisten aufbewahrt; wer sie einsehen will, muss eine Haftungserklärung unterschreiben."
   },
   {
     "id": "planck-quantentheorie",
