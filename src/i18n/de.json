@@ -132,6 +132,15 @@
     "noResults": "Keine Treffer",
     "jumpToYear": "Springe zu Jahr {{year}}"
   },
+  "cultureFilter": {
+    "title": "{{continent}} filtern",
+    "all": "Alle anzeigen",
+    "noCultures": "Keine Kulturen für diesen Kontinent verfügbar",
+    "activeLabel": "Gefiltert: {{culture}} · zum Zurücksetzen tippen",
+    "activeShort": "gefiltert",
+    "openHint": "erneut tippen zum Filtern",
+    "clear": "Filter zurücksetzen"
+  },
   "axis": {
     "billion": "Mrd",
     "million": "Mio",

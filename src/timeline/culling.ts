@@ -191,6 +191,8 @@ export type VisibilityFilter = {
   continent: Continent;
   /** Highest importance rank to show (cumulative). Default 2 (= show all). */
   maxImportanceRank?: number;
+  /** When set, only events with this exact `culture` value pass (#163 country/culture filter). */
+  culture?: string | null;
 };
 
 export function filterVisible(events: TimelineEvent[], f: VisibilityFilter): TimelineEvent[] {
@@ -201,6 +203,7 @@ export function filterVisible(events: TimelineEvent[], f: VisibilityFilter): Tim
     if (ev.continent !== 'global' && ev.continent !== f.continent) continue;
     if (ev.minZoomLevel > f.zoomLevel) continue;
     if (!passesImportance(ev, maxImportanceRank)) continue;
+    if (f.culture && ev.culture !== f.culture) continue;
     const evStart = ev.startYear;
     const evEnd = ev.endYear ?? ev.startYear;
     // Overlap test with viewport.
@@ -236,6 +239,8 @@ export type LaneDataInput = {
   maxEventsPerLane: number;
   /** Highest importance rank to show (cumulative). Default 2 (= show all). */
   maxImportanceRank?: number;
+  /** When set, only events with this exact `culture` value pass (#163 country/culture filter). */
+  culture?: string | null;
   /** Optional pre-built index for O(hits + log n) queries instead of O(n) full scan. */
   eventIndex?: EventIndex;
   /**
@@ -260,10 +265,16 @@ export function buildStableTracksByLane(
   continent: Continent,
   maxImportanceRank: number | undefined,
   eventIndex: EventIndex,
+  culture?: string | null,
 ): Map<Category, TrackMap> {
   const tracksByLane = new Map<Category, TrackMap>();
   for (const cat of lanes) {
-    const all = eventIndex.getFilteredCategory({ category: cat, continent, maxImportanceRank });
+    const all = eventIndex.getFilteredCategory({
+      category: cat,
+      continent,
+      maxImportanceRank,
+      culture,
+    });
     tracksByLane.set(cat, assignTracks(all));
   }
   return tracksByLane;
@@ -284,6 +295,7 @@ export function computeLaneData(input: LaneDataInput): LaneData {
     continent,
     maxEventsPerLane,
     maxImportanceRank,
+    culture,
     eventIndex,
     stableTracksByLane,
   } = input;
@@ -300,6 +312,7 @@ export function computeLaneData(input: LaneDataInput): LaneData {
       categories: new Set<Category>([cat]),
       continent,
       maxImportanceRank,
+      culture,
     };
     const visible = eventIndex ? eventIndex.queryVisible(query) : filterVisible(events, query);
     visibleByLane.set(cat, visible);

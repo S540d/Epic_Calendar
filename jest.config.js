@@ -4,6 +4,7 @@ module.exports = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+  setupFiles: ['<rootDir>/jest.setup.js'],
   transformIgnorePatterns: [
     'node_modules/(?!((jest-)?react-native|@react-native|expo(nent)?|@expo(nent)?/.*|@shopify/.*|react-native-.*))',
   ],
