@@ -117,4 +117,14 @@ describe('validateEvent', () => {
     const errs = validateEvent({ ...valid, regions: [true] as never }, CATEGORIES);
     expect(errs.some((e) => e.includes('regions'))).toBe(true);
   });
+
+  it('accepts a valid story field', () => {
+    const event: TimelineEvent = { ...valid, story: 'Störe meine Kreise nicht!' };
+    expect(validateEvent(event, CATEGORIES)).toEqual([]);
+  });
+
+  it('flags story that is not a string', () => {
+    const errs = validateEvent({ ...valid, story: 42 as never }, CATEGORIES);
+    expect(errs.some((e) => e.includes('story'))).toBe(true);
+  });
 });

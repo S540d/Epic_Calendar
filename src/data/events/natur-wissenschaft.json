@@ -69,6 +69,19 @@
     "tags": ["mathematik", "physik", "antike"]
   },
   {
+    "id": "archimedes-tod",
+    "title": "Der Tod des Archimedes",
+    "description": "Bei der Eroberung von Syrakus im Zweiten Punischen Krieg tötet ein römischer Soldat Archimedes – entgegen dem Befehl, den berühmten Gelehrten zu verschonen.",
+    "startYear": -212,
+    "category": "natur",
+    "continent": "global",
+    "culture": "Mathematikgeschichte",
+    "importance": "core",
+    "minZoomLevel": 2,
+    "tags": ["mathematik", "antike", "griechenland", "rom"],
+    "story": "Als römische Soldaten 212 v. Chr. Syrakus erobern, sitzt Archimedes über geometrische Figuren im Sand gebeugt. Als ein Soldat ihn zum Mitkommen auffordert, soll er nur geantwortet haben: „Störe meine Kreise nicht!“ – der Soldat erschlägt ihn daraufhin."
+  },
+  {
     "id": "eratosthenes-erdumfang",
     "title": "Eratosthenes misst die Erde",
     "description": "Eratosthenes von Kyrene berechnet den Erdumfang mit bemerkenswert hoher Genauigkeit. Sein Wert weicht nur um 2 % vom tatsächlichen Wert ab.",

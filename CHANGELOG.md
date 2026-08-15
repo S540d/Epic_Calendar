@@ -4,6 +4,7 @@
 
 ### Added
 
+- **Bekannte Geschichten für den Kindermodus (`story`, #171-Folge):** Neues optionales Schema-Feld `story?: string` neben `mnemonic` — für kurz nacherzählte Anekdoten statt Jahres-Merksprüchen. Erster Eintrag: Archimedes' „Störe meine Kreise nicht!" beim Fall von Syrakus (neues Event `archimedes-tod`, 212 v. Chr., in `natur-wissenschaft.json`). Wird im `EventDetailModal` in einer eigenen Box angezeigt, unabhängig von `mnemonic`.
 - **Kultur-/Länder-Filter innerhalb eines Kontinents (#163):** Erneutes Antippen des bereits aktiven Kontinent-Tabs öffnet ein neues `CultureFilterModal` mit allen `culture`-Werten (Völker/Reiche) dieses Kontinents. Auswahl filtert den Zeitstrahl auf diese Kultur; „Alle anzeigen" setzt zurück. Der aktive Filter ist unmissverständlich sichtbar: Punkt-Indikator auf dem Kontinent-Tab plus Banner-Zeile über dem Zeitstrahl („Gefiltert: Römisch · zum Zurücksetzen tippen"). Der Filter wird pro Kontinent zurückgesetzt, da Kulturen kontinentgebunden sind (Kontinentwechsel oder Such-Sprung löschen ihn). `culture` ist als optionaler Parameter durch `eventIndex.ts`/`culling.ts`/`TimelineView` gefädelt, analog zum bestehenden `continent`-Filter.
 - **Weitere Lernsprüche (#171):** 6 neue `mnemonic`-Einträge zu bekannten Wendepunkten in `europa.json` (Caesar/Rubikon „Alea iacta est", Varusschlacht „Varus, gib mir meine Legionen wieder!", Luthers Thesenanschlag 1517, Thermopylen-Epitaph, Marathon-Läufer, Sturm auf die Bastille 1789) — alle auf bereits vorhandenen `importance: 'core'`-Events, sichtbar im `EventDetailModal`.
 

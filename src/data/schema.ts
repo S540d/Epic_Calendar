@@ -66,6 +66,13 @@ export type TimelineEvent = {
    * the simplified "Kinderdarstellung" (#171). E.g. "753, Rom kroch aus dem Ei".
    */
   mnemonic?: string;
+  /**
+   * Kid-friendly narrative anecdote about this event, shown alongside
+   * `mnemonic` in the "Kinderdarstellung" (#171 follow-up). Unlike `mnemonic`
+   * (a short year-rhyme), this is a short retold story — e.g. Archimedes'
+   * "Störe meine Kreise nicht!" at the fall of Syracuse.
+   */
+  story?: string;
 };
 
 export type ImportanceLevel = 'core' | 'extended' | 'detail';
@@ -184,5 +191,7 @@ export function validateEvent(
     errors.push('regions must be an array of strings');
   if (event.mnemonic !== undefined && typeof event.mnemonic !== 'string')
     errors.push('mnemonic must be a string');
+  if (event.story !== undefined && typeof event.story !== 'string')
+    errors.push('story must be a string');
   return errors;
 }
