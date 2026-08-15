@@ -1655,7 +1655,8 @@
     "culture": "griechisch",
     "importance": "core",
     "minZoomLevel": 3,
-    "tags": ["krieg", "griechenland", "persien"]
+    "tags": ["krieg", "griechenland", "persien"],
+    "mnemonic": "490 v. Chr. – „Freut euch, wir haben gesiegt!“: der Läufer von Marathon nach 42 km bis Athen."
   },
   {
     "id": "eu-schlacht-issos",
@@ -1680,7 +1681,8 @@
     "culture": "griechisch",
     "importance": "core",
     "minZoomLevel": 3,
-    "tags": ["krieg", "griechenland", "sparta", "persien"]
+    "tags": ["krieg", "griechenland", "sparta", "persien"],
+    "mnemonic": "480 v. Chr. – „Wanderer, kommst du nach Sparta…“: das berühmte Epitaph für die 300 Gefallenen der Thermopylen."
   },
   {
     "id": "eu-peloponnesischer-krieg",
@@ -1718,7 +1720,8 @@
     "culture": "römisch",
     "importance": "core",
     "minZoomLevel": 3,
-    "tags": ["rom", "bürgerkrieg", "caesar"]
+    "tags": ["rom", "bürgerkrieg", "caesar"],
+    "mnemonic": "49 v. Chr. – „Alea iacta est“: Der Würfel ist gefallen, als Caesar den Rubikon überschritt."
   },
   {
     "id": "eu-edict-mailand",
@@ -1818,7 +1821,8 @@
     "culture": "deutsch",
     "importance": "core",
     "minZoomLevel": 2,
-    "tags": ["reformation", "religion", "protestantismus", "deutschland"]
+    "tags": ["reformation", "religion", "protestantismus", "deutschland"],
+    "mnemonic": "1517 – Luther schlägt seine 95 Thesen an die Wittenberger Schlosskirche."
   },
   {
     "id": "eu-dreissigjähriger-krieg",
@@ -1868,7 +1872,8 @@
     "culture": "französisch",
     "importance": "core",
     "minZoomLevel": 2,
-    "tags": ["revolution", "demokratie", "frankreich", "aufklärung"]
+    "tags": ["revolution", "demokratie", "frankreich", "aufklärung"],
+    "mnemonic": "1789 – Sturm auf die Bastille: Liberté, Égalité, Fraternité."
   },
   {
     "id": "eu-napoleon-reich",
@@ -2423,7 +2428,8 @@
     "culture": "germanisch",
     "importance": "core",
     "minZoomLevel": 3,
-    "tags": ["arminius", "rom", "germanen"]
+    "tags": ["arminius", "rom", "germanen"],
+    "mnemonic": "9 n. Chr. – „Varus, gib mir meine Legionen wieder!“, soll Kaiser Augustus nach der Niederlage gerufen haben."
   },
   {
     "id": "eu-mauerfall-wiedervereinigung",
