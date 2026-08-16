@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { Platform, useWindowDimensions, type ScrollView } from 'react-native';
+import { Platform, useWindowDimensions, type ScrollView, type View } from 'react-native';
 
 import { ALL_EVENTS } from '@/data/events';
 import { buildStableTracksByLane, computeLaneData, type TrackMap } from '@/timeline/culling';
@@ -109,6 +109,16 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
 ) {
   const { width: screenWidth } = useWindowDimensions();
   const canvasWidth = Math.max(0, screenWidth - LANE_LABEL_WIDTH);
+
+  // Ref to the lanes container inside whichever canvas renderer is mounted, so
+  // `scrollToEventLane` can bring a jumped-to event's lane into view (#171-
+  // Lernreise follow-up — without this, a station whose lane sits low in the
+  // (unscrolled) canvas stays hidden behind the bottom-docked
+  // LearningJourneyBar / below the fold). Same mechanism on both platforms:
+  // measured via `measureLayout` against the *outer* screen ScrollView
+  // (`scrollRef`, from `TimelineScreen`) — see `TimelineCanvasWeb`'s doc
+  // comment for why web has no scroll container of its own either.
+  const lanesContainerRef = useRef<View>(null);
 
   // Popover shown when a tap hits multiple overlapping events (#35)
   const [popoverState, setPopoverState] = useState<PopoverState | null>(null);
@@ -385,6 +395,76 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
     };
   }, [epochRange, canvasWidth]);
 
+  // Scrolls a jumped-to event's lane into view. Without this, a lane that
+  // sits low in the (unscrolled) canvas can stay entirely off-screen after a
+  // zoom-to-fit — the horizontal zoom is right, but the bar itself is never
+  // visible because nothing ever moved the vertical scroll position. Most
+  // visible for the guided learning journey, whose bottom-docked bar also
+  // eats into the already-limited viewport height.
+  //
+  // Deliberately reads `lanes`/`laneTops` fresh via closure (not a snapshot
+  // taken at jump time): `computeLaneData` derives both from the *visible*
+  // viewport, so right after a jump request they still describe the
+  // *previous* viewport — only once `zoomToFit`'s animation has actually
+  // panned there do they reflect the new one. Callers must invoke this
+  // through `scrollToEventLaneRef` (see below) *after* the zoom settles, not
+  // synchronously — see the jumpToEvent effect.
+  const scrollToEventLane = useCallback(
+    (event: TimelineEvent) => {
+      const laneIdx = lanes.indexOf(event.category);
+      if (laneIdx === -1) return; // category not active — nothing to scroll to
+      const targetY = Math.max(0, (laneTops[laneIdx] ?? 0) - LANE_GAP);
+      const scrollNode = scrollRef?.current;
+      if (!scrollNode) return;
+      if (Platform.OS === 'web') {
+        // `TimelineChrome`/`TimelineLaneLabels` are `position: sticky` on web
+        // (see their doc comments) — the chrome always visually reserves its
+        // own height at the top of the viewport, *regardless of scrollTop*,
+        // by design. So a lane's local offset within the lanes container
+        // (`targetY`) already IS the scrollTop that lands it just below the
+        // pinned chrome; adding the chrome's own height (like native needs)
+        // would scroll *past* that point and let the sticky chrome paint
+        // over the lane instead of sitting above it.
+        //
+        // `ScrollView.scrollTo()` is deliberately NOT used here: react-native-
+        // web implements it as `node.scroll({ top, left, behavior })` — the
+        // DOM's *options-object* form of `Element.scroll`/`scrollTo`, which
+        // (confirmed against real headless Chromium, not a test-only quirk)
+        // silently no-ops on this element: `scrollTop` never updates and
+        // nothing repaints. Setting `.scrollTop` directly on the underlying
+        // DOM node is the one form that reliably works, so that's what we do,
+        // at the cost of losing the smooth-scroll animation.
+        const rawNode = (
+          scrollNode as unknown as { getScrollableNode?: () => { scrollTop: number } | null }
+        ).getScrollableNode?.();
+        if (rawNode) rawNode.scrollTop = targetY;
+        return;
+      }
+      // Native has no sticky chrome — `TimelineChrome` is normal document
+      // flow above the lanes and genuinely scrolls away, so the target needs
+      // its real rendered height too. Measure the lanes View against the
+      // outer screen ScrollView to get it.
+      lanesContainerRef.current?.measureLayout(
+        // react-native's typings for measureLayout are stricter than what it
+        // accepts at runtime — a ScrollView ref works fine as the relative-to
+        // target (same pattern RN's own docs use).
+        scrollNode as any,
+        (_x: number, y: number) => {
+          scrollNode.scrollTo({ y: y + targetY, animated: true });
+        },
+        () => {},
+      );
+    },
+    [lanes, laneTops, scrollRef],
+  );
+
+  // Stable ref to the latest scrollToEventLane closure — see its doc comment
+  // for why callers must go through this instead of calling it directly.
+  const scrollToEventLaneRef = useRef(scrollToEventLane);
+  useLayoutEffect(() => {
+    scrollToEventLaneRef.current = scrollToEventLane;
+  }, [scrollToEventLane]);
+
   // Jump to a specific event (e.g. from search, #146 A). Keyed on requestId
   // (not event.id) so repeated jumps to the same event still re-trigger the
   // animation. Reuses the same zoom-to-fit + minimap highlight + delayed
@@ -400,14 +480,20 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
       startT: yearToT(event.startYear),
       endT: yearToT(event.endYear ?? event.startYear),
     });
+    let scrollTimer: ReturnType<typeof setTimeout> | undefined;
     const zoomTimer = setTimeout(() => {
       zoomToFitRef.current(event.startYear, event.endYear, true);
+      // Wait for the zoom-to-fit animation to actually settle (same delay as
+      // the detail-modal open below) before scrolling — `lanes`/`laneTops`
+      // only reflect the new viewport once it does (see doc comment above).
+      scrollTimer = setTimeout(() => scrollToEventLaneRef.current(event), ZOOM_MODAL_DELAY_MS);
       if (openDetail) setPendingSelectEvent(event);
     }, 100);
     const clearTimer = setTimeout(() => setMinimapHighlight(null), 450);
     return () => {
       clearTimeout(zoomTimer);
       clearTimeout(clearTimer);
+      clearTimeout(scrollTimer);
     };
   }, [jumpToEvent, canvasWidth]);
 
@@ -453,6 +539,7 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
   if (Platform.OS === 'web') {
     return (
       <TimelineCanvasWeb
+        ref={lanesContainerRef}
         lanes={lanes}
         laneTops={laneTops}
         laneTrackCounts={laneTrackCounts}
@@ -482,6 +569,7 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
 
   return (
     <TimelineCanvasNative
+      ref={lanesContainerRef}
       lanes={lanes}
       laneTops={laneTops}
       laneTrackCounts={laneTrackCounts}
