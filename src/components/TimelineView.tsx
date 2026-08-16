@@ -59,8 +59,11 @@ type Props = {
    * same event) so repeated searches for the same event still re-trigger the
    * animation. Does not change the active category/continent filter itself —
    * the caller must ensure the event is visible under the current filters.
+   * `openDetail` defaults to true; the guided learning journey passes false
+   * because it renders the station content in its own bar instead of a modal
+   * that would cover the timeline.
    */
-  jumpToEvent?: { event: TimelineEvent; requestId: number } | null;
+  jumpToEvent?: { event: TimelineEvent; requestId: number; openDetail?: boolean } | null;
   /**
    * Set (e.g. from search) to center the viewport on a specific year without
    * opening a detail modal. Same `requestId` re-trigger semantics as `jumpToEvent`.
@@ -392,14 +395,14 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
     if (canvasWidth <= 0) return;
     if (lastJumpRequestIdRef.current === jumpToEvent.requestId) return;
     lastJumpRequestIdRef.current = jumpToEvent.requestId;
-    const { event } = jumpToEvent;
+    const { event, openDetail = true } = jumpToEvent;
     setMinimapHighlight({
       startT: yearToT(event.startYear),
       endT: yearToT(event.endYear ?? event.startYear),
     });
     const zoomTimer = setTimeout(() => {
       zoomToFitRef.current(event.startYear, event.endYear, true);
-      setPendingSelectEvent(event);
+      if (openDetail) setPendingSelectEvent(event);
     }, 100);
     const clearTimer = setTimeout(() => setMinimapHighlight(null), 450);
     return () => {

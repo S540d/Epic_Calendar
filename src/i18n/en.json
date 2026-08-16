@@ -44,6 +44,36 @@
     "openSettings": "Go to Settings",
     "later": "Later"
   },
+  "learning": {
+    "sectionTitle": "Learning journeys",
+    "sectionHint": "Guided tours – one stop at a time through history",
+    "stations": "{{count}} stops",
+    "progress": "Stop {{current}} of {{total}}",
+    "start": "Start",
+    "continue": "Continue",
+    "restart": "Start over",
+    "next": "Next",
+    "prev": "Back",
+    "exit": "End journey",
+    "exitHint": "Ends the learning journey and returns to the free timeline",
+    "finish": "Finish journey",
+    "doneTitle": "All done!",
+    "doneMessage": "You have visited every stop on this learning journey.",
+    "journey": {
+      "grosse-reise": {
+        "label": "The Great Journey",
+        "description": "From the Big Bang to the World Wide Web – the key milestones of history in one run."
+      },
+      "beruehmte-geschichten": {
+        "label": "Famous Stories",
+        "description": "From “Do not disturb my circles!” to Newton's apple – anecdotes retold for centuries."
+      },
+      "erfindungen": {
+        "label": "Inventions That Changed Everything",
+        "description": "From the wheel through the printing press to the internet – ideas that rebuilt the world."
+      }
+    }
+  },
   "event": {
     "unknownDate": "Date unknown",
     "present": "present",
@@ -54,6 +84,7 @@
     "continent": "Continent",
     "culture": "Culture",
     "mnemonic": "Mnemonic",
+    "story": "Famous Story",
     "billion": "Bn",
     "million": "M",
     "thousand": "k"

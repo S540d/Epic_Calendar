@@ -72,6 +72,12 @@ export function EventDetailModal({ event, onClose }: Props) {
                   <Text style={styles.mnemonicText}>{event.mnemonic}</Text>
                 </View>
               )}
+              {event.story && (
+                <View style={styles.storyBox} accessibilityRole="text">
+                  <Text style={styles.storyLabel}>{t('event.story')}</Text>
+                  <Text style={styles.storyText}>{event.story}</Text>
+                </View>
+              )}
             </ScrollView>
           )}
         </Pressable>
@@ -140,6 +146,22 @@ function makeStyles(colors: ThemeColors) {
       ...typography.body,
       color: colors.accent,
       fontStyle: 'italic',
+    },
+    storyBox: {
+      marginTop: spacing.md,
+      padding: spacing.sm,
+      borderRadius: radii.md,
+      backgroundColor: colors.bg,
+    },
+    storyLabel: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      marginBottom: spacing.xs,
+    },
+    storyText: {
+      ...typography.body,
+      color: colors.textPrimary,
+      lineHeight: 22,
     },
   });
 }

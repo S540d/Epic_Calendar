@@ -1,6 +1,7 @@
 import de from '../de.json';
 import en from '../en.json';
 import { flattenEpochs } from '@/timeline/epoch';
+import { LEARNING_JOURNEYS } from '@/data/learningJourneys';
 
 type Json = Record<string, unknown>;
 
@@ -85,5 +86,14 @@ describe('i18n resources', () => {
   it.each(flattenEpochs().map((e) => e.key))('labels epoch "%s" in both languages', (epochKey) => {
     expect(deKeys).toContain(`epochNav.${epochKey}`);
     expect(enKeys).toContain(`epochNav.${epochKey}`);
+  });
+
+  // Same guard for learning journeys: a new curated journey without labels
+  // fails here instead of rendering "learning.journey.xyz.label" to the user.
+  it.each(LEARNING_JOURNEYS.map((j) => j.id))('labels journey "%s" in both languages', (id) => {
+    for (const keys of [deKeys, enKeys]) {
+      expect(keys).toContain(`learning.journey.${id}.label`);
+      expect(keys).toContain(`learning.journey.${id}.description`);
+    }
   });
 });
