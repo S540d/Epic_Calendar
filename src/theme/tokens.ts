@@ -1,4 +1,5 @@
-import { CATEGORY_COLORS, CATEGORY_LANE_BG, CATEGORY_PALETTES, type Category } from './categories';
+import { CATEGORY_COLORS, CATEGORY_LANE_BG, type Category } from './categories';
+import { eventColorFor } from './colorGeneration';
 
 // Category and its registry live in `categories.ts` (single source of truth).
 // Re-exported here so existing `@/theme/tokens` imports keep working.
@@ -91,28 +92,14 @@ export const TRACK_HEIGHT = 80;
 /** Vertical padding inside a lane (top + bottom combined). */
 export const LANE_PADDING_V = 14;
 
-/** Deterministic hash of a string → integer 0..N-1 */
-function hashIndex(s: string, n: number): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) {
-    h = (Math.imul(31, h) + s.charCodeAt(i)) >>> 0;
-  }
-  return h % n;
-}
-
 /**
- * Returns a stable event color. Uses ev.color if set, otherwise picks a
- * deterministic color from the category palette based on ev.culture ?? ev.id.
- * Events sharing the same culture get the same color.
+ * Returns a stable event color. Uses ev.color if set, otherwise generates a
+ * deterministic tonal variation of the category's hue based on ev.culture
+ * (see `colorGeneration.ts`). Events sharing the same culture get the same
+ * color; events without a culture fall back to the flat category color.
  */
-export function eventColor(ev: {
-  id: string;
-  color?: string;
-  category: Category;
-  culture?: string;
-}): string {
+export function eventColor(ev: { color?: string; category: Category; culture?: string }): string {
   if (ev.color) return ev.color;
-  const palette = CATEGORY_PALETTES[ev.category] ?? CATEGORY_PALETTES.zivilisation;
-  const key = ev.culture ?? ev.id;
-  return (palette[hashIndex(key, palette.length)] ?? palette[0]) as string;
+  const base = CATEGORY_COLORS[ev.category] ?? CATEGORY_COLORS.zivilisation;
+  return eventColorFor(base, ev.culture);
 }

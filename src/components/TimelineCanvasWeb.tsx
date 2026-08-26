@@ -227,7 +227,11 @@ export const TimelineCanvasWeb = forwardRef<View, Props>(function TimelineCanvas
                             top: cy,
                             width: Math.max(1, x2 - x1),
                             height: 2,
-                            backgroundColor: colors.category[cat],
+                            backgroundColor: eventColor({
+                              category: cat,
+                              culture: c.culture,
+                              color: c.color,
+                            }),
                             opacity: 0.45,
                           }}
                         />

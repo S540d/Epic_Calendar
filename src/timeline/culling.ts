@@ -141,6 +141,10 @@ export type LineageConnector = {
   /** Start year of the successor (where the line ends). */
   toYear: number;
   track: number;
+  /** Culture of the connecting events, for color continuity with the bars (#162). */
+  culture?: string;
+  /** Manual color override from either connecting event, if set. */
+  color?: string;
 };
 
 /**
@@ -177,7 +181,14 @@ export function computeLineageConnectors(
       const fromYear = prev.endYear ?? prev.startYear;
       const toYear = next.startYear;
       if (toYear <= fromYear) continue; // overlap / no gap → no line
-      connectors.push({ lineageId, fromYear, toYear, track: prevTrack });
+      connectors.push({
+        lineageId,
+        fromYear,
+        toYear,
+        track: prevTrack,
+        culture: next.culture ?? prev.culture,
+        color: next.color ?? prev.color,
+      });
     }
   }
   return connectors;
