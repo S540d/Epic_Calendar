@@ -174,7 +174,7 @@ export const TimelineCanvasNative = forwardRef<View, Props>(function TimelineCan
                           y={cy}
                           width={Math.max(1, x2 - x1)}
                           height={2}
-                          color={colors.category[cat]}
+                          color={eventColor({ category: cat, culture: c.culture, color: c.color })}
                           opacity={0.45}
                         />
                       );

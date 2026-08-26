@@ -7,12 +7,9 @@ import {
   DISABLED_CATEGORIES,
   CATEGORY_COLORS,
   CATEGORY_LANE_BG,
-  CATEGORY_PALETTES,
   categoryColor,
   categoryLaneBg,
-  categoryPalette,
   categoryConfig,
-  generatePalette,
   type Category,
 } from '../categories';
 
@@ -81,44 +78,6 @@ describe('category registry — color/palette values match the previous tokens',
       kultur: 'rgba(168, 95, 194, 0.10)',
     });
   });
-
-  it('palettes are derived from the accent color via generatePalette (#162)', () => {
-    for (const c of CATEGORIES) {
-      expect(CATEGORY_PALETTES[c.id]).toEqual(generatePalette(c.color));
-    }
-  });
-});
-
-describe('generatePalette (#162 — deterministic, traceable color logic)', () => {
-  it('index 0 is always the base color itself', () => {
-    expect(generatePalette('#4A8FA8')[0]).toBe('#4A8FA8');
-    expect(generatePalette('#A85FC2')[0]).toBe('#A85FC2');
-  });
-
-  it('is deterministic (same input → same output)', () => {
-    expect(generatePalette('#C28B4A')).toEqual(generatePalette('#C28B4A'));
-  });
-
-  it('returns 7 distinct, valid hex colors', () => {
-    const palette = generatePalette('#7C9CFF');
-    expect(palette).toHaveLength(7);
-    expect(new Set(palette).size).toBe(7);
-    for (const hex of palette) {
-      expect(hex).toMatch(/^#[0-9A-F]{6}$/);
-    }
-  });
-
-  it('produces a fixed, pinned palette for a known base color', () => {
-    expect(generatePalette('#4A8FA8')).toEqual([
-      '#4A8FA8',
-      '#659CBB',
-      '#3C7B88',
-      '#85A9C9',
-      '#2E6468',
-      '#A5BBD7',
-      '#204847',
-    ]);
-  });
 });
 
 describe('category registry — internal consistency', () => {
@@ -127,11 +86,10 @@ describe('category registry — internal consistency', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('every category has a color, laneBg, non-empty palette and labelKey', () => {
+  it('every category has a color, laneBg and labelKey', () => {
     for (const c of CATEGORIES) {
       expect(c.color).toMatch(/^#[0-9A-Fa-f]{6}$/);
       expect(c.laneBg).toMatch(/^rgba\(/);
-      expect(c.palette.length).toBeGreaterThan(0);
       expect(c.labelKey).toBe(`category.${c.id}`);
     }
   });
@@ -150,12 +108,11 @@ describe('category registry — internal consistency', () => {
 });
 
 describe('category registry — accessor helpers', () => {
-  it('categoryColor / categoryLaneBg / categoryPalette match the maps', () => {
+  it('categoryColor / categoryLaneBg match the maps', () => {
     for (const c of CATEGORIES) {
       const id = c.id as Category;
       expect(categoryColor(id)).toBe(CATEGORY_COLORS[id]);
       expect(categoryLaneBg(id)).toBe(CATEGORY_LANE_BG[id]);
-      expect(categoryPalette(id)).toEqual(CATEGORY_PALETTES[id]);
     }
   });
 
