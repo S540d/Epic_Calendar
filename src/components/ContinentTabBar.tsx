@@ -9,12 +9,19 @@ import { useTheme, type ThemeColors } from '@/theme/ThemeContext';
 type Props = {
   active: Continent;
   onChange: (c: Continent) => void;
+  /**
+   * Pressing the already-active tab again opens the culture/country filter
+   * for that continent (#163) instead of a no-op `onChange`.
+   */
+  onPressActive?: (c: Continent) => void;
+  /** Shows a small filter-active indicator on the active tab (#163). */
+  cultureFilterActive?: boolean;
 };
 
 const TABS: Continent[] = ['global', 'europa', 'asien', 'afrika', 'amerika', 'ozeanien'];
 const ENABLED: Continent[] = ['global', 'europa', 'asien', 'afrika', 'amerika'];
 
-export function ContinentTabBar({ active, onChange }: Props) {
+export function ContinentTabBar({ active, onChange, onPressActive, cultureFilterActive }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -24,28 +31,37 @@ export function ContinentTabBar({ active, onChange }: Props) {
       {TABS.map((c) => {
         const enabled = ENABLED.includes(c);
         const isActive = c === active;
+        const showFilterDot = isActive && cultureFilterActive;
         const label = t(`continent.${c}`);
+        const accessibilityLabel = !enabled
+          ? `${label} – bald verfügbar`
+          : isActive
+            ? `${label}${cultureFilterActive ? `, ${t('cultureFilter.activeShort')}` : ''}, ${t('cultureFilter.openHint')}`
+            : label;
         return (
           <TouchableOpacity
             key={c}
             disabled={!enabled}
-            onPress={() => onChange(c)}
+            onPress={() => (isActive ? onPressActive?.(c) : onChange(c))}
             accessibilityRole="tab"
             accessibilityState={{ selected: isActive, disabled: !enabled }}
-            accessibilityLabel={enabled ? label : `${label} – bald verfügbar`}
+            accessibilityLabel={accessibilityLabel}
             style={[styles.tab, isActive && styles.tabActive]}
           >
-            <Text
-              style={[
-                styles.tabText,
-                isActive && styles.tabTextActive,
-                !enabled && styles.tabTextDisabled,
-              ]}
-              numberOfLines={1}
-              importantForAccessibility="no"
-            >
-              {label}
-            </Text>
+            <View style={styles.tabLabelRow}>
+              <Text
+                style={[
+                  styles.tabText,
+                  isActive && styles.tabTextActive,
+                  !enabled && styles.tabTextDisabled,
+                ]}
+                numberOfLines={1}
+                importantForAccessibility="no"
+              >
+                {label}
+              </Text>
+              {showFilterDot && <View style={styles.filterDot} />}
+            </View>
           </TouchableOpacity>
         );
       })}
@@ -84,6 +100,18 @@ function makeStyles(colors: ThemeColors) {
     },
     tabTextDisabled: {
       color: colors.textMuted,
+    },
+    tabLabelRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    filterDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: colors.accent,
+      marginLeft: 4,
     },
   });
 }

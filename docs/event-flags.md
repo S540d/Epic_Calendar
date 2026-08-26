@@ -83,6 +83,23 @@ Freier String, der die Unterkategorie innerhalb einer Kategorie benennt.
 Bsp: `"Äon"`, `"Phanerozoikum"`, `"römisch"`, `"maya"`.
 Wird künftig per Config validierbar (Phase 1.4+).
 
+**Farblogik (Issue #162):** Die Balkenfarbe wird deterministisch aus `category` + `culture`
+generiert (`src/theme/colorGeneration.ts`, `eventColor()` in `src/theme/tokens.ts`) statt aus
+einer festen, handgepflegten Palette pro Kategorie ausgewählt zu werden:
+
+- **Hue** kommt fest von der Kategorie-Akzentfarbe (`category.color`) — Events derselben
+  Kategorie bleiben immer als Farbfamilie erkennbar.
+- **Sättigung, Helligkeit und ein kleiner Hue-Jitter (±6°)** werden aus einem Hash von
+  `culture` abgeleitet — jede Kultur bekommt einen stabilen, aber unterscheidbaren Farbton
+  innerhalb der Kategoriefarbe.
+- Events **ohne** `culture` rendern in der flachen Kategoriefarbe (stabiler Neutralwert, kein
+  Zufallston pro Event).
+- `color` überschreibt weiterhin alles.
+
+Da die Farbe formelbasiert und nicht mehr aus einem festen Array (früher 7 Einträge pro
+Kategorie) ausgewählt wird, skaliert die Unterscheidbarkeit mit der Anzahl der `culture`-Werte,
+statt bei mehr Inhalten zunehmend zu kollidieren.
+
 #### `importance` _(verdrahtet: Detailgrad-Filter)_
 
 | Wert       | Rang | Bedeutung                                             |

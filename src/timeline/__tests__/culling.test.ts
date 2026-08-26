@@ -4,31 +4,10 @@ import {
   computeLaneData,
   computeLineageConnectors,
   filterVisible,
-  type VisibilityFilter,
 } from '../culling';
 import { buildEventIndex } from '../eventIndex';
-import type { TimelineEvent } from '@/data/schema';
 import type { Category } from '@/theme/tokens';
-
-function ev(
-  partial: Partial<TimelineEvent> & Pick<TimelineEvent, 'id' | 'startYear'>,
-): TimelineEvent {
-  return {
-    title: partial.id,
-    category: 'zivilisation',
-    continent: 'europa',
-    minZoomLevel: 0,
-    ...partial,
-  } as TimelineEvent;
-}
-
-const base: VisibilityFilter = {
-  startYear: 0,
-  endYear: 1000,
-  zoomLevel: 4,
-  categories: new Set<Category>(['erdzeitalter', 'natur', 'zivilisation', 'nation']),
-  continent: 'europa',
-};
+import { makeEvent as ev, baseVisibilityFilter as base } from './testUtils';
 
 describe('timeline/culling.filterVisible', () => {
   it('includes a range event that overlaps the viewport', () => {

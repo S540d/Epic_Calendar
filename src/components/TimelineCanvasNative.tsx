@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { StyleSheet, View, Text, Pressable, Platform } from 'react-native';
 import {
   GestureDetector,
@@ -83,32 +83,35 @@ type Props = {
  * label overlay + the multi-hit disambiguation popover. Pure presentation — the
  * gesture and all viewport commands come in via props.
  */
-export function TimelineCanvasNative({
-  lanes,
-  laneTops,
-  laneTrackCounts,
-  visibleByLane,
-  tracksByLane,
-  connectorsByLane,
-  overflowCounts,
-  labelVisibleIds,
-  canvasWidth,
-  canvasHeight,
-  jsOffsetX,
-  jsPixelsPerUnit,
-  zoomLevel,
-  viewportRange,
-  heutePx,
-  heuteVisible,
-  gesture,
-  zoomToFit,
-  handleMinimapJump,
-  popoverState,
-  onPopoverClose,
-  onPopoverSelect,
-  minimapHighlight,
-  showFpsMonitor = false,
-}: Props) {
+export const TimelineCanvasNative = forwardRef<View, Props>(function TimelineCanvasNative(
+  {
+    lanes,
+    laneTops,
+    laneTrackCounts,
+    visibleByLane,
+    tracksByLane,
+    connectorsByLane,
+    overflowCounts,
+    labelVisibleIds,
+    canvasWidth,
+    canvasHeight,
+    jsOffsetX,
+    jsPixelsPerUnit,
+    zoomLevel,
+    viewportRange,
+    heutePx,
+    heuteVisible,
+    gesture,
+    zoomToFit,
+    handleMinimapJump,
+    popoverState,
+    onPopoverClose,
+    onPopoverSelect,
+    minimapHighlight,
+    showFpsMonitor = false,
+  }: Props,
+  lanesContainerRef,
+) {
   const { t } = useTranslation();
 
   return (
@@ -125,7 +128,12 @@ export function TimelineCanvasNative({
         showFpsMonitor={showFpsMonitor}
       />
 
-      <View style={[styles.container, { height: canvasHeight }]}>
+      {/* Ref forwarded out so `TimelineView` can `measureLayout` this lane
+          container relative to the *outer* screen ScrollView (native has no
+          internal scroll like web's `overflowY:auto` — the whole tree here
+          sits inside `TimelineScreen`'s ScrollView) and scroll a lane into
+          view (`scrollToEventLane`, #171-Lernreise follow-up). */}
+      <View ref={lanesContainerRef} style={[styles.container, { height: canvasHeight }]}>
         <TimelineLaneLabels
           lanes={lanes}
           laneTops={laneTops}
@@ -166,7 +174,7 @@ export function TimelineCanvasNative({
                           y={cy}
                           width={Math.max(1, x2 - x1)}
                           height={2}
-                          color={colors.category[cat]}
+                          color={eventColor({ category: cat, culture: c.culture, color: c.color })}
                           opacity={0.45}
                         />
                       );
@@ -317,4 +325,4 @@ export function TimelineCanvasNative({
       )}
     </View>
   );
-}
+});

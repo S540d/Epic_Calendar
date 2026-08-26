@@ -14,6 +14,8 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import type { NavigationEpoch } from '@/timeline/epoch';
 import { NAVIGATION_EPOCHS } from '@/timeline/epoch';
+import { formatEventYear } from '@/timeline/formatYear';
+import { LEARNING_JOURNEYS } from '@/data/learningJourneys';
 import { radii, spacing, typography } from '@/theme/tokens';
 import { useTheme, type ThemeColors } from '@/theme/ThemeContext';
 
@@ -22,6 +24,10 @@ type Props = {
   onShowFullTimeline: () => void;
   onOpenSettings: () => void;
   onOpenSearch: () => void;
+  /** Starts (or resumes) a guided learning journey by id. */
+  onStartJourney: (journeyId: string) => void;
+  /** Persisted station index per journey id; absent = not started yet. */
+  journeyProgress?: Record<string, number>;
 };
 
 function formatDuration(startYear: number, endYear: number, t: TFunction): string {
@@ -40,17 +46,7 @@ function formatDuration(startYear: number, endYear: number, t: TFunction): strin
 
 function formatYearLabel(year: number, t: TFunction): string {
   if (year >= 2020) return t('event.present');
-  const abs = Math.abs(year);
-  const suffix = year < 0 ? ` ${t('event.bce')}` : ` ${t('event.ce')}`;
-  if (abs >= 1_000_000_000) {
-    const n = (abs / 1_000_000_000).toFixed(1).replace(/\.0$/, '');
-    return `${n} ${t('axis.billion')}${suffix}`;
-  }
-  if (abs >= 1_000_000) return `${Math.round(abs / 1_000_000)} ${t('event.million')}${suffix}`;
-  const formatted = Math.round(abs)
-    .toString()
-    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  return `${formatted}${suffix}`;
+  return formatEventYear(year, t);
 }
 
 type EpochTileProps = {
@@ -128,6 +124,8 @@ export function EpochOverviewScreen({
   onShowFullTimeline,
   onOpenSettings,
   onOpenSearch,
+  onStartJourney,
+  journeyProgress,
 }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -212,6 +210,42 @@ export function EpochOverviewScreen({
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        <Text style={styles.sectionTitle}>{t('learning.sectionTitle')}</Text>
+        <Text style={styles.sectionHint}>{t('learning.sectionHint')}</Text>
+        {LEARNING_JOURNEYS.map((journey) => {
+          const stepCount = journey.eventIds.length;
+          const stored = journeyProgress?.[journey.id];
+          const inProgress = stored !== undefined && stored > 0;
+          return (
+            <Pressable
+              key={journey.id}
+              style={({ pressed }) => [styles.journeyCard, pressed && styles.tilePressed]}
+              onPress={() => onStartJourney(journey.id)}
+              accessibilityRole="button"
+              accessibilityLabel={t(journey.labelKey)}
+              accessibilityHint={t(journey.descriptionKey)}
+            >
+              <Text style={styles.journeyIcon}>{journey.icon}</Text>
+              <View style={styles.journeyText}>
+                <Text style={styles.journeyName}>{t(journey.labelKey)}</Text>
+                <Text style={styles.journeyDescription} numberOfLines={2}>
+                  {t(journey.descriptionKey)}
+                </Text>
+                <Text style={styles.journeyMeta}>
+                  {inProgress
+                    ? `${t('learning.continue')} · ${t('learning.progress', {
+                        current: Math.min(stored + 1, stepCount),
+                        total: stepCount,
+                      })}`
+                    : t('learning.stations', { count: stepCount })}
+                </Text>
+              </View>
+              <Text style={styles.tileArrow}>›</Text>
+            </Pressable>
+          );
+        })}
+
+        <Text style={styles.sectionTitle}>{t('epochNav.title')}</Text>
         {tiles}
 
         <Pressable
@@ -378,6 +412,61 @@ function makeStyles(colors: ThemeColors) {
       ...typography.body,
       color: colors.accent,
       fontWeight: '600',
+    },
+    sectionTitle: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      fontWeight: '700',
+      marginTop: spacing.md,
+      marginBottom: spacing.xs,
+    },
+    sectionHint: {
+      ...typography.caption,
+      color: colors.textMuted,
+      marginBottom: spacing.sm,
+    },
+    journeyCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.bgElevated,
+      borderRadius: radii.sm,
+      borderWidth: 1,
+      borderColor: colors.border,
+      marginBottom: spacing.xs,
+      padding: spacing.md,
+    },
+    journeyIcon: {
+      fontSize: 26,
+      marginRight: spacing.md,
+    },
+    journeyText: {
+      flex: 1,
+    },
+    journeyName: {
+      ...typography.body,
+      color: colors.textPrimary,
+      fontWeight: '700',
+    },
+    journeyDescription: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      marginTop: 2,
+    },
+    journeyMeta: {
+      ...typography.caption,
+      color: colors.accent,
+      marginTop: spacing.xs,
+      fontWeight: '600',
+    },
+    tilePressed: {
+      opacity: 0.75,
+    },
+    tileArrow: {
+      ...typography.body,
+      color: colors.textMuted,
+      marginLeft: spacing.sm,
     },
   });
 }

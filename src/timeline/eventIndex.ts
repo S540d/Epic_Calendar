@@ -14,6 +14,8 @@ export type IndexQuery = {
   continent: Continent;
   /** Highest importance rank to show (cumulative). Default 2 (= show all). */
   maxImportanceRank?: number;
+  /** When set, only events with this exact `culture` value pass (#163 country/culture filter). */
+  culture?: string | null;
 };
 
 /** Query without a year range — used to derive the full (viewport-independent) event set for stable track assignment. */
@@ -22,6 +24,8 @@ export type CategoryQuery = {
   continent: Continent;
   /** Highest importance rank to show (cumulative). Default 2 (= show all). */
   maxImportanceRank?: number;
+  /** When set, only events with this exact `culture` value pass (#163 country/culture filter). */
+  culture?: string | null;
 };
 
 /**
@@ -48,7 +52,7 @@ export class EventIndex {
   }
 
   queryVisible(query: IndexQuery): TimelineEvent[] {
-    const { startYear, endYear, zoomLevel, categories, continent } = query;
+    const { startYear, endYear, zoomLevel, categories, continent, culture } = query;
     const maxImportanceRank = query.maxImportanceRank ?? 2;
     const result: TimelineEvent[] = [];
 
@@ -68,6 +72,7 @@ export class EventIndex {
         if (ev.continent !== 'global' && ev.continent !== continent) continue;
         if (ev.minZoomLevel > zoomLevel) continue;
         if (!passesImportance(ev, maxImportanceRank)) continue;
+        if (culture && ev.culture !== culture) continue;
         result.push(ev);
       }
     }
@@ -82,7 +87,7 @@ export class EventIndex {
    * time is currently scrolled into view.
    */
   getFilteredCategory(query: CategoryQuery): TimelineEvent[] {
-    const { category, continent } = query;
+    const { category, continent, culture } = query;
     const maxImportanceRank = query.maxImportanceRank ?? 2;
     const arr = this.byCategory.get(category);
     if (!arr) return [];
@@ -91,9 +96,26 @@ export class EventIndex {
     for (const ev of arr) {
       if (ev.continent !== 'global' && ev.continent !== continent) continue;
       if (!passesImportance(ev, maxImportanceRank)) continue;
+      if (culture && ev.culture !== culture) continue;
       result.push(ev);
     }
     return result;
+  }
+
+  /**
+   * All distinct `culture` values present in a continent's events (used by the
+   * culture/country filter, #163). `'global'` is excluded from continent-scoped
+   * results — the filter only makes sense per continent. Sorted alphabetically.
+   */
+  culturesForContinent(continent: Continent): string[] {
+    const seen = new Set<string>();
+    for (const arr of this.byCategory.values()) {
+      for (const ev of arr) {
+        if (ev.continent !== continent) continue;
+        if (ev.culture) seen.add(ev.culture);
+      }
+    }
+    return Array.from(seen).sort((a, b) => a.localeCompare(b));
   }
 }
 

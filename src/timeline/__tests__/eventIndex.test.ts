@@ -3,26 +3,7 @@ import { filterVisible, type VisibilityFilter } from '../culling';
 import type { TimelineEvent } from '@/data/schema';
 import type { Category } from '@/theme/tokens';
 import { ALL_EVENTS } from '@/data/events';
-
-function ev(
-  partial: Partial<TimelineEvent> & Pick<TimelineEvent, 'id' | 'startYear'>,
-): TimelineEvent {
-  return {
-    title: partial.id,
-    category: 'zivilisation' as Category,
-    continent: 'europa',
-    minZoomLevel: 0,
-    ...partial,
-  } as TimelineEvent;
-}
-
-const baseFilter: VisibilityFilter = {
-  startYear: 0,
-  endYear: 1000,
-  zoomLevel: 4,
-  categories: new Set<Category>(['erdzeitalter', 'natur', 'zivilisation', 'nation']),
-  continent: 'europa',
-};
+import { makeEvent as ev, baseVisibilityFilter as baseFilter } from './testUtils';
 
 function sortedIds(events: TimelineEvent[]): string[] {
   return events.map((e) => e.id).sort();
@@ -222,6 +203,66 @@ describe('EventIndex.getFilteredCategory', () => {
     expect(index.getFilteredCategory({ category: 'zivilisation', continent: 'europa' })).toEqual(
       [],
     );
+  });
+
+  it('respects the culture filter (#163)', () => {
+    const events = [
+      ev({ id: 'roma', startYear: 100, culture: 'römisch' }),
+      ev({ id: 'grae', startYear: 100, culture: 'griechisch' }),
+      ev({ id: 'none', startYear: 100 }),
+    ];
+    const index = buildEventIndex(events);
+    expect(
+      sortedIds(
+        index.getFilteredCategory({
+          category: 'zivilisation',
+          continent: 'europa',
+          culture: 'römisch',
+        }),
+      ),
+    ).toEqual(['roma']);
+  });
+});
+
+describe('EventIndex.queryVisible culture filter (#163)', () => {
+  it('only returns events matching the exact culture', () => {
+    const events = [
+      ev({ id: 'roma', startYear: 100, culture: 'römisch' }),
+      ev({ id: 'grae', startYear: 100, culture: 'griechisch' }),
+    ];
+    const index = buildEventIndex(events);
+    expect(sortedIds(index.queryVisible({ ...baseFilter, culture: 'römisch' }))).toEqual(['roma']);
+  });
+
+  it('null/undefined culture disables the filter', () => {
+    const events = [
+      ev({ id: 'roma', startYear: 100, culture: 'römisch' }),
+      ev({ id: 'grae', startYear: 100, culture: 'griechisch' }),
+    ];
+    const index = buildEventIndex(events);
+    expect(sortedIds(index.queryVisible({ ...baseFilter, culture: null }))).toEqual([
+      'grae',
+      'roma',
+    ]);
+  });
+});
+
+describe('EventIndex.culturesForContinent (#163)', () => {
+  it('returns distinct cultures for a continent, sorted alphabetically', () => {
+    const events = [
+      ev({ id: 'a', startYear: 100, continent: 'europa', culture: 'römisch' }),
+      ev({ id: 'b', startYear: 200, continent: 'europa', culture: 'griechisch' }),
+      ev({ id: 'c', startYear: 300, continent: 'europa', culture: 'römisch' }),
+      ev({ id: 'd', startYear: 400, continent: 'asien', culture: 'chinesisch' }),
+      ev({ id: 'e', startYear: 500, continent: 'europa' }),
+    ];
+    const index = buildEventIndex(events);
+    expect(index.culturesForContinent('europa')).toEqual(['griechisch', 'römisch']);
+  });
+
+  it('returns an empty array when nothing matches', () => {
+    const index = buildEventIndex([]);
+    expect(index.culturesForContinent('europa')).toEqual([]);
   });
 });
 

@@ -134,7 +134,8 @@
     "continent": "asien",
     "culture": "indisch",
     "importance": "core",
-    "minZoomLevel": 2
+    "minZoomLevel": 2,
+    "story": "Der Überlieferung nach saß Siddhartha unter einem Feigenbaum (dem späteren „Bodhi-Baum“) und schwor, nicht aufzustehen, bevor er die Wahrheit über das Leiden gefunden hätte. Nach 49 Tagen der Meditation erlangte er das Erwachen (Bodhi) und wurde zum Buddha – dem „Erwachten“."
   },
   {
     "id": "as-konfuzius",
@@ -317,7 +318,8 @@
     "continent": "asien",
     "culture": "mongolisch",
     "importance": "core",
-    "minZoomLevel": 0
+    "minZoomLevel": 0,
+    "story": "Der Überlieferung nach gab Dschingis Khan seinen Söhnen jeweils einen einzelnen Pfeil, den sie mühelos zerbrechen konnten. Dann gab er ihnen ein ganzes Bündel Pfeile – das ließ sich nicht zerbrechen. So lehrte er sie: Einzeln seid ihr schwach, gemeinsam unbesiegbar."
   },
   {
     "id": "as-sultanat-delhi",

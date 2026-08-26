@@ -7,10 +7,8 @@ import {
   DISABLED_CATEGORIES,
   CATEGORY_COLORS,
   CATEGORY_LANE_BG,
-  CATEGORY_PALETTES,
   categoryColor,
   categoryLaneBg,
-  categoryPalette,
   categoryConfig,
   type Category,
 } from '../categories';
@@ -80,63 +78,6 @@ describe('category registry — color/palette values match the previous tokens',
       kultur: 'rgba(168, 95, 194, 0.10)',
     });
   });
-
-  it('palettes are unchanged', () => {
-    expect(CATEGORY_PALETTES.erdzeitalter).toEqual([
-      '#3D7A90',
-      '#4E8FA8',
-      '#2E6A7A',
-      '#5FA5C2',
-      '#1E5568',
-      '#6BBAD4',
-      '#357088',
-    ]);
-    expect(CATEGORY_PALETTES.natur).toEqual([
-      '#3D9957',
-      '#5ABF72',
-      '#2E7A45',
-      '#7AD68A',
-      '#4FB06A',
-      '#236634',
-      '#8FD4A0',
-    ]);
-    expect(CATEGORY_PALETTES.zivilisation).toEqual([
-      '#B87C3A',
-      '#D49A52',
-      '#C86030',
-      '#E8B468',
-      '#A05C28',
-      '#F0C878',
-      '#7A4420',
-    ]);
-    expect(CATEGORY_PALETTES.nation).toEqual([
-      '#5A7AE8',
-      '#8AACFF',
-      '#3A5CC4',
-      '#7090D8',
-      '#A0C0FF',
-      '#4468B0',
-      '#C0D4FF',
-    ]);
-    expect(CATEGORY_PALETTES.herrscher).toEqual([
-      '#BF7020',
-      '#D98C38',
-      '#A05810',
-      '#E8A050',
-      '#8C4808',
-      '#F0B868',
-      '#704000',
-    ]);
-    expect(CATEGORY_PALETTES.kultur).toEqual([
-      '#9750B4',
-      '#B876CC',
-      '#7E3E9E',
-      '#CC96DE',
-      '#6A2E88',
-      '#D8AAE8',
-      '#5A2374',
-    ]);
-  });
 });
 
 describe('category registry — internal consistency', () => {
@@ -145,11 +86,10 @@ describe('category registry — internal consistency', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('every category has a color, laneBg, non-empty palette and labelKey', () => {
+  it('every category has a color, laneBg and labelKey', () => {
     for (const c of CATEGORIES) {
       expect(c.color).toMatch(/^#[0-9A-Fa-f]{6}$/);
       expect(c.laneBg).toMatch(/^rgba\(/);
-      expect(c.palette.length).toBeGreaterThan(0);
       expect(c.labelKey).toBe(`category.${c.id}`);
     }
   });
@@ -168,12 +108,11 @@ describe('category registry — internal consistency', () => {
 });
 
 describe('category registry — accessor helpers', () => {
-  it('categoryColor / categoryLaneBg / categoryPalette match the maps', () => {
+  it('categoryColor / categoryLaneBg match the maps', () => {
     for (const c of CATEGORIES) {
       const id = c.id as Category;
       expect(categoryColor(id)).toBe(CATEGORY_COLORS[id]);
       expect(categoryLaneBg(id)).toBe(CATEGORY_LANE_BG[id]);
-      expect(categoryPalette(id)).toEqual(CATEGORY_PALETTES[id]);
     }
   });
 

@@ -1,9 +1,11 @@
 /**
  * Category registry — single source of truth for all event categories.
  *
- * Every category-derived value (colors, lane backgrounds, palettes, chip order,
+ * Every category-derived value (colors, lane backgrounds, chip order,
  * lane order, defaults, disabled set, i18n label keys) is produced from the
  * ordered `CATEGORIES` config below. Adding a new category = a single entry here.
+ * Per-culture tonal variation is formula-generated from `color`, see
+ * `colorGeneration.ts` — no per-category palette array is stored here.
  *
  * NOTE: this module must NOT import from `tokens.ts` — `tokens.ts` re-exports
  * from here, so importing back would create a cycle.
@@ -12,12 +14,11 @@
 type CategoryConfigBase = {
   /** Stable identifier, also the i18n suffix and persistence key. */
   id: string;
-  /** Solid accent color (chips, color bars, lane border). */
+  /** Solid accent color (chips, color bars, lane border). Also the hue anchor
+   *  for formula-generated per-culture colors, see `colorGeneration.ts` (#162). */
   color: string;
   /** Translucent lane background fill. */
   laneBg: string;
-  /** Distinct hues within the category's tonal range for per-culture coloring. */
-  palette: readonly string[];
   /** i18n key for the human-readable label. */
   labelKey: string;
   /** Position in the filter chip bar. Absent → not shown as a chip. */
@@ -38,7 +39,6 @@ const CATEGORY_LIST = [
     id: 'erdzeitalter',
     color: '#4A8FA8',
     laneBg: 'rgba(74, 143, 168, 0.10)',
-    palette: ['#3D7A90', '#4E8FA8', '#2E6A7A', '#5FA5C2', '#1E5568', '#6BBAD4', '#357088'],
     labelKey: 'category.erdzeitalter',
     chipOrder: 0,
     laneOrder: 0,
@@ -49,7 +49,6 @@ const CATEGORY_LIST = [
     id: 'natur',
     color: '#4FA86A',
     laneBg: 'rgba(79, 168, 106, 0.10)',
-    palette: ['#3D9957', '#5ABF72', '#2E7A45', '#7AD68A', '#4FB06A', '#236634', '#8FD4A0'],
     labelKey: 'category.natur',
     chipOrder: 4,
     laneOrder: 2,
@@ -60,7 +59,6 @@ const CATEGORY_LIST = [
     id: 'zivilisation',
     color: '#C28B4A',
     laneBg: 'rgba(194, 139, 74, 0.10)',
-    palette: ['#B87C3A', '#D49A52', '#C86030', '#E8B468', '#A05C28', '#F0C878', '#7A4420'],
     labelKey: 'category.zivilisation',
     chipOrder: 1,
     laneOrder: 1,
@@ -71,7 +69,6 @@ const CATEGORY_LIST = [
     id: 'nation',
     color: '#7C9CFF',
     laneBg: 'rgba(124, 156, 255, 0.10)',
-    palette: ['#5A7AE8', '#8AACFF', '#3A5CC4', '#7090D8', '#A0C0FF', '#4468B0', '#C0D4FF'],
     labelKey: 'category.nation',
     chipOrder: 2,
     laneOrder: 3,
@@ -81,7 +78,6 @@ const CATEGORY_LIST = [
     id: 'herrscher',
     color: '#CF8A30',
     laneBg: 'rgba(207, 138, 48, 0.10)',
-    palette: ['#BF7020', '#D98C38', '#A05810', '#E8A050', '#8C4808', '#F0B868', '#704000'],
     labelKey: 'category.herrscher',
     chipOrder: 3,
     // Rendered as the bottom lane (finest detail below nations). The 116
@@ -93,7 +89,6 @@ const CATEGORY_LIST = [
     id: 'kultur',
     color: '#A85FC2',
     laneBg: 'rgba(168, 95, 194, 0.10)',
-    palette: ['#9750B4', '#B876CC', '#7E3E9E', '#CC96DE', '#6A2E88', '#D8AAE8', '#5A2374'],
     labelKey: 'category.kultur',
     chipOrder: 5,
     laneOrder: 5,
@@ -157,11 +152,6 @@ export function categoryLaneBg(id: Category): string {
   return BY_ID.get(id)?.laneBg ?? FALLBACK.laneBg;
 }
 
-/** Per-culture color palette for a category. */
-export function categoryPalette(id: Category): readonly string[] {
-  return BY_ID.get(id)?.palette ?? FALLBACK.palette;
-}
-
 /** Map of category id → accent color. */
 export const CATEGORY_COLORS = Object.fromEntries(CATEGORIES.map((c) => [c.id, c.color])) as Record<
   Category,
@@ -172,8 +162,3 @@ export const CATEGORY_COLORS = Object.fromEntries(CATEGORIES.map((c) => [c.id, c
 export const CATEGORY_LANE_BG = Object.fromEntries(
   CATEGORIES.map((c) => [c.id, c.laneBg]),
 ) as Record<Category, string>;
-
-/** Map of category id → per-culture palette. */
-export const CATEGORY_PALETTES = Object.fromEntries(
-  CATEGORIES.map((c) => [c.id, c.palette]),
-) as Record<Category, readonly string[]>;

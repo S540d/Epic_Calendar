@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef } from 'react';
+import React, { forwardRef, useEffect, useLayoutEffect, useRef } from 'react';
 import { View, Text, Pressable, Platform } from 'react-native';
 import {
   GestureDetector,
@@ -62,32 +62,46 @@ type Props = {
  * Web timeline renderer. Renders event bars viewport-relatively inside a fixed-
  * width View (same model as the native Skia renderer). Pan is driven by RNGH
  * gestures; mouse wheel is handled via a useEffect shim.
+ *
+ * The "root does NOT scroll" comment below is aspirational-looking but not
+ * actually how scrolling works here: `TimelineChrome`/`TimelineLaneLabels` use
+ * `position: sticky` (see CLAUDE.md) to *stay* fixed while the *outer* screen
+ * `ScrollView` (`TimelineScreen`'s `canvasScrollRef`) does the real scrolling —
+ * same mechanism as native. The inner `overflowY: 'auto'` View below is inert
+ * in practice: nested inside that ScrollView's unbounded-height content, its
+ * `flex: 1` has nothing to flex against, so it never actually overflows.
+ * Forwards a ref to the **lanes container** (not that inert view) so
+ * `TimelineView.scrollToEventLane` can `measureLayout` it against the real
+ * scrollable ancestor, exactly like the native renderer.
  */
-export function TimelineCanvasWeb({
-  lanes,
-  laneTops,
-  laneTrackCounts,
-  visibleByLane,
-  tracksByLane,
-  connectorsByLane,
-  overflowCounts,
-  labelVisibleIds,
-  canvasWidth,
-  canvasHeight,
-  jsOffsetX,
-  jsPixelsPerUnit,
-  offsetX,
-  pixelsPerUnit,
-  gesture,
-  zoomLevel,
-  zoomAtPoint,
-  onEventTap,
-  zoomToFit,
-  handleMinimapJump,
-  viewportRange,
-  minimapHighlight,
-  showFpsMonitor = false,
-}: Props) {
+export const TimelineCanvasWeb = forwardRef<View, Props>(function TimelineCanvasWeb(
+  {
+    lanes,
+    laneTops,
+    laneTrackCounts,
+    visibleByLane,
+    tracksByLane,
+    connectorsByLane,
+    overflowCounts,
+    labelVisibleIds,
+    canvasWidth,
+    canvasHeight,
+    jsOffsetX,
+    jsPixelsPerUnit,
+    offsetX,
+    pixelsPerUnit,
+    gesture,
+    zoomLevel,
+    zoomAtPoint,
+    onEventTap,
+    zoomToFit,
+    handleMinimapJump,
+    viewportRange,
+    minimapHighlight,
+    showFpsMonitor = false,
+  }: Props,
+  lanesContainerRef,
+) {
   const WEB_PPU = jsPixelsPerUnit;
 
   const heutePx = (T_HEUTE - jsOffsetX) * WEB_PPU;
@@ -159,7 +173,7 @@ export function TimelineCanvasWeb({
           default: { flex: 1 },
         })}
       >
-        <View style={[styles.container, { height: canvasHeight }]}>
+        <View ref={lanesContainerRef} style={[styles.container, { height: canvasHeight }]}>
           <TimelineLaneLabels
             lanes={lanes}
             laneTops={laneTops}
@@ -213,7 +227,11 @@ export function TimelineCanvasWeb({
                             top: cy,
                             width: Math.max(1, x2 - x1),
                             height: 2,
-                            backgroundColor: colors.category[cat],
+                            backgroundColor: eventColor({
+                              category: cat,
+                              culture: c.culture,
+                              color: c.color,
+                            }),
                             opacity: 0.45,
                           }}
                         />
@@ -315,4 +333,4 @@ export function TimelineCanvasWeb({
       </View>
     </View>
   );
-}
+});

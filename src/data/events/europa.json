@@ -825,6 +825,21 @@
     "iconKey": "scroll"
   },
   {
+    "id": "eu-herr-diogenes",
+    "title": "Diogenes von Sinope",
+    "description": "Begründer der kynischen Philosophie. Lebt bedürfnislos in einer Tonne und fordert mit provokanten Taten dazu auf, gesellschaftliche Konventionen zu hinterfragen und nach Natürlichkeit statt Reichtum und Ansehen zu streben.",
+    "startYear": -412,
+    "endYear": -323,
+    "category": "herrscher",
+    "continent": "europa",
+    "culture": "griechisch",
+    "importance": "core",
+    "minZoomLevel": 3,
+    "tags": ["philosophie", "kynismus", "korinth"],
+    "iconKey": "scroll",
+    "story": "Als Alexander der Große den berühmten Diogenes besuchte und ihm jeden Wunsch erfüllen wollte, soll dieser nur geantwortet haben: „Geh mir aus der Sonne.“ Alexander war so beeindruckt, dass er gesagt haben soll: „Wäre ich nicht Alexander, wollte ich Diogenes sein.“"
+  },
+  {
     "id": "eu-herr-agesilaos",
     "title": "Agesilaos II. (Sparta)",
     "description": "Bedeutendster spartanischer König. Feldzüge in Persien, dominierende Figur Griechenlands im 4. Jh. v. Chr.",
@@ -856,7 +871,8 @@
     "continent": "europa",
     "culture": "makedonisch",
     "importance": "core",
-    "minZoomLevel": 4
+    "minZoomLevel": 4,
+    "story": "In der Stadt Gordion soll ein Orakel demjenigen die Herrschaft über Asien versprochen haben, der einen extrem kompliziert verknoteten Wagenknoten löst. Statt ihn mühsam zu entwirren, zerschlug Alexander den „Gordischen Knoten“ 333 v. Chr. kurzerhand mit dem Schwert – seither steht die Redewendung für das entschlossene Lösen scheinbar unlösbarer Probleme."
   },
   {
     "id": "eu-herr-pyrrhos",
@@ -1655,7 +1671,8 @@
     "culture": "griechisch",
     "importance": "core",
     "minZoomLevel": 3,
-    "tags": ["krieg", "griechenland", "persien"]
+    "tags": ["krieg", "griechenland", "persien"],
+    "mnemonic": "490 v. Chr. – „Freut euch, wir haben gesiegt!“: der Läufer von Marathon nach 42 km bis Athen."
   },
   {
     "id": "eu-schlacht-issos",
@@ -1680,7 +1697,8 @@
     "culture": "griechisch",
     "importance": "core",
     "minZoomLevel": 3,
-    "tags": ["krieg", "griechenland", "sparta", "persien"]
+    "tags": ["krieg", "griechenland", "sparta", "persien"],
+    "mnemonic": "480 v. Chr. – „Wanderer, kommst du nach Sparta…“: das berühmte Epitaph für die 300 Gefallenen der Thermopylen."
   },
   {
     "id": "eu-peloponnesischer-krieg",
@@ -1718,7 +1736,21 @@
     "culture": "römisch",
     "importance": "core",
     "minZoomLevel": 3,
-    "tags": ["rom", "bürgerkrieg", "caesar"]
+    "tags": ["rom", "bürgerkrieg", "caesar"],
+    "mnemonic": "49 v. Chr. – „Alea iacta est“: Der Würfel ist gefallen, als Caesar den Rubikon überschritt."
+  },
+  {
+    "id": "eu-caesar-ermordung",
+    "title": "Die Ermordung Caesars",
+    "description": "Eine Gruppe römischer Senatoren um Brutus und Cassius ersticht Julius Caesar an den Iden des März, um die Republik vor seiner Alleinherrschaft zu retten. Stattdessen stürzt Rom in einen neuen Bürgerkrieg.",
+    "startYear": -44,
+    "category": "zivilisation",
+    "continent": "europa",
+    "culture": "römisch",
+    "importance": "core",
+    "minZoomLevel": 3,
+    "tags": ["rom", "caesar", "attentat"],
+    "story": "Als Caesar unter den Dolchstößen der Verschwörer auch seinen engen Vertrauten Brutus erkennt, soll er auf Griechisch „Kai su, teknon“ gerufen haben – „Auch du, mein Sohn?“ In der lateinischen Fassung „Et tu, Brute?“ wurde der Satz zum berühmtesten Ausdruck von Verrat der Weltgeschichte, obwohl er historisch nicht sicher belegt ist."
   },
   {
     "id": "eu-edict-mailand",
@@ -1818,7 +1850,8 @@
     "culture": "deutsch",
     "importance": "core",
     "minZoomLevel": 2,
-    "tags": ["reformation", "religion", "protestantismus", "deutschland"]
+    "tags": ["reformation", "religion", "protestantismus", "deutschland"],
+    "mnemonic": "1517 – Luther schlägt seine 95 Thesen an die Wittenberger Schlosskirche."
   },
   {
     "id": "eu-dreissigjähriger-krieg",
@@ -1868,7 +1901,8 @@
     "culture": "französisch",
     "importance": "core",
     "minZoomLevel": 2,
-    "tags": ["revolution", "demokratie", "frankreich", "aufklärung"]
+    "tags": ["revolution", "demokratie", "frankreich", "aufklärung"],
+    "mnemonic": "1789 – Sturm auf die Bastille: Liberté, Égalité, Fraternité."
   },
   {
     "id": "eu-napoleon-reich",
@@ -2423,7 +2457,8 @@
     "culture": "germanisch",
     "importance": "core",
     "minZoomLevel": 3,
-    "tags": ["arminius", "rom", "germanen"]
+    "tags": ["arminius", "rom", "germanen"],
+    "mnemonic": "9 n. Chr. – „Varus, gib mir meine Legionen wieder!“, soll Kaiser Augustus nach der Niederlage gerufen haben."
   },
   {
     "id": "eu-mauerfall-wiedervereinigung",
