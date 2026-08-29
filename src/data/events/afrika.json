@@ -922,5 +922,18 @@
     "importance": "extended",
     "minZoomLevel": 2,
     "tags": ["musik", "afrobeat", "fela-kuti", "nigeria"]
+  },
+  {
+    "id": "af-kultur-benin-bronzen",
+    "title": "Benin-Bronzen – Hofkunst des Königreichs Benin",
+    "description": "Am Hof des Benin-Reichs (siehe Benin-Reich, Nigeria) entstehen im Wachsausschmelzverfahren gegossene Bronze- und Elfenbeinreliefs, die Könige (Oba) und höfisches Leben verewigen. 1897 raubt eine britische Strafexpedition Tausende Werke und verschleppt sie in europäische Museen – ihre Rückgabe ist bis heute Gegenstand internationaler Restitutionsdebatten.",
+    "startYear": 1550,
+    "endYear": 1897,
+    "category": "kultur",
+    "continent": "afrika",
+    "culture": "edo",
+    "importance": "core",
+    "minZoomLevel": 2,
+    "tags": ["kunst", "bronze", "benin", "restitution"]
   }
 ]

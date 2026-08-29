@@ -877,5 +877,18 @@
     "importance": "extended",
     "minZoomLevel": 2,
     "tags": ["literatur", "magischer-realismus", "boom", "garcía-márquez"]
+  },
+  {
+    "id": "am-kultur-samba-karneval",
+    "title": "Samba und Karneval in Rio de Janeiro",
+    "description": "Aus afrobrasilianischen Rhythmen ehemals versklavter Bevölkerungsgruppen entsteht in Rio de Janeiro der Samba; mit der ersten Aufnahme \"Pelo Telefone\" (1917) und den ersten Escolas de Samba wird er zum Herzstück des Karnevals. Wie die zeitgleiche Harlem Renaissance in den USA und die Négritude-Bewegung in Frankreich ist der Samba Ausdruck eines neuen afrodiasporischen Selbstbewusstseins.",
+    "startYear": 1917,
+    "endYear": 1935,
+    "category": "kultur",
+    "continent": "amerika",
+    "culture": "brasilianisch",
+    "importance": "core",
+    "minZoomLevel": 2,
+    "tags": ["musik", "samba", "karneval", "brasilien"]
   }
 ]
