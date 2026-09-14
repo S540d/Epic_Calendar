@@ -597,5 +597,18 @@
     "importance": "extended",
     "minZoomLevel": 2,
     "tags": ["hula", "sprache", "hokulea", "hawaii"]
+  },
+  {
+    "id": "oz-kultur-haka-tamoko",
+    "title": "Haka und Tā Moko – Māori-Ausdruckskunst",
+    "description": "Aus der Stammesgesellschaft der neuseeländischen Maori (siehe Maori-Kultur in Aotearoa) entwickeln sich der rhythmische Haka-Tanz und die Tā-Moko-Gesichtstätowierung zu zentralen Ausdrucksformen von Identität, Rang und Kriegsvorbereitung. Der Haka ist bis heute weltbekannt, etwa durch das neuseeländische Rugby-Nationalteam vor jedem Spiel.",
+    "startYear": 1300,
+    "endYear": 1840,
+    "category": "kultur",
+    "continent": "ozeanien",
+    "culture": "maori",
+    "importance": "core",
+    "minZoomLevel": 2,
+    "tags": ["haka", "ta-moko", "maori", "tanz"]
   }
 ]

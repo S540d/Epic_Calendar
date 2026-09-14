@@ -1128,6 +1128,7 @@
     "culture": "japanisch",
     "importance": "core",
     "minZoomLevel": 2,
+    "lineageId": "japan-edo-kultur",
     "tags": ["kunst", "holzschnitt", "ukiyo-e", "japan"]
   },
   {
@@ -1155,5 +1156,19 @@
     "importance": "extended",
     "minZoomLevel": 2,
     "tags": ["kunst", "miniaturmalerei", "mogulreich", "indien"]
+  },
+  {
+    "id": "as-kultur-basho-haiku",
+    "title": "Matsuo Bashō und die Haiku-Dichtung",
+    "description": "Matsuo Bashō vollendet mit seinem Reisetagebuch \"Oku no Hosomichi\" die knappe, naturverbundene Gedichtform Haiku (5-7-5 Silben) zur eigenständigen Kunstform. Wie die zeitgleich aufblühende Holzschnittkunst Ukiyo-e prägt sein Werk das ästhetische Selbstverständnis der Edo-Zeit – und wird zur weltweit meistübersetzten japanischen Lyrikform.",
+    "startYear": 1689,
+    "endYear": 1694,
+    "category": "kultur",
+    "continent": "asien",
+    "culture": "japanisch",
+    "importance": "core",
+    "minZoomLevel": 2,
+    "lineageId": "japan-edo-kultur",
+    "tags": ["dichtung", "haiku", "basho", "japan"]
   }
 ]
