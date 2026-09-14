@@ -51,33 +51,36 @@ export function TimelineChrome({
 }: Props) {
   return (
     <>
+      {/* #214: the minimap lives inside the same sticky wrapper as the axis
+          row — as a slim hairline directly beneath it — so it scrolls (or
+          rather, doesn't) together with the axis instead of separating from
+          it as its own chrome row. */}
       <View
-        style={[
-          styles.axisRow,
-          Platform.select({ web: { position: 'sticky', top: 0, zIndex: 10 } as any }),
-        ]}
+        style={Platform.select({ web: { position: 'sticky', top: 0, zIndex: 10 } as any })}
       >
-        <View style={{ width: LANE_LABEL_WIDTH }} />
-        <TimeAxis
+        <View style={styles.axisRow}>
+          <View style={{ width: LANE_LABEL_WIDTH }} />
+          <TimeAxis
+            offsetX={jsOffsetX}
+            pixelsPerUnit={jsPixelsPerUnit}
+            canvasWidth={canvasWidth}
+            zoomLevel={zoomLevel}
+          />
+          <View style={StyleSheet.absoluteFill} pointerEvents="none">
+            <View style={styles.topRightGroup}>
+              <FpsMonitor enabled={showFpsMonitor} />
+            </View>
+          </View>
+        </View>
+
+        <TimelineMinimap
           offsetX={jsOffsetX}
           pixelsPerUnit={jsPixelsPerUnit}
           canvasWidth={canvasWidth}
-          zoomLevel={zoomLevel}
+          onJump={handleMinimapJump}
+          highlightRange={minimapHighlight}
         />
-        <View style={StyleSheet.absoluteFill} pointerEvents="none">
-          <View style={styles.topRightGroup}>
-            <FpsMonitor enabled={showFpsMonitor} />
-          </View>
-        </View>
       </View>
-
-      <TimelineMinimap
-        offsetX={jsOffsetX}
-        pixelsPerUnit={jsPixelsPerUnit}
-        canvasWidth={canvasWidth}
-        onJump={handleMinimapJump}
-        highlightRange={minimapHighlight}
-      />
 
       <View style={styles.epochBandRow}>
         <View style={{ width: LANE_LABEL_WIDTH }} />
