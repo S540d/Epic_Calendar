@@ -103,8 +103,8 @@ export const TimelineZoomCluster = forwardRef<TimelineZoomClusterHandle, Props>(
     useEffect(() => {
       if (Platform.OS !== 'web') return;
       const handler = () => wake();
-      window.addEventListener('wheel', handler, { passive: true, capture: true });
-      return () => window.removeEventListener('wheel', handler, true);
+      window.addEventListener('wheel', handler, { passive: true, capture: true }); // platform-safe: early-returns above when Platform.OS !== 'web'
+      return () => window.removeEventListener('wheel', handler, true); // platform-safe: early-returns above when Platform.OS !== 'web'
     }, [wake]);
 
     const handleMouseEnter = useCallback(() => {
