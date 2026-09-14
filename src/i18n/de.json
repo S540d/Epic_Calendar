@@ -163,6 +163,13 @@
     "noResults": "Keine Treffer",
     "jumpToYear": "Springe zu Jahr {{year}}"
   },
+  "filterSheet": {
+    "title": "Filter",
+    "categories": "Kategorien",
+    "done": "Fertig",
+    "iconLabel": "Filter",
+    "iconLabelActive": "Filter, {{badge}} Kategorien aktiv"
+  },
   "cultureFilter": {
     "title": "{{continent}} filtern",
     "all": "Alle anzeigen",

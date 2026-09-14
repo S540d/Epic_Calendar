@@ -24,6 +24,10 @@ type Props = {
   onShowFullTimeline: () => void;
   onOpenSettings: () => void;
   onOpenSearch: () => void;
+  onOpenFilters: () => void;
+  /** #212: shown as a badge on the filter icon when the selection deviates
+   *  from the default (quantitative, e.g. "3/6"). */
+  filterBadgeLabel?: string;
   /** Starts (or resumes) a guided learning journey by id. */
   onStartJourney: (journeyId: string) => void;
   /** Persisted station index per journey id; absent = not started yet. */
@@ -124,6 +128,8 @@ export function EpochOverviewScreen({
   onShowFullTimeline,
   onOpenSettings,
   onOpenSearch,
+  onOpenFilters,
+  filterBadgeLabel,
   onStartJourney,
   journeyProgress,
 }: Props) {
@@ -192,6 +198,23 @@ export function EpochOverviewScreen({
           accessibilityRole="button"
         >
           <Text style={styles.iconButtonText}>🔍</Text>
+        </Pressable>
+        <Pressable
+          style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
+          onPress={onOpenFilters}
+          accessibilityLabel={
+            filterBadgeLabel
+              ? t('filterSheet.iconLabelActive', { badge: filterBadgeLabel })
+              : t('filterSheet.iconLabel')
+          }
+          accessibilityRole="button"
+        >
+          <Text style={styles.iconButtonText}>🏷</Text>
+          {filterBadgeLabel && (
+            <View style={styles.filterBadge}>
+              <Text style={styles.filterBadgeText}>{filterBadgeLabel}</Text>
+            </View>
+          )}
         </Pressable>
         <Pressable
           style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
@@ -387,6 +410,23 @@ function makeStyles(colors: ThemeColors) {
     iconButtonText: {
       fontSize: 20,
       color: colors.textSecondary,
+    },
+    filterBadge: {
+      position: 'absolute',
+      top: -4,
+      right: -4,
+      minWidth: 20,
+      height: 16,
+      borderRadius: 8,
+      paddingHorizontal: 4,
+      backgroundColor: colors.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    filterBadgeText: {
+      fontSize: 10,
+      fontWeight: '700',
+      color: colors.bg,
     },
     scroll: {
       flex: 1,

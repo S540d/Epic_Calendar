@@ -4,10 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import { ContinentTabBar } from '@/components/ContinentTabBar';
-import { CultureFilterModal } from '@/components/CultureFilterModal';
 import { DetailLevelPrompt } from '@/components/DetailLevelPrompt';
 import { EpochOverviewScreen } from '@/components/EpochOverviewScreen';
-import { FilterChipBar } from '@/components/FilterChipBar';
+import { FilterSheet } from '@/components/FilterSheet';
 import { LearningJourneyBar } from '@/components/LearningJourneyBar';
 import { SearchModal } from '@/components/SearchModal';
 import { SettingsModal } from '@/components/SettingsModal';
@@ -20,7 +19,7 @@ import { journeyById, resolveJourneySteps } from '@/data/learningJourneys';
 import type { Continent, ImportanceLevel, TimelineEvent } from '@/data/schema';
 import { globalEventIndex } from '@/timeline/globalEventIndex';
 import { spacing, typography, type Category } from '@/theme/tokens';
-import { DEFAULT_CATEGORIES } from '@/theme/categories';
+import { CHIP_CATEGORIES, DEFAULT_CATEGORIES } from '@/theme/categories';
 import { useTheme, type ThemeColors } from '@/theme/ThemeContext';
 
 export function TimelineScreen() {
@@ -35,7 +34,7 @@ export function TimelineScreen() {
 
   const [continent, setContinent] = usePersistedState<Continent>('selectedContinent', 'europa');
   const [cultureFilter, setCultureFilter] = useState<string | null>(null);
-  const [cultureFilterVisible, setCultureFilterVisible] = useState(false);
+  const [filterSheetVisible, setFilterSheetVisible] = useState(false);
   const [detailLevel, setDetailLevel] = usePersistedState<ImportanceLevel>('detailLevel', 'detail');
   const [showFpsMonitor, setShowFpsMonitor] = usePersistedState<boolean>('showFpsMonitor', false);
   const [selected, setSelected] = useState<TimelineEvent | null>(null);
@@ -108,9 +107,11 @@ export function TimelineScreen() {
     },
     [setContinent],
   );
-  const handleOpenCultureFilter = useCallback(() => setCultureFilterVisible(true), []);
-  const handleCloseCultureFilter = useCallback(() => setCultureFilterVisible(false), []);
-  const handleClearCultureFilter = useCallback(() => setCultureFilter(null), []);
+  // #212: the culture filter's own entry point (re-tapping the active
+  // continent tab, #163) and the new explicit filter icon both open the same
+  // FilterSheet — the tab gesture is kept as a shortcut, not the only way in.
+  const handleOpenFilterSheet = useCallback(() => setFilterSheetVisible(true), []);
+  const handleCloseFilterSheet = useCallback(() => setFilterSheetVisible(false), []);
 
   // Cultures available for the current continent, for the #163 filter sheet.
   const availableCultures = useMemo(
@@ -231,6 +232,17 @@ export function TimelineScreen() {
   // Leaving the timeline for the landing page also leaves the journey mode.
   const isJourneyActive = activeJourneyId !== null && !showOverview;
 
+  // #212: the filter icon's badge is quantitative ("n/m") and only shown when
+  // the selection deviates from the default — otherwise it would be
+  // permanent noise and lose its signal value.
+  const isDefaultCategorySelection = useMemo(() => {
+    if (persistedCategories.length !== DEFAULT_CATEGORIES.length) return false;
+    const defaults = new Set(DEFAULT_CATEGORIES);
+    return persistedCategories.every((c) => defaults.has(c));
+  }, [persistedCategories]);
+  const showFilterBadge = !isDefaultCategorySelection || cultureFilter !== null;
+  const filterBadgeLabel = `${activeCategories.size}/${CHIP_CATEGORIES.length}`;
+
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   return (
@@ -242,6 +254,8 @@ export function TimelineScreen() {
             onShowFullTimeline={handleShowFullTimeline}
             onOpenSettings={handleOpenSettings}
             onOpenSearch={handleOpenSearch}
+            onOpenFilters={handleOpenFilterSheet}
+            filterBadgeLabel={showFilterBadge ? filterBadgeLabel : undefined}
             onStartJourney={handleStartJourney}
             journeyProgress={journeyProgress}
           />
@@ -274,6 +288,23 @@ export function TimelineScreen() {
             </Pressable>
             <Pressable
               style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
+              onPress={handleOpenFilterSheet}
+              accessibilityLabel={
+                showFilterBadge
+                  ? t('filterSheet.iconLabelActive', { badge: filterBadgeLabel })
+                  : t('filterSheet.iconLabel')
+              }
+              accessibilityRole="button"
+            >
+              <Text style={styles.iconButtonText}>🏷</Text>
+              {showFilterBadge && (
+                <View style={styles.filterBadge}>
+                  <Text style={styles.filterBadgeText}>{filterBadgeLabel}</Text>
+                </View>
+              )}
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
               onPress={handleOpenSettings}
               accessibilityLabel={t('settings.title')}
               accessibilityRole="button"
@@ -281,21 +312,6 @@ export function TimelineScreen() {
               <Text style={styles.iconButtonText}>⚙</Text>
             </Pressable>
           </View>
-          <FilterChipBar active={activeCategories} onToggle={toggleCategory} />
-          {cultureFilter && (
-            <Pressable
-              style={styles.cultureFilterBanner}
-              onPress={handleClearCultureFilter}
-              accessibilityRole="button"
-              accessibilityLabel={t('cultureFilter.activeLabel', { culture: cultureFilter })}
-              accessibilityHint={t('cultureFilter.clear')}
-            >
-              <Text style={styles.cultureFilterBannerText} numberOfLines={1}>
-                {t('cultureFilter.activeLabel', { culture: cultureFilter })}
-              </Text>
-              <Text style={styles.cultureFilterBannerClose}>✕</Text>
-            </Pressable>
-          )}
           <View style={styles.canvasOuter}>
             <ScrollView
               ref={canvasScrollRef}
@@ -342,7 +358,7 @@ export function TimelineScreen() {
           <ContinentTabBar
             active={continent}
             onChange={handleContinentChange}
-            onPressActive={handleOpenCultureFilter}
+            onPressActive={handleOpenFilterSheet}
             cultureFilterActive={cultureFilter !== null}
           />
           <EventDetailModal event={selected} onClose={() => setSelected(null)} />
@@ -362,13 +378,15 @@ export function TimelineScreen() {
         onSelectEvent={handleSearchSelectEvent}
         onSelectYear={handleSearchSelectYear}
       />
-      <CultureFilterModal
-        visible={cultureFilterVisible}
+      <FilterSheet
+        visible={filterSheetVisible}
+        onClose={handleCloseFilterSheet}
+        activeCategories={activeCategories}
+        onToggleCategory={toggleCategory}
         continent={continent}
         cultures={availableCultures}
-        active={cultureFilter}
-        onSelect={setCultureFilter}
-        onClose={handleCloseCultureFilter}
+        activeCulture={cultureFilter}
+        onSelectCulture={setCultureFilter}
       />
     </>
   );
@@ -418,30 +436,22 @@ function makeStyles(colors: ThemeColors) {
       fontSize: 20,
       color: colors.textSecondary,
     },
-    cultureFilterBanner: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      marginHorizontal: spacing.md,
-      marginBottom: spacing.xs,
-      paddingHorizontal: spacing.md,
-      paddingVertical: spacing.xs,
+    filterBadge: {
+      position: 'absolute',
+      top: -4,
+      right: -4,
+      minWidth: 20,
+      height: 16,
       borderRadius: 8,
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.accent,
+      paddingHorizontal: 4,
+      backgroundColor: colors.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
-    cultureFilterBannerText: {
-      ...typography.caption,
-      color: colors.accent,
+    filterBadgeText: {
+      fontSize: 10,
       fontWeight: '700',
-      flex: 1,
-    },
-    cultureFilterBannerClose: {
-      ...typography.caption,
-      color: colors.accent,
-      fontWeight: '700',
-      marginLeft: spacing.sm,
+      color: colors.bg,
     },
     canvasOuter: {
       flex: 1,
