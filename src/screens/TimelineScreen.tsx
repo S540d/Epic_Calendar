@@ -11,7 +11,10 @@ import { LearningJourneyBar } from '@/components/LearningJourneyBar';
 import { SearchModal } from '@/components/SearchModal';
 import { SettingsModal } from '@/components/SettingsModal';
 import { TimelineView, type TimelineViewHandle } from '@/components/TimelineView';
-import { TimelineZoomCluster } from '@/components/TimelineZoomCluster';
+import {
+  TimelineZoomCluster,
+  type TimelineZoomClusterHandle,
+} from '@/components/TimelineZoomCluster';
 import { EventDetailModal } from '@/screens/EventDetailModal';
 import { usePersistedState } from '@/hooks/usePersistedState';
 import { ALL_EVENTS } from '@/data/events';
@@ -65,6 +68,11 @@ export function TimelineScreen() {
     undefined,
   );
   const jumpRequestIdRef = useRef(0);
+  // #215: any canvas touch (pan/pinch/tap) wakes TimelineZoomCluster from its
+  // inactivity fade via this ref — an imperative call from the actual event
+  // handler below, not a prop bump routed through an effect (which would call
+  // setState synchronously inside an effect and risk a cascading render).
+  const zoomClusterRef = useRef<TimelineZoomClusterHandle>(null);
 
   const toggleCategory = (cat: Category) => {
     setPersistedCategories((prev) => {
@@ -312,7 +320,13 @@ export function TimelineScreen() {
               <Text style={styles.iconButtonText}>⚙</Text>
             </Pressable>
           </View>
-          <View style={styles.canvasOuter}>
+          <View
+            style={styles.canvasOuter}
+            onStartShouldSetResponderCapture={() => {
+              zoomClusterRef.current?.wake();
+              return false;
+            }}
+          >
             <ScrollView
               ref={canvasScrollRef}
               style={styles.canvasWrap}
@@ -338,6 +352,7 @@ export function TimelineScreen() {
                 bottom of the screen and drives navigation itself. */}
             {!isJourneyActive && (
               <TimelineZoomCluster
+                ref={zoomClusterRef}
                 jumpToToday={() => timelineViewRef.current?.jumpToToday()}
                 zoomIn={() => timelineViewRef.current?.zoomIn()}
                 zoomOut={() => timelineViewRef.current?.zoomOut()}

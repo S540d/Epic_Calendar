@@ -149,6 +149,10 @@
     "noResults": "Keine Treffer",
     "jumpToYear": "Springe zu Jahr {{year}}"
   },
+  "zoomCluster": {
+    "zoomIn": "Vergrößern",
+    "zoomOut": "Verkleinern"
+  },
   "filterSheet": {
     "title": "Filter",
     "categories": "Kategorien",
