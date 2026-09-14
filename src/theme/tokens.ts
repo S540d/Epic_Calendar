@@ -88,9 +88,9 @@ export const LANE_HEIGHT = 84;
 export const LANE_GAP = 8;
 export const LANE_LABEL_WIDTH = 28;
 /** Height of a single track row within a multi-track lane. */
-export const TRACK_HEIGHT = 80;
+export const TRACK_HEIGHT = 64;
 /** Vertical padding inside a lane (top + bottom combined). */
-export const LANE_PADDING_V = 14;
+export const LANE_PADDING_V = 10;
 
 /**
  * Returns a stable event color. Uses ev.color if set, otherwise generates a
