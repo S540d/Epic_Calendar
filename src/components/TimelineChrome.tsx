@@ -55,9 +55,7 @@ export function TimelineChrome({
           row — as a slim hairline directly beneath it — so it scrolls (or
           rather, doesn't) together with the axis instead of separating from
           it as its own chrome row. */}
-      <View
-        style={Platform.select({ web: { position: 'sticky', top: 0, zIndex: 10 } as any })}
-      >
+      <View style={Platform.select({ web: { position: 'sticky', top: 0, zIndex: 10 } as any })}>
         <View style={styles.axisRow}>
           <View style={{ width: LANE_LABEL_WIDTH }} />
           <TimeAxis

@@ -170,11 +170,7 @@ export function FilterSheet({
             )}
           </ScrollView>
 
-          <TouchableOpacity
-            style={styles.doneButton}
-            onPress={onClose}
-            accessibilityRole="button"
-          >
+          <TouchableOpacity style={styles.doneButton} onPress={onClose} accessibilityRole="button">
             <Text style={styles.doneButtonText}>{t('filterSheet.done')}</Text>
           </TouchableOpacity>
         </Pressable>

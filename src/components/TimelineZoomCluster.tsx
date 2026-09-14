@@ -6,7 +6,14 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { AccessibilityInfo, LayoutAnimation, Platform, Text, TouchableOpacity, View } from 'react-native';
+import {
+  AccessibilityInfo,
+  LayoutAnimation,
+  Platform,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { timelineStyles as styles } from './timelineRenderShared';
 
