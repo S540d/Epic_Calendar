@@ -149,6 +149,10 @@ export const timelineStyles = StyleSheet.create({
     flexDirection: 'column',
     gap: 6,
   },
+  // #215: dimmed state after inactivity — never unmounted, still tappable.
+  zoomButtonsFaded: {
+    opacity: 0.35,
+  },
   zoomBtn: {
     width: 44,
     height: 44,

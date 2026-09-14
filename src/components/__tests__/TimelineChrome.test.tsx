@@ -4,15 +4,16 @@ import '@/i18n';
 import { TimelineChrome } from '../TimelineChrome';
 
 /**
- * Viewport covering roughly the Hellenistic period, so the breadcrumb resolves
- * to a full three-level path (Menschheit › Antike › Hellenismus).
+ * Viewport covering roughly the Hellenistic period, so the epoch band renders
+ * its finest level (Hellenismus etc.) while the ancestor prefix chip in
+ * `EpochBand` carries the levels above it (Menschheitsgeschichte › Antike ›).
  */
 const HELLENISM = { startYear: -320, endYear: -280 };
 
 function renderChrome(overrides: Partial<React.ComponentProps<typeof TimelineChrome>> = {}) {
   const zoomToFit = jest.fn();
   const handleMinimapJump = jest.fn();
-  const span = overrides.viewportRange ?? HELLENISM;
+  const span = HELLENISM;
   const canvasWidth = 800;
   const utils = render(
     <TimelineChrome
@@ -20,7 +21,6 @@ function renderChrome(overrides: Partial<React.ComponentProps<typeof TimelineChr
       jsPixelsPerUnit={canvasWidth / (span.endYear - span.startYear)}
       canvasWidth={canvasWidth}
       zoomLevel={4}
-      viewportRange={span}
       zoomToFit={zoomToFit}
       handleMinimapJump={handleMinimapJump}
       {...overrides}
@@ -29,22 +29,26 @@ function renderChrome(overrides: Partial<React.ComponentProps<typeof TimelineChr
   return { ...utils, zoomToFit, handleMinimapJump };
 }
 
-describe('TimelineChrome', () => {
-  it('renders the whole header stack: zoom band, breadcrumb path and minimap', () => {
-    const { getByText, getByLabelText, getAllByLabelText } = renderChrome();
+describe('TimelineChrome (#213)', () => {
+  it('renders the header stack: minimap, epoch band and its ancestor prefix', () => {
+    const { getByLabelText, getAllByLabelText } = renderChrome();
 
-    // Zoom pill (absorbed from the former ZoomLevelIndicator).
-    expect(getByText('Jahre')).toBeTruthy();
-    // Breadcrumb crumbs for the current viewport. "Hellenismus" appears twice —
-    // once as a crumb, once as an epoch-band segment (see the band test below).
+    // Ancestor prefix chip on EpochBand (levels above what the band itself shows).
     expect(getByLabelText('Menschheitsgeschichte')).toBeTruthy();
     expect(getByLabelText('Antike')).toBeTruthy();
+    // The band's own segment for the current level.
     expect(getAllByLabelText('Hellenismus').length).toBeGreaterThan(0);
     // Minimap is part of the stack.
     expect(getByLabelText(/Zeitstrahl/i)).toBeTruthy();
   });
 
-  it('zooms to the tapped crumb rather than the current viewport', () => {
+  it('there is no separate breadcrumb row with a zoom-level pill', () => {
+    const { queryByText } = renderChrome();
+    // Former internal LOD naming ("Jahre" for zoomLevel 4) must not leak into the UI.
+    expect(queryByText('Jahre')).toBeNull();
+  });
+
+  it('zooms to the tapped ancestor rather than the current viewport', () => {
     const { getByLabelText, zoomToFit } = renderChrome();
 
     fireEvent.press(getByLabelText('Antike'));
@@ -53,13 +57,14 @@ describe('TimelineChrome', () => {
     expect(zoomToFit).toHaveBeenCalledWith(-800, 600);
   });
 
-  it('coarsens the breadcrumb when zoomed all the way out', () => {
+  it('shows no ancestor prefix when zoomed all the way out', () => {
     const { queryByLabelText } = renderChrome({
-      viewportRange: { startYear: -13_800_000_000, endYear: 2026 },
-      zoomLevel: 0,
+      jsOffsetX: -13_800_000_000,
+      jsPixelsPerUnit: 800 / (2026 - -13_800_000_000),
     });
 
-    // The coverage guard must stop the path from claiming a narrow sub-epoch.
+    // The coverage guard must stop the path from claiming a narrow sub-epoch,
+    // and the band itself renders only its coarsest level here.
     expect(queryByLabelText('Hellenismus')).toBeNull();
     expect(queryByLabelText('Antike')).toBeNull();
   });
@@ -67,12 +72,5 @@ describe('TimelineChrome', () => {
   it('hides the FPS pill unless explicitly enabled', () => {
     const { queryByText } = renderChrome();
     expect(queryByText(/FPS$/)).toBeNull();
-  });
-
-  it('renders epoch band segments for the visible range', () => {
-    // At this span the band renders its finest level, so the sub-epochs of
-    // antiquity must appear as tappable segments alongside the crumbs.
-    const { getAllByLabelText } = renderChrome();
-    expect(getAllByLabelText('Hellenismus').length).toBeGreaterThanOrEqual(2);
   });
 });
