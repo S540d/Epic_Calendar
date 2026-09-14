@@ -89,20 +89,6 @@
     "million": "M",
     "thousand": "k"
   },
-  "breadcrumb": {
-    "from": "from",
-    "to": "to",
-    "zoom": "Zoom"
-  },
-  "zoom": {
-    "level": {
-      "0": "Eons",
-      "1": "Eras",
-      "2": "Epochs",
-      "3": "Centuries",
-      "4": "Years"
-    }
-  },
   "epochNav": {
     "title": "Time Journey",
     "subtitle": "Choose an epoch to explore",
@@ -162,6 +148,17 @@
     "minChars": "Enter at least 2 characters",
     "noResults": "No results",
     "jumpToYear": "Jump to year {{year}}"
+  },
+  "zoomCluster": {
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out"
+  },
+  "filterSheet": {
+    "title": "Filters",
+    "categories": "Categories",
+    "done": "Done",
+    "iconLabel": "Filters",
+    "iconLabelActive": "Filters, {{badge}} categories active"
   },
   "cultureFilter": {
     "title": "Filter {{continent}}",

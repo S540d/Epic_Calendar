@@ -97,6 +97,10 @@ export function TimelineMinimap({
       <View style={{ width: LANE_LABEL_WIDTH }} />
       <Pressable
         style={styles.track}
+        // The visible hairline is thin (#214), but the tappable area stays at
+        // least ~24px tall via hitSlop — otherwise tap-to-jump would be
+        // effectively dead on touch, trading function for pixels.
+        hitSlop={{ top: 10, bottom: 10 }}
         onLayout={(e) => setBarWidth(e.nativeEvent.layout.width)}
         onPress={handlePress}
         accessibilityRole="adjustable"
@@ -132,21 +136,21 @@ export function TimelineMinimap({
 }
 
 const styles = StyleSheet.create({
+  // #214: no longer its own chrome row — a slim hairline directly under the
+  // time axis (parent `TimelineChrome` renders it inside the sticky axis
+  // wrapper so it never separates from the axis on scroll).
   wrapper: {
     flexDirection: 'row',
-    height: 20,
+    height: 6,
     alignItems: 'center',
     backgroundColor: colors.bg,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
-    paddingVertical: spacing.xs,
   },
   track: {
     flex: 1,
-    height: 8,
-    borderRadius: 4,
+    height: 4,
+    borderRadius: 2,
     backgroundColor: 'rgba(255,255,255,0.06)',
-    marginHorizontal: spacing.sm,
+    marginHorizontal: spacing.xs,
     overflow: 'hidden',
     position: 'relative',
   },

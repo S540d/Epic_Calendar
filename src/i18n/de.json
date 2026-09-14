@@ -89,20 +89,6 @@
     "million": "Mio.",
     "thousand": "Tsd."
   },
-  "breadcrumb": {
-    "from": "von",
-    "to": "bis",
-    "zoom": "Zoom"
-  },
-  "zoom": {
-    "level": {
-      "0": "Äonen",
-      "1": "Ären",
-      "2": "Epochen",
-      "3": "Jahrhunderte",
-      "4": "Jahre"
-    }
-  },
   "epochNav": {
     "title": "Zeitreise",
     "subtitle": "Wähle eine Epoche zum Erkunden",
@@ -162,6 +148,17 @@
     "minChars": "Mindestens 2 Zeichen eingeben",
     "noResults": "Keine Treffer",
     "jumpToYear": "Springe zu Jahr {{year}}"
+  },
+  "zoomCluster": {
+    "zoomIn": "Vergrößern",
+    "zoomOut": "Verkleinern"
+  },
+  "filterSheet": {
+    "title": "Filter",
+    "categories": "Kategorien",
+    "done": "Fertig",
+    "iconLabel": "Filter",
+    "iconLabelActive": "Filter, {{badge}} Kategorien aktiv"
   },
   "cultureFilter": {
     "title": "{{continent}} filtern",
