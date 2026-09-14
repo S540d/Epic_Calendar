@@ -61,8 +61,6 @@ describe('i18n resources', () => {
     'event.thousand',
     'event.bce',
     'event.ce',
-    'zoom.level.0',
-    'zoom.level.4',
     'epochNav.stoneAge',
     'epochNav.modern',
     'epochNav.jumpHint',

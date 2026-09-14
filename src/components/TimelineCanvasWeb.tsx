@@ -51,8 +51,6 @@ type Props = {
   onEventTap: (event: TimelineEvent) => void;
   zoomToFit: (startYear: number, endYear: number | null | undefined) => void;
   handleMinimapJump: (newOffsetX: number) => void;
-  /** Visible year range, computed once in TimelineView so both renderers agree. */
-  viewportRange: { startYear: number; endYear: number };
   minimapHighlight?: { startT: number; endT: number } | null;
   /** Shows the live FPS overlay (#5 FPS-Monitoring, opt-in via Settings). */
   showFpsMonitor?: boolean;
@@ -96,7 +94,6 @@ export const TimelineCanvasWeb = forwardRef<View, Props>(function TimelineCanvas
     onEventTap,
     zoomToFit,
     handleMinimapJump,
-    viewportRange,
     minimapHighlight,
     showFpsMonitor = false,
   }: Props,
@@ -161,7 +158,6 @@ export const TimelineCanvasWeb = forwardRef<View, Props>(function TimelineCanvas
         jsPixelsPerUnit={WEB_PPU}
         canvasWidth={canvasWidth}
         zoomLevel={zoomLevel}
-        viewportRange={viewportRange}
         zoomToFit={zoomToFit}
         handleMinimapJump={handleMinimapJump}
         minimapHighlight={minimapHighlight}

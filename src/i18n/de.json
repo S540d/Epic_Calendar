@@ -89,20 +89,6 @@
     "million": "Mio.",
     "thousand": "Tsd."
   },
-  "breadcrumb": {
-    "from": "von",
-    "to": "bis",
-    "zoom": "Zoom"
-  },
-  "zoom": {
-    "level": {
-      "0": "Äonen",
-      "1": "Ären",
-      "2": "Epochen",
-      "3": "Jahrhunderte",
-      "4": "Jahre"
-    }
-  },
   "epochNav": {
     "title": "Zeitreise",
     "subtitle": "Wähle eine Epoche zum Erkunden",

@@ -64,7 +64,6 @@ type Props = {
   jsOffsetX: number;
   jsPixelsPerUnit: number;
   zoomLevel: ZoomLevel;
-  viewportRange: { startYear: number; endYear: number };
   heutePx: number;
   heuteVisible: boolean;
   gesture: ComposedGesture | GestureType;
@@ -98,7 +97,6 @@ export const TimelineCanvasNative = forwardRef<View, Props>(function TimelineCan
     jsOffsetX,
     jsPixelsPerUnit,
     zoomLevel,
-    viewportRange,
     heutePx,
     heuteVisible,
     gesture,
@@ -121,7 +119,6 @@ export const TimelineCanvasNative = forwardRef<View, Props>(function TimelineCan
         jsPixelsPerUnit={jsPixelsPerUnit}
         canvasWidth={canvasWidth}
         zoomLevel={zoomLevel}
-        viewportRange={viewportRange}
         zoomToFit={zoomToFit}
         handleMinimapJump={handleMinimapJump}
         minimapHighlight={minimapHighlight}

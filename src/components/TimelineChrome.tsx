@@ -2,7 +2,6 @@ import React from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import type { ZoomLevel } from '@/data/schema';
 import { EpochBand } from './EpochBand';
-import { EpochBreadcrumbBar } from './EpochBreadcrumbBar';
 import { FpsMonitor } from './FpsMonitor';
 import { TimeAxis } from './TimeAxis';
 import { TimelineMinimap } from './TimelineMinimap';
@@ -14,7 +13,6 @@ type Props = {
   jsPixelsPerUnit: number;
   canvasWidth: number;
   zoomLevel: ZoomLevel;
-  viewportRange: { startYear: number; endYear: number };
   zoomToFit: (startYear: number, endYear: number | null | undefined) => void;
   handleMinimapJump: (newOffsetX: number) => void;
   minimapHighlight?: { startT: number; endT: number } | null;
@@ -23,7 +21,7 @@ type Props = {
 
 /**
  * The fixed header stack above the lane area: time axis (+ FPS overlay),
- * minimap, epoch band and breadcrumb bar.
+ * minimap and epoch band.
  *
  * Shared by both renderers. These rows are pure React Native views with no
  * Skia or DOM specifics, so keeping one copy removes the main way the web and
@@ -34,13 +32,18 @@ type Props = {
  * The `position: sticky` on the axis row is a web-only concern, but the
  * `Platform.select` has no `default` branch and therefore resolves to
  * `undefined` on native — so it can live here unconditionally.
+ *
+ * #213 removed the separate `EpochBreadcrumbBar` row: its zoom-level pill
+ * leaked internal LOD naming ("Level 3") that nobody acts on, and its year
+ * range duplicated `TimeAxis`'s own tick labels. The one piece of unique
+ * information it carried — ancestors above what the band itself shows — moved
+ * into `EpochBand`'s small prefix chip instead of its own row.
  */
 export function TimelineChrome({
   jsOffsetX,
   jsPixelsPerUnit,
   canvasWidth,
   zoomLevel,
-  viewportRange,
   zoomToFit,
   handleMinimapJump,
   minimapHighlight,
@@ -87,13 +90,6 @@ export function TimelineChrome({
           />
         </View>
       </View>
-
-      <EpochBreadcrumbBar
-        startYear={viewportRange.startYear}
-        endYear={viewportRange.endYear}
-        zoomLevel={zoomLevel}
-        onJump={zoomToFit}
-      />
     </>
   );
 }

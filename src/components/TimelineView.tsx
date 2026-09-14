@@ -260,11 +260,6 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
     [visibleByLane, tracksByLane, jsOffsetX, jsPixelsPerUnit, canvasWidth],
   );
 
-  const viewportRange = useMemo(
-    () => viewportYearRange(canvasWidth, jsOffsetX, jsPixelsPerUnit),
-    [canvasWidth, jsOffsetX, jsPixelsPerUnit],
-  );
-
   const heutePx = useMemo(
     () => (T_HEUTE - jsOffsetX) * jsPixelsPerUnit,
     [jsOffsetX, jsPixelsPerUnit],
@@ -560,7 +555,6 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
         onEventTap={handleEventTap}
         zoomToFit={zoomToFit}
         handleMinimapJump={handleMinimapJump}
-        viewportRange={viewportRange}
         minimapHighlight={minimapHighlight}
         showFpsMonitor={showFpsMonitor}
       />
@@ -583,7 +577,6 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
       jsOffsetX={jsOffsetX}
       jsPixelsPerUnit={jsPixelsPerUnit}
       zoomLevel={zoomLevel}
-      viewportRange={viewportRange}
       heutePx={heutePx}
       heuteVisible={heuteVisible}
       gesture={gesture}
