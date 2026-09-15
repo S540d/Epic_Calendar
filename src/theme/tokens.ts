@@ -84,11 +84,15 @@ export const iconSize = {
   xl: 32,
 };
 
-export const LANE_HEIGHT = 84;
 export const LANE_GAP = 8;
 export const LANE_LABEL_WIDTH = 28;
-/** Height of a single track row within a multi-track lane. */
-export const TRACK_HEIGHT = 64;
+/** Height of a single track row within a multi-track lane. Rendered bar
+ *  height is `TRACK_HEIGHT - 8` (see `timelineRenderShared.ts`). Kept well
+ *  below the 44px touch-target minimum on purpose — the vertical tap
+ *  tolerance is padded independently in the hit-test (`TimelineView`'s
+ *  `handleCanvasTap`) and via `hitSlop` on web, so shrinking the *visual*
+ *  bar doesn't shrink what's actually tappable (#206-Folge). */
+export const TRACK_HEIGHT = 40;
 /** Vertical padding inside a lane (top + bottom combined). */
 export const LANE_PADDING_V = 10;
 

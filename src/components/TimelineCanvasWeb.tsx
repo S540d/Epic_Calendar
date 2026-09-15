@@ -255,13 +255,16 @@ export const TimelineCanvasWeb = forwardRef<View, Props>(function TimelineCanvas
                       const labelTopPos =
                         maxLines === 1 ? barTop + barHeight / 2 - lblSize / 2 : barTop + 4;
 
-                      // Expand thin bars to >=44px touch target without changing visual width.
+                      // Expand thin/short bars to >=44px touch target without
+                      // changing the visual size (#206-Folge: bars are
+                      // intentionally more compact than the touch minimum).
                       const hSlop = Math.max(0, (MIN_HIT_PX - w) / 2);
+                      const vSlop = Math.max(4, (MIN_HIT_PX - barHeight) / 2);
                       return (
                         <React.Fragment key={ev.id}>
                           <Pressable
                             onPress={() => onEventTap(ev)}
-                            hitSlop={{ left: hSlop, right: hSlop, top: 4, bottom: 4 }}
+                            hitSlop={{ left: hSlop, right: hSlop, top: vSlop, bottom: vSlop }}
                             accessibilityRole="button"
                             accessibilityLabel={ev.title}
                             style={

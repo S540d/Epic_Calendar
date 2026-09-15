@@ -73,11 +73,9 @@ describe('eventLabelMaxLines', () => {
     expect(eventLabelMaxLines(1)).toBe(1);
     expect(eventLabelMaxLines(2)).toBe(1);
   });
-  it('returns 2 for zoom level 3', () => {
+  it('returns 2 for zoom levels 3-4 (capped: label containers do not clip, #206-Folge)', () => {
     expect(eventLabelMaxLines(3)).toBe(2);
-  });
-  it('returns 3 for zoom level 4', () => {
-    expect(eventLabelMaxLines(4)).toBe(3);
+    expect(eventLabelMaxLines(4)).toBe(2);
   });
 });
 

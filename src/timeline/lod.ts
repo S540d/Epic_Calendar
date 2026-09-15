@@ -71,11 +71,20 @@ export function eventLabelFontSize(zoomLevel: ZoomLevel): number {
   return 13; // level 4
 }
 
-/** Returns max number of label lines per bar at the current LOD. */
+/**
+ * Returns max number of label lines per bar at the current LOD.
+ *
+ * Capped at 2 (not 3): `numberOfLines` truncates the *text* after that many
+ * lines, but the label's container has no explicit height, so it doesn't
+ * clip — a taller text block simply renders past the bar's own box. Since
+ * the compact `TRACK_HEIGHT` (#206-Folge) only leaves ~28-32px of headroom
+ * below a bar before it visually collides with the bar in the next track, 3
+ * lines at the level-4 font size would overflow into stacked tracks (exactly
+ * the dense multi-culture lanes #206 was about).
+ */
 export function eventLabelMaxLines(zoomLevel: ZoomLevel): number {
   if (zoomLevel <= 2) return 1;
-  if (zoomLevel === 3) return 2;
-  return 3; // level 4
+  return 2; // levels 3-4
 }
 
 export const MIN_PIXELS_PER_UNIT = 1e-9;
