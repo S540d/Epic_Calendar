@@ -173,6 +173,11 @@
   "themeFilter": {
     "all": "Alle Themen"
   },
+  "themeSection": {
+    "title": "Themen entdecken",
+    "hint": "Quer durch Kontinente und Kategorien",
+    "eventCount": "{{count}} Ereignisse"
+  },
   "theme": {
     "voelkerwanderungen": { "label": "Völkerwanderungen & Besiedlung" },
     "kolonialismus": { "label": "Kolonialismus & Eroberung" },

@@ -173,6 +173,11 @@
   "themeFilter": {
     "all": "All themes"
   },
+  "themeSection": {
+    "title": "Discover themes",
+    "hint": "Across continents and categories",
+    "eventCount": "{{count}} events"
+  },
   "theme": {
     "voelkerwanderungen": { "label": "Migrations & Settlement" },
     "kolonialismus": { "label": "Colonialism & Conquest" },

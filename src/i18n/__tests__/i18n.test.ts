@@ -75,6 +75,9 @@ describe('i18n resources', () => {
     'axis.today',
     'filterSheet.themes',
     'themeFilter.all',
+    'themeSection.title',
+    'themeSection.hint',
+    'themeSection.eventCount',
   ];
 
   it.each(REQUIRED_KEYS)('defines required key "%s" in both languages', (key) => {
