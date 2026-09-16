@@ -9,9 +9,11 @@ function setup(overrides?: {
   cultures?: string[];
   activeCulture?: string | null;
   activeCategories?: Category[];
+  activeTheme?: string | null;
 }) {
   const onToggleCategory = jest.fn();
   const onSelectCulture = jest.fn();
+  const onSelectTheme = jest.fn();
   const onClose = jest.fn();
   const utils = render(
     <FilterSheet
@@ -23,9 +25,11 @@ function setup(overrides?: {
       cultures={overrides?.cultures ?? ['griechisch', 'römisch']}
       activeCulture={overrides?.activeCulture ?? null}
       onSelectCulture={onSelectCulture}
+      activeTheme={overrides?.activeTheme ?? null}
+      onSelectTheme={onSelectTheme}
     />,
   );
-  return { ...utils, onToggleCategory, onSelectCulture, onClose };
+  return { ...utils, onToggleCategory, onSelectCulture, onSelectTheme, onClose };
 }
 
 describe('FilterSheet (#212)', () => {
@@ -65,5 +69,24 @@ describe('FilterSheet (#212)', () => {
     const { getByText, onClose } = setup();
     fireEvent.press(getByText('Fertig'));
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders theme rows (#226)', () => {
+    const { getByText } = setup();
+    expect(getByText('Alle Themen')).toBeTruthy();
+    expect(getByText('🚩 Kolonialismus & Eroberung')).toBeTruthy();
+  });
+
+  it('selecting a theme calls onSelectTheme without closing the sheet', () => {
+    const { getByText, onSelectTheme, onClose } = setup();
+    fireEvent.press(getByText('🚩 Kolonialismus & Eroberung'));
+    expect(onSelectTheme).toHaveBeenCalledWith('kolonialismus');
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('selecting "Alle Themen" clears the theme filter', () => {
+    const { getByText, onSelectTheme } = setup({ activeTheme: 'kolonialismus' });
+    fireEvent.press(getByText('Alle Themen'));
+    expect(onSelectTheme).toHaveBeenCalledWith(null);
   });
 });

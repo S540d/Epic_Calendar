@@ -12,6 +12,7 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import type { Continent } from '@/data/schema';
+import { THEMES } from '@/data/themes';
 import { useTheme, type ThemeColors } from '@/theme/ThemeContext';
 import { radii, spacing, typography, type Category } from '@/theme/tokens';
 import { CHIP_CATEGORIES, DISABLED_CATEGORIES } from '@/theme/categories';
@@ -27,6 +28,9 @@ type Props = {
   cultures: string[];
   activeCulture: string | null;
   onSelectCulture: (culture: string | null) => void;
+  /** Cross-continent theme filter (#226) — always shown, unlike the culture filter. */
+  activeTheme: string | null;
+  onSelectTheme: (theme: string | null) => void;
 };
 
 /**
@@ -46,6 +50,8 @@ export function FilterSheet({
   cultures,
   activeCulture,
   onSelectCulture,
+  activeTheme,
+  onSelectTheme,
 }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -168,6 +174,39 @@ export function FilterSheet({
                 )}
               </>
             )}
+
+            <Text style={styles.sectionLabel}>{t('filterSheet.themes')}</Text>
+            <FlatList
+              data={THEMES}
+              keyExtractor={(th) => th.id}
+              scrollEnabled={false}
+              ListHeaderComponent={
+                <TouchableOpacity
+                  style={styles.row}
+                  onPress={() => onSelectTheme(null)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: activeTheme === null }}
+                >
+                  <Text style={[styles.rowText, activeTheme === null && styles.rowTextActive]}>
+                    {t('themeFilter.all')}
+                  </Text>
+                  {activeTheme === null && <Text style={styles.checkmark}>✓</Text>}
+                </TouchableOpacity>
+              }
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.row}
+                  onPress={() => onSelectTheme(item.id)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: activeTheme === item.id }}
+                >
+                  <Text style={[styles.rowText, activeTheme === item.id && styles.rowTextActive]}>
+                    {item.icon} {t(item.labelKey)}
+                  </Text>
+                  {activeTheme === item.id && <Text style={styles.checkmark}>✓</Text>}
+                </TouchableOpacity>
+              )}
+            />
           </ScrollView>
 
           <TouchableOpacity style={styles.doneButton} onPress={onClose} accessibilityRole="button">

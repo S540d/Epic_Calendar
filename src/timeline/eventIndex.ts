@@ -4,6 +4,7 @@ import {
   type ZoomLevel,
   type Continent,
 } from '@/data/schema';
+import { eventMatchesTheme } from '@/data/themes';
 import type { Category } from '@/theme/tokens';
 
 export type IndexQuery = {
@@ -16,6 +17,8 @@ export type IndexQuery = {
   maxImportanceRank?: number;
   /** When set, only events with this exact `culture` value pass (#163 country/culture filter). */
   culture?: string | null;
+  /** When set, only events matching this theme id pass (#226 theme filter, cross-continent). */
+  theme?: string | null;
 };
 
 /** Query without a year range — used to derive the full (viewport-independent) event set for stable track assignment. */
@@ -26,6 +29,8 @@ export type CategoryQuery = {
   maxImportanceRank?: number;
   /** When set, only events with this exact `culture` value pass (#163 country/culture filter). */
   culture?: string | null;
+  /** When set, only events matching this theme id pass (#226 theme filter, cross-continent). */
+  theme?: string | null;
 };
 
 /**
@@ -52,7 +57,7 @@ export class EventIndex {
   }
 
   queryVisible(query: IndexQuery): TimelineEvent[] {
-    const { startYear, endYear, zoomLevel, categories, continent, culture } = query;
+    const { startYear, endYear, zoomLevel, categories, continent, culture, theme } = query;
     const maxImportanceRank = query.maxImportanceRank ?? 2;
     const result: TimelineEvent[] = [];
 
@@ -73,6 +78,7 @@ export class EventIndex {
         if (ev.minZoomLevel > zoomLevel) continue;
         if (!passesImportance(ev, maxImportanceRank)) continue;
         if (culture && ev.culture !== culture) continue;
+        if (theme && !eventMatchesTheme(ev, theme)) continue;
         result.push(ev);
       }
     }
@@ -87,7 +93,7 @@ export class EventIndex {
    * time is currently scrolled into view.
    */
   getFilteredCategory(query: CategoryQuery): TimelineEvent[] {
-    const { category, continent, culture } = query;
+    const { category, continent, culture, theme } = query;
     const maxImportanceRank = query.maxImportanceRank ?? 2;
     const arr = this.byCategory.get(category);
     if (!arr) return [];
@@ -97,6 +103,7 @@ export class EventIndex {
       if (ev.continent !== 'global' && ev.continent !== continent) continue;
       if (!passesImportance(ev, maxImportanceRank)) continue;
       if (culture && ev.culture !== culture) continue;
+      if (theme && !eventMatchesTheme(ev, theme)) continue;
       result.push(ev);
     }
     return result;

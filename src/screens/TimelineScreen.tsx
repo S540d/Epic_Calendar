@@ -37,6 +37,9 @@ export function TimelineScreen() {
 
   const [continent, setContinent] = usePersistedState<Continent>('selectedContinent', 'europa');
   const [cultureFilter, setCultureFilter] = useState<string | null>(null);
+  // Cross-continent theme filter (#226) — unlike cultureFilter, not scoped to
+  // a continent, so it survives continent switches.
+  const [themeFilter, setThemeFilter] = useState<string | null>(null);
   const [filterSheetVisible, setFilterSheetVisible] = useState(false);
   const [detailLevel, setDetailLevel] = usePersistedState<ImportanceLevel>('detailLevel', 'detail');
   const [showFpsMonitor, setShowFpsMonitor] = usePersistedState<boolean>('showFpsMonitor', false);
@@ -150,6 +153,9 @@ export function TimelineScreen() {
         setContinent(event.continent);
         setCultureFilter(null);
       }
+      // The theme filter is cross-continent, so it can hide the jump target on
+      // any continent — always clear it to guarantee the target is visible.
+      setThemeFilter(null);
       setShowOverview(false);
       setEpochRange(undefined);
       jumpRequestIdRef.current += 1;
@@ -248,7 +254,8 @@ export function TimelineScreen() {
     const defaults = new Set(DEFAULT_CATEGORIES);
     return persistedCategories.every((c) => defaults.has(c));
   }, [persistedCategories]);
-  const showFilterBadge = !isDefaultCategorySelection || cultureFilter !== null;
+  const showFilterBadge =
+    !isDefaultCategorySelection || cultureFilter !== null || themeFilter !== null;
   const filterBadgeLabel = `${activeCategories.size}/${CHIP_CATEGORIES.length}`;
 
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -337,6 +344,7 @@ export function TimelineScreen() {
                 activeCategories={activeCategories}
                 continent={continent}
                 culture={cultureFilter}
+                theme={themeFilter}
                 detailLevel={detailLevel}
                 onSelectEvent={setSelected}
                 epochRange={epochRange}
@@ -402,6 +410,8 @@ export function TimelineScreen() {
         cultures={availableCultures}
         activeCulture={cultureFilter}
         onSelectCulture={setCultureFilter}
+        activeTheme={themeFilter}
+        onSelectTheme={setThemeFilter}
       />
     </>
   );
