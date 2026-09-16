@@ -38,6 +38,7 @@ let Rect: any = null;
 let Paint: any = null;
 if (Platform.OS !== 'web') {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports -- conditional native-only load, must stay require() to avoid pulling Skia into the web bundle
     const skia = require('@shopify/react-native-skia');
     Canvas = skia.Canvas;
     Group = skia.Group;
