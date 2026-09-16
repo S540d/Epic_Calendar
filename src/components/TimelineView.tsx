@@ -298,7 +298,12 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
         const w = Math.max(2, (endT - startT) * jsPixelsPerUnit);
         const barY = laneTop + LANE_PADDING_V + trackIdx * TRACK_HEIGHT + 4;
         const barH = TRACK_HEIGHT - 8;
-        if (py < barY || py > barY + barH) continue;
+        // Vertical hit tolerance is padded independently of the (intentionally
+        // compact) visual bar height, mirroring the horizontal MIN_HIT_PX
+        // padding below — see the TRACK_HEIGHT comment in tokens.ts.
+        const cy = barY + barH / 2;
+        const vHalf = Math.max(barH, MIN_HIT_PX) / 2;
+        if (py < cy - vHalf || py > cy + vHalf) continue;
         const cx = x + w / 2;
         const half = Math.max(w, MIN_HIT_PX) / 2;
         if (px < cx - half || px > cx + half) continue;
