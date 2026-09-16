@@ -156,6 +156,7 @@
   "filterSheet": {
     "title": "Filter",
     "categories": "Kategorien",
+    "themes": "Themen",
     "done": "Fertig",
     "iconLabel": "Filter",
     "iconLabelActive": "Filter, {{badge}} Kategorien aktiv"
@@ -168,6 +169,17 @@
     "activeShort": "gefiltert",
     "openHint": "erneut tippen zum Filtern",
     "clear": "Filter zurücksetzen"
+  },
+  "themeFilter": {
+    "all": "Alle Themen"
+  },
+  "theme": {
+    "voelkerwanderungen": { "label": "Völkerwanderungen & Besiedlung" },
+    "kolonialismus": { "label": "Kolonialismus & Eroberung" },
+    "seefahrt": { "label": "Seefahrt & Entdeckungen" },
+    "demokratie": { "label": "Demokratiebewegungen" },
+    "aufklaerung": { "label": "Aufklärung & Wissenschaft" },
+    "kalter-krieg": { "label": "Kalter Krieg" }
   },
   "axis": {
     "billion": "Mrd",
