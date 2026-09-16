@@ -54,3 +54,41 @@ updates:
       npm-all:
         patterns:
           - '*'
+    # Major-Versionen der Expo/RN-Kernkette pausiert, solange die gestufte
+    # Migration aus Issue #221 läuft (siehe #210 — ein einzelner Sammel-PR mit
+    # allen Majors auf einmal ist nicht mergebar: npm install scheitert schon
+    # an eslint 10 vs. eslint-plugin-import, plus 40+ Breaking Changes durch
+    # React 19/RN 0.87s Ref-Modell, RNGH 3s Gesture-API und Testing-Library
+    # 14s async render()). Minor/Patch bleiben für alle Pakete weiter aktiv.
+    # Nach Abschluss von #221 wieder entfernen.
+    ignore:
+      - dependency-name: 'expo'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'expo-*'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@expo/*'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'react'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'react-dom'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@types/react'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'react-test-renderer'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'react-native'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'react-native-reanimated'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'react-native-gesture-handler'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@shopify/react-native-skia'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@testing-library/react-native'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'eslint'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'jest'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'jest-expo'
+        update-types: ['version-update:semver-major']
