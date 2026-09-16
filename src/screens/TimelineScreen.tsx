@@ -124,6 +124,23 @@ export function TimelineScreen() {
   const handleOpenFilterSheet = useCallback(() => setFilterSheetVisible(true), []);
   const handleCloseFilterSheet = useCallback(() => setFilterSheetVisible(false), []);
 
+  // Landing-page theme chips (#226) are a second entry point into the theme
+  // filter, alongside the FilterSheet. Tapping the active theme again clears
+  // it instead of re-entering the timeline — a quick way to back out without
+  // detouring through the FilterSheet.
+  const handleSelectThemeFromOverview = useCallback(
+    (themeId: string) => {
+      if (themeFilter === themeId) {
+        setThemeFilter(null);
+        return;
+      }
+      setThemeFilter(themeId);
+      setShowOverview(false);
+      setEpochRange(undefined);
+    },
+    [themeFilter],
+  );
+
   // Cultures available for the current continent, for the #163 filter sheet.
   const availableCultures = useMemo(
     () => (continent === 'global' ? [] : globalEventIndex.culturesForContinent(continent)),
@@ -273,6 +290,8 @@ export function TimelineScreen() {
             filterBadgeLabel={showFilterBadge ? filterBadgeLabel : undefined}
             onStartJourney={handleStartJourney}
             journeyProgress={journeyProgress}
+            onSelectTheme={handleSelectThemeFromOverview}
+            activeTheme={themeFilter}
           />
           <DetailLevelPrompt
             visible={!detailPromptSeen}

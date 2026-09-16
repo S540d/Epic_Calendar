@@ -16,6 +16,8 @@ import type { NavigationEpoch } from '@/timeline/epoch';
 import { NAVIGATION_EPOCHS } from '@/timeline/epoch';
 import { formatEventYear } from '@/timeline/formatYear';
 import { LEARNING_JOURNEYS } from '@/data/learningJourneys';
+import { ALL_EVENTS } from '@/data/events';
+import { THEMES, eventMatchesTheme } from '@/data/themes';
 import { radii, spacing, typography } from '@/theme/tokens';
 import { useTheme, type ThemeColors } from '@/theme/ThemeContext';
 
@@ -32,6 +34,10 @@ type Props = {
   onStartJourney: (journeyId: string) => void;
   /** Persisted station index per journey id; absent = not started yet. */
   journeyProgress?: Record<string, number>;
+  /** Activates (or, if already active, clears) the cross-continent theme filter (#226) and leaves the overview. */
+  onSelectTheme: (themeId: string) => void;
+  /** Currently active theme filter id, if any — highlights the matching chip. */
+  activeTheme?: string | null;
 };
 
 function formatDuration(startYear: number, endYear: number, t: TFunction): string {
@@ -132,10 +138,22 @@ export function EpochOverviewScreen({
   filterBadgeLabel,
   onStartJourney,
   journeyProgress,
+  onSelectTheme,
+  activeTheme,
 }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+
+  // Event count per theme (#226) — cheap over 605 events, so computed inline
+  // rather than threaded through props like journey progress.
+  const themeEventCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const theme of THEMES) {
+      counts.set(theme.id, ALL_EVENTS.filter((ev) => eventMatchesTheme(ev, theme.id)).length);
+    }
+    return counts;
+  }, []);
 
   const handleEpochPress = useCallback(
     (startYear: number, endYear: number) => {
@@ -267,6 +285,39 @@ export function EpochOverviewScreen({
             </Pressable>
           );
         })}
+
+        <Text style={styles.sectionTitle}>{t('themeSection.title')}</Text>
+        <Text style={styles.sectionHint}>{t('themeSection.hint')}</Text>
+        <View style={styles.themeChipRow}>
+          {THEMES.map((theme) => {
+            const isActive = activeTheme === theme.id;
+            return (
+              <Pressable
+                key={theme.id}
+                style={({ pressed }) => [
+                  styles.themeChip,
+                  isActive && styles.themeChipActive,
+                  pressed && styles.tilePressed,
+                ]}
+                onPress={() => onSelectTheme(theme.id)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isActive }}
+                accessibilityLabel={t(theme.labelKey)}
+                accessibilityHint={t('themeSection.eventCount', {
+                  count: themeEventCounts.get(theme.id) ?? 0,
+                })}
+              >
+                <Text style={styles.themeChipIcon}>{theme.icon}</Text>
+                <Text style={[styles.themeChipLabel, isActive && styles.themeChipLabelActive]}>
+                  {t(theme.labelKey)}
+                </Text>
+                <Text style={styles.themeChipCount}>
+                  {t('themeSection.eventCount', { count: themeEventCounts.get(theme.id) ?? 0 })}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
 
         <Text style={styles.sectionTitle}>{t('epochNav.title')}</Text>
         {tiles}
@@ -507,6 +558,43 @@ function makeStyles(colors: ThemeColors) {
       ...typography.body,
       color: colors.textMuted,
       marginLeft: spacing.sm,
+    },
+    themeChipRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+      marginBottom: spacing.sm,
+    },
+    themeChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.bgElevated,
+      borderRadius: radii.pill,
+      borderWidth: 1,
+      borderColor: colors.border,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs,
+      gap: spacing.xs,
+    },
+    themeChipActive: {
+      backgroundColor: colors.accent,
+      borderColor: colors.accent,
+    },
+    themeChipIcon: {
+      fontSize: 14,
+    },
+    themeChipLabel: {
+      ...typography.caption,
+      color: colors.textPrimary,
+      fontWeight: '600',
+    },
+    themeChipLabelActive: {
+      color: colors.bg,
+    },
+    themeChipCount: {
+      ...typography.caption,
+      color: colors.textMuted,
+      fontSize: 10,
     },
   });
 }

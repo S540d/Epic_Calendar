@@ -100,7 +100,8 @@
     "continent": "europa",
     "culture": "germanisch",
     "importance": "core",
-    "minZoomLevel": 2
+    "minZoomLevel": 2,
+    "tags": ["migration"]
   },
   {
     "id": "eu-byzanz",
