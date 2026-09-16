@@ -100,7 +100,8 @@
     "category": "zivilisation",
     "continent": "asien",
     "culture": "indisch",
-    "minZoomLevel": 1
+    "minZoomLevel": 1,
+    "tags": ["migration"]
   },
   {
     "id": "as-zhou-dynastie",
@@ -1091,7 +1092,7 @@
     "culture": "indisch",
     "importance": "core",
     "minZoomLevel": 2,
-    "tags": ["indien", "gandhi", "unabhängigkeit", "kolonialismus"]
+    "tags": ["indien", "gandhi", "unabhängigkeit", "kolonialismus", "demokratie"]
   },
   {
     "id": "as-siebenjähriger-krieg-asien",

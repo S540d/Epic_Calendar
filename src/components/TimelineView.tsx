@@ -44,6 +44,8 @@ type Props = {
   continent: Continent;
   /** When set, only events with this exact `culture` value are shown (#163 country/culture filter). */
   culture?: string | null;
+  /** When set, only events matching this theme id are shown (#226 theme filter, cross-continent). */
+  theme?: string | null;
   /** Cumulative detail tier; higher tiers reveal more events. */
   detailLevel?: ImportanceLevel;
   onSelectEvent: (event: TimelineEvent) => void;
@@ -96,6 +98,7 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
     activeCategories,
     continent,
     culture = null,
+    theme = null,
     detailLevel = 'detail',
     onSelectEvent,
     resetKey = 0,
@@ -202,8 +205,8 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
   // when the filtered event set changes (continent/detail/active lanes), NOT on
   // every pan/zoom frame. Keeps an event's row stable while scrolling.
   const stableTracksByLane = useMemo(
-    () => buildStableTracksByLane(lanes, continent, maxImportanceRank, eventIndex, culture),
-    [lanes, continent, maxImportanceRank, culture],
+    () => buildStableTracksByLane(lanes, continent, maxImportanceRank, eventIndex, culture, theme),
+    [lanes, continent, maxImportanceRank, culture, theme],
   );
 
   // Lane data for both web and native — driven by jsOffsetX (viewport-relative).
@@ -219,6 +222,7 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
       maxEventsPerLane: MAX_EVENTS_PER_LANE,
       maxImportanceRank,
       culture,
+      theme,
       eventIndex,
       stableTracksByLane,
     });
@@ -231,6 +235,7 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
     continent,
     maxImportanceRank,
     culture,
+    theme,
     stableTracksByLane,
   ]);
   const { visibleByLane, overflowCounts, tracksByLane, connectorsByLane } = laneData;

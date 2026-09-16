@@ -156,6 +156,7 @@
   "filterSheet": {
     "title": "Filters",
     "categories": "Categories",
+    "themes": "Themes",
     "done": "Done",
     "iconLabel": "Filters",
     "iconLabelActive": "Filters, {{badge}} categories active"
@@ -168,6 +169,22 @@
     "activeShort": "filtered",
     "openHint": "tap again to filter",
     "clear": "Clear filter"
+  },
+  "themeFilter": {
+    "all": "All themes"
+  },
+  "themeSection": {
+    "title": "Discover themes",
+    "hint": "Across continents and categories",
+    "eventCount": "{{count}} events"
+  },
+  "theme": {
+    "voelkerwanderungen": { "label": "Migrations & Settlement" },
+    "kolonialismus": { "label": "Colonialism & Conquest" },
+    "seefahrt": { "label": "Seafaring & Exploration" },
+    "demokratie": { "label": "Democracy Movements" },
+    "aufklaerung": { "label": "Enlightenment & Science" },
+    "kalter-krieg": { "label": "Cold War" }
   },
   "axis": {
     "billion": "Bn",

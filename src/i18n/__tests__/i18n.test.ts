@@ -2,6 +2,7 @@ import de from '../de.json';
 import en from '../en.json';
 import { flattenEpochs } from '@/timeline/epoch';
 import { LEARNING_JOURNEYS } from '@/data/learningJourneys';
+import { THEMES } from '@/data/themes';
 
 type Json = Record<string, unknown>;
 
@@ -72,6 +73,11 @@ describe('i18n resources', () => {
     'popover.title',
     'popover.dismiss',
     'axis.today',
+    'filterSheet.themes',
+    'themeFilter.all',
+    'themeSection.title',
+    'themeSection.hint',
+    'themeSection.eventCount',
   ];
 
   it.each(REQUIRED_KEYS)('defines required key "%s" in both languages', (key) => {
@@ -92,6 +98,14 @@ describe('i18n resources', () => {
     for (const keys of [deKeys, enKeys]) {
       expect(keys).toContain(`learning.journey.${id}.label`);
       expect(keys).toContain(`learning.journey.${id}.description`);
+    }
+  });
+
+  // Same guard for the theme filter (#226): a new curated theme without labels
+  // fails here instead of rendering "theme.xyz.label" to the user.
+  it.each(THEMES.map((th) => th.id))('labels theme "%s" in both languages', (id) => {
+    for (const keys of [deKeys, enKeys]) {
+      expect(keys).toContain(`theme.${id}.label`);
     }
   });
 });

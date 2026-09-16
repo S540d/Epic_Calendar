@@ -13,6 +13,7 @@
       "backgroundColor": "#0E1116"
     },
     "assetBundlePatterns": ["**/*"],
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "io.s540d.epiccalendar"
