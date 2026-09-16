@@ -10,7 +10,12 @@
     "darkMode": "Dunkelmodus",
     "display": "Darstellung",
     "fpsMonitor": "FPS-Monitor anzeigen",
-    "language": "Sprache"
+    "language": "Sprache",
+    "about": "Über",
+    "version": "Version",
+    "impressum": "Impressum",
+    "sourceCode": "Quellcode (GitHub)",
+    "feedback": "Feedback"
   },
   "category": {
     "erdzeitalter": "Erdzeitalter",
