@@ -10,7 +10,12 @@
     "darkMode": "Dark mode",
     "display": "Display",
     "fpsMonitor": "Show FPS monitor",
-    "language": "Language"
+    "language": "Language",
+    "about": "About",
+    "version": "Version",
+    "impressum": "Imprint",
+    "sourceCode": "Source Code (GitHub)",
+    "feedback": "Feedback"
   },
   "category": {
     "erdzeitalter": "Geological Eras",
