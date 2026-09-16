@@ -1,10 +1,20 @@
 import React, { useMemo } from 'react';
-import { Modal, Pressable, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Linking,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { ImportanceLevel } from '@/data/schema';
 import { useTheme, type ThemeColors } from '@/theme/ThemeContext';
 import { radii, spacing, typography } from '@/theme/tokens';
+import packageJson from '../../package.json';
 
 type Props = {
   visible: boolean;
@@ -16,6 +26,17 @@ type Props = {
 };
 
 const DETAIL_LEVELS: ImportanceLevel[] = ['core', 'extended', 'detail'];
+
+const APP_VERSION = packageJson.version;
+
+/**
+ * Zentrales Impressum für alle Projekte unter s540d.github.io (nicht
+ * projektlokal) — siehe project-templates/dev-standards/about-section.md,
+ * Issue #150.
+ */
+const IMPRESSUM_URL = 'https://s540d.github.io/impressum.html';
+const GITHUB_REPO_URL = 'https://github.com/S540d/Epic_Calendar';
+const GITHUB_ISSUES_URL = 'https://github.com/S540d/Epic_Calendar/issues';
 
 export function SettingsModal({
   visible,
@@ -132,6 +153,31 @@ export function SettingsModal({
               })}
             </View>
           </View>
+
+          <Text style={styles.sectionLabel}>{t('settings.about')}</Text>
+          <View style={styles.section}>
+            <Text style={styles.rowLabel}>
+              {t('settings.version')} {APP_VERSION}
+            </Text>
+            <TouchableOpacity
+              style={styles.aboutLinkRow}
+              onPress={() => Linking.openURL(IMPRESSUM_URL)}
+            >
+              <Text style={styles.linkText}>{t('settings.impressum')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.aboutLinkRow}
+              onPress={() => Linking.openURL(GITHUB_REPO_URL)}
+            >
+              <Text style={styles.linkText}>{t('settings.sourceCode')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.aboutLinkRow}
+              onPress={() => Linking.openURL(GITHUB_ISSUES_URL)}
+            >
+              <Text style={styles.linkText}>{t('settings.feedback')}</Text>
+            </TouchableOpacity>
+          </View>
         </Pressable>
       </Pressable>
     </Modal>
@@ -209,6 +255,14 @@ function makeStyles(colors: ThemeColors) {
     rowLabel: {
       ...typography.body,
       color: colors.textPrimary,
+    },
+    aboutLinkRow: {
+      paddingVertical: spacing.xs,
+      marginTop: spacing.xs,
+    },
+    linkText: {
+      ...typography.body,
+      color: colors.accent,
     },
     segmentGroup: {
       flexDirection: 'row',
