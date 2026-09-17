@@ -7,9 +7,8 @@ describe('themes (theme filter, #226)', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('every theme has an icon and an i18n key derived from its id', () => {
+  it('every theme has an i18n key derived from its id', () => {
     for (const th of THEMES) {
-      expect(th.icon.length).toBeGreaterThan(0);
       expect(th.labelKey).toBe(`theme.${th.id}.label`);
     }
   });

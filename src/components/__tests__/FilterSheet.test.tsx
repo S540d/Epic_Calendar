@@ -74,12 +74,12 @@ describe('FilterSheet (#212)', () => {
   it('renders theme rows (#226)', () => {
     const { getByText } = setup();
     expect(getByText('Alle Themen')).toBeTruthy();
-    expect(getByText('🚩 Kolonialismus & Eroberung')).toBeTruthy();
+    expect(getByText('Kolonialismus & Eroberung')).toBeTruthy();
   });
 
   it('selecting a theme calls onSelectTheme without closing the sheet', () => {
     const { getByText, onSelectTheme, onClose } = setup();
-    fireEvent.press(getByText('🚩 Kolonialismus & Eroberung'));
+    fireEvent.press(getByText('Kolonialismus & Eroberung'));
     expect(onSelectTheme).toHaveBeenCalledWith('kolonialismus');
     expect(onClose).not.toHaveBeenCalled();
   });

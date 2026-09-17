@@ -201,7 +201,7 @@ export function FilterSheet({
                   accessibilityState={{ selected: activeTheme === item.id }}
                 >
                   <Text style={[styles.rowText, activeTheme === item.id && styles.rowTextActive]}>
-                    {item.icon} {t(item.labelKey)}
+                    {t(item.labelKey)}
                   </Text>
                   {activeTheme === item.id && <Text style={styles.checkmark}>✓</Text>}
                 </TouchableOpacity>
