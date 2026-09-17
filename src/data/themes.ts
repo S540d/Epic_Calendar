@@ -26,8 +26,6 @@ export type Theme = {
    * qualifies if it carries at least one of these tags.
    */
   tagIds: readonly string[];
-  /** Emoji shown on theme chips/cards. */
-  icon: string;
 };
 
 export const THEMES: readonly Theme[] = [
@@ -35,37 +33,31 @@ export const THEMES: readonly Theme[] = [
     id: 'voelkerwanderungen',
     labelKey: 'theme.voelkerwanderungen.label',
     tagIds: ['migration', 'besiedlung'],
-    icon: '🧭',
   },
   {
     id: 'kolonialismus',
     labelKey: 'theme.kolonialismus.label',
     tagIds: ['kolonialismus'],
-    icon: '🚩',
   },
   {
     id: 'seefahrt',
     labelKey: 'theme.seefahrt.label',
     tagIds: ['seefahrt', 'entdeckung'],
-    icon: '⛵',
   },
   {
     id: 'demokratie',
     labelKey: 'theme.demokratie.label',
     tagIds: ['demokratie'],
-    icon: '⚖️',
   },
   {
     id: 'aufklaerung',
     labelKey: 'theme.aufklaerung.label',
     tagIds: ['aufklärung'],
-    icon: '💡',
   },
   {
     id: 'kalter-krieg',
     labelKey: 'theme.kalter-krieg.label',
     tagIds: ['kalter-krieg'],
-    icon: '☢️',
   },
 ];
 

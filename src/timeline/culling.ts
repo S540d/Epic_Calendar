@@ -214,7 +214,8 @@ export function filterVisible(events: TimelineEvent[], f: VisibilityFilter): Tim
   const result: TimelineEvent[] = [];
   for (const ev of events) {
     if (!f.categories.has(ev.category)) continue;
-    if (ev.continent !== 'global' && ev.continent !== f.continent) continue;
+    // A theme is cross-continent by design (#226) — see EventIndex.queryVisible.
+    if (!f.theme && ev.continent !== 'global' && ev.continent !== f.continent) continue;
     if (ev.minZoomLevel > f.zoomLevel) continue;
     if (!passesImportance(ev, maxImportanceRank)) continue;
     if (f.culture && ev.culture !== f.culture) continue;

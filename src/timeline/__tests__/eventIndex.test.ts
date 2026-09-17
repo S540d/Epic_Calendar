@@ -222,6 +222,24 @@ describe('EventIndex.getFilteredCategory', () => {
       ),
     ).toEqual(['roma']);
   });
+
+  it('with an active theme, bypasses the continent filter entirely (#236)', () => {
+    const events = [
+      ev({ id: 'eu', startYear: 100, continent: 'europa', tags: ['kolonialismus'] }),
+      ev({ id: 'as', startYear: 100, continent: 'asien', tags: ['kolonialismus'] }),
+      ev({ id: 'no-tag', startYear: 100, continent: 'asien' }),
+    ];
+    const index = buildEventIndex(events);
+    expect(
+      sortedIds(
+        index.getFilteredCategory({
+          category: 'zivilisation',
+          continent: 'europa',
+          theme: 'kolonialismus',
+        }),
+      ),
+    ).toEqual(['as', 'eu']);
+  });
 });
 
 describe('EventIndex.queryVisible culture filter (#163)', () => {
@@ -244,6 +262,29 @@ describe('EventIndex.queryVisible culture filter (#163)', () => {
       'grae',
       'roma',
     ]);
+  });
+});
+
+describe('EventIndex.queryVisible theme filter (#226, continent bypass #236)', () => {
+  it('with an active theme, keeps a matching event outside the selected continent', () => {
+    const events = [
+      ev({ id: 'eu', startYear: 100, continent: 'europa', tags: ['kolonialismus'] }),
+      ev({ id: 'as', startYear: 100, continent: 'asien', tags: ['kolonialismus'] }),
+    ];
+    const index = buildEventIndex(events);
+    expect(sortedIds(index.queryVisible({ ...baseFilter, theme: 'kolonialismus' }))).toEqual([
+      'as',
+      'eu',
+    ]);
+  });
+
+  it('without a theme, the continent filter still applies', () => {
+    const events = [
+      ev({ id: 'eu', startYear: 100, continent: 'europa', tags: ['kolonialismus'] }),
+      ev({ id: 'as', startYear: 100, continent: 'asien', tags: ['kolonialismus'] }),
+    ];
+    const index = buildEventIndex(events);
+    expect(sortedIds(index.queryVisible(baseFilter))).toEqual(['eu']);
   });
 });
 

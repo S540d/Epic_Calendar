@@ -253,26 +253,25 @@ export function EpochOverviewScreen({
       >
         <Text style={styles.sectionTitle}>{t('learning.sectionTitle')}</Text>
         <Text style={styles.sectionHint}>{t('learning.sectionHint')}</Text>
-        {LEARNING_JOURNEYS.map((journey) => {
-          const stepCount = journey.eventIds.length;
-          const stored = journeyProgress?.[journey.id];
-          const inProgress = stored !== undefined && stored > 0;
-          return (
-            <Pressable
-              key={journey.id}
-              style={({ pressed }) => [styles.journeyCard, pressed && styles.tilePressed]}
-              onPress={() => onStartJourney(journey.id)}
-              accessibilityRole="button"
-              accessibilityLabel={t(journey.labelKey)}
-              accessibilityHint={t(journey.descriptionKey)}
-            >
-              <Text style={styles.journeyIcon}>{journey.icon}</Text>
-              <View style={styles.journeyText}>
-                <Text style={styles.journeyName}>{t(journey.labelKey)}</Text>
-                <Text style={styles.journeyDescription} numberOfLines={2}>
-                  {t(journey.descriptionKey)}
+        <View style={styles.cardGrid}>
+          {LEARNING_JOURNEYS.map((journey) => {
+            const stepCount = journey.eventIds.length;
+            const stored = journeyProgress?.[journey.id];
+            const inProgress = stored !== undefined && stored > 0;
+            return (
+              <Pressable
+                key={journey.id}
+                style={({ pressed }) => [styles.card, pressed && styles.tilePressed]}
+                onPress={() => onStartJourney(journey.id)}
+                accessibilityRole="button"
+                accessibilityLabel={t(journey.labelKey)}
+                accessibilityHint={t(journey.descriptionKey)}
+              >
+                <Text style={styles.cardIcon}>{journey.icon}</Text>
+                <Text style={styles.cardTitle} numberOfLines={2}>
+                  {t(journey.labelKey)}
                 </Text>
-                <Text style={styles.journeyMeta}>
+                <Text style={styles.cardMeta} numberOfLines={1}>
                   {inProgress
                     ? `${t('learning.continue')} · ${t('learning.progress', {
                         current: Math.min(stored + 1, stepCount),
@@ -280,23 +279,22 @@ export function EpochOverviewScreen({
                       })}`
                     : t('learning.stations', { count: stepCount })}
                 </Text>
-              </View>
-              <Text style={styles.tileArrow}>›</Text>
-            </Pressable>
-          );
-        })}
+              </Pressable>
+            );
+          })}
+        </View>
 
         <Text style={styles.sectionTitle}>{t('themeSection.title')}</Text>
         <Text style={styles.sectionHint}>{t('themeSection.hint')}</Text>
-        <View style={styles.themeChipRow}>
+        <View style={styles.cardGrid}>
           {THEMES.map((theme) => {
             const isActive = activeTheme === theme.id;
             return (
               <Pressable
                 key={theme.id}
                 style={({ pressed }) => [
-                  styles.themeChip,
-                  isActive && styles.themeChipActive,
+                  styles.card,
+                  isActive && styles.cardActive,
                   pressed && styles.tilePressed,
                 ]}
                 onPress={() => onSelectTheme(theme.id)}
@@ -307,11 +305,13 @@ export function EpochOverviewScreen({
                   count: themeEventCounts.get(theme.id) ?? 0,
                 })}
               >
-                <Text style={styles.themeChipIcon}>{theme.icon}</Text>
-                <Text style={[styles.themeChipLabel, isActive && styles.themeChipLabelActive]}>
+                <Text
+                  style={[styles.cardTitle, isActive && styles.cardTitleActive]}
+                  numberOfLines={2}
+                >
                   {t(theme.labelKey)}
                 </Text>
-                <Text style={styles.themeChipCount}>
+                <Text style={[styles.cardMeta, isActive && styles.cardMetaActive]}>
                   {t('themeSection.eventCount', { count: themeEventCounts.get(theme.id) ?? 0 })}
                 </Text>
               </Pressable>
@@ -518,39 +518,6 @@ function makeStyles(colors: ThemeColors) {
       color: colors.textMuted,
       marginBottom: spacing.sm,
     },
-    journeyCard: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: colors.bgElevated,
-      borderRadius: radii.sm,
-      borderWidth: 1,
-      borderColor: colors.border,
-      marginBottom: spacing.xs,
-      padding: spacing.md,
-    },
-    journeyIcon: {
-      fontSize: 26,
-      marginRight: spacing.md,
-    },
-    journeyText: {
-      flex: 1,
-    },
-    journeyName: {
-      ...typography.body,
-      color: colors.textPrimary,
-      fontWeight: '700',
-    },
-    journeyDescription: {
-      ...typography.caption,
-      color: colors.textSecondary,
-      marginTop: 2,
-    },
-    journeyMeta: {
-      ...typography.caption,
-      color: colors.accent,
-      marginTop: spacing.xs,
-      fontWeight: '600',
-    },
     tilePressed: {
       opacity: 0.75,
     },
@@ -559,42 +526,47 @@ function makeStyles(colors: ThemeColors) {
       color: colors.textMuted,
       marginLeft: spacing.sm,
     },
-    themeChipRow: {
+    // Shared 2-column card grid for both the learning-journey and theme
+    // sections (#236) — one visual language instead of a full-width journey
+    // card next to a single-line theme chip row.
+    cardGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: spacing.sm,
       marginBottom: spacing.sm,
     },
-    themeChip: {
-      flexDirection: 'row',
-      alignItems: 'center',
+    card: {
+      flexBasis: '47%',
+      flexGrow: 1,
       backgroundColor: colors.bgElevated,
-      borderRadius: radii.pill,
+      borderRadius: radii.sm,
       borderWidth: 1,
       borderColor: colors.border,
-      paddingHorizontal: spacing.sm,
-      paddingVertical: spacing.xs,
-      gap: spacing.xs,
+      padding: spacing.sm,
     },
-    themeChipActive: {
+    cardActive: {
       backgroundColor: colors.accent,
       borderColor: colors.accent,
     },
-    themeChipIcon: {
-      fontSize: 14,
+    cardIcon: {
+      fontSize: 22,
+      marginBottom: spacing.xs,
     },
-    themeChipLabel: {
-      ...typography.caption,
+    cardTitle: {
+      ...typography.body,
       color: colors.textPrimary,
-      fontWeight: '600',
+      fontWeight: '700',
     },
-    themeChipLabelActive: {
+    cardTitleActive: {
       color: colors.bg,
     },
-    themeChipCount: {
+    cardMeta: {
       ...typography.caption,
       color: colors.textMuted,
-      fontSize: 10,
+      marginTop: spacing.xs,
+    },
+    cardMetaActive: {
+      color: colors.bg,
     },
   });
 }
