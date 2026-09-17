@@ -74,7 +74,10 @@ export class EventIndex {
         // Skip events that ended before the viewport starts.
         const evEnd = ev.endYear ?? ev.startYear;
         if (evEnd < startYear) continue;
-        if (ev.continent !== 'global' && ev.continent !== continent) continue;
+        // A theme is cross-continent by design (#226) — skip the continent gate
+        // entirely while one is active, otherwise only the currently selected
+        // continent's share of the theme's events would ever be visible.
+        if (!theme && ev.continent !== 'global' && ev.continent !== continent) continue;
         if (ev.minZoomLevel > zoomLevel) continue;
         if (!passesImportance(ev, maxImportanceRank)) continue;
         if (culture && ev.culture !== culture) continue;
@@ -100,7 +103,8 @@ export class EventIndex {
 
     const result: TimelineEvent[] = [];
     for (const ev of arr) {
-      if (ev.continent !== 'global' && ev.continent !== continent) continue;
+      // See queryVisible: a theme is cross-continent, so it bypasses the gate.
+      if (!theme && ev.continent !== 'global' && ev.continent !== continent) continue;
       if (!passesImportance(ev, maxImportanceRank)) continue;
       if (culture && ev.culture !== culture) continue;
       if (theme && !eventMatchesTheme(ev, theme)) continue;

@@ -19,6 +19,7 @@ import { EventDetailModal } from '@/screens/EventDetailModal';
 import { usePersistedState } from '@/hooks/usePersistedState';
 import { ALL_EVENTS } from '@/data/events';
 import { journeyById, resolveJourneySteps } from '@/data/learningJourneys';
+import { eventMatchesTheme } from '@/data/themes';
 import type { Continent, ImportanceLevel, TimelineEvent } from '@/data/schema';
 import { globalEventIndex } from '@/timeline/globalEventIndex';
 import { spacing, typography, type Category } from '@/theme/tokens';
@@ -124,9 +125,40 @@ export function TimelineScreen() {
   const handleOpenFilterSheet = useCallback(() => setFilterSheetVisible(true), []);
   const handleCloseFilterSheet = useCallback(() => setFilterSheetVisible(false), []);
 
-  // Landing-page theme chips (#226) are a second entry point into the theme
-  // filter, alongside the FilterSheet. Tapping the active theme again clears
-  // it instead of re-entering the timeline — a quick way to back out without
+  // Activating a theme (#226, #236 follow-up) needs two things the plain
+  // `setThemeFilter` never did: the matching events' categories must be
+  // active (otherwise a category the user has switched off hides them), and
+  // the viewport must zoom to fit their full year range — otherwise a theme
+  // with events spread across zoom levels only ever shows whichever slice
+  // happens to be in view. Cross-continent by design, so this scans all
+  // events rather than the current continent's slice.
+  const applyThemeSelection = useCallback(
+    (themeId: string) => {
+      const matching = ALL_EVENTS.filter((ev) => eventMatchesTheme(ev, themeId));
+      if (matching.length > 0) {
+        setPersistedCategories((prev) => {
+          const set = new Set(prev);
+          for (const ev of matching) set.add(ev.category);
+          return Array.from(set);
+        });
+        let startYear = Infinity;
+        let endYear = -Infinity;
+        for (const ev of matching) {
+          if (ev.startYear < startYear) startYear = ev.startYear;
+          const evEnd = ev.endYear ?? ev.startYear;
+          if (evEnd > endYear) endYear = evEnd;
+        }
+        setEpochRange({ startYear, endYear });
+      }
+      setThemeFilter(themeId);
+      setShowOverview(false);
+    },
+    [setPersistedCategories],
+  );
+
+  // Landing-page theme chips are a second entry point into the theme filter,
+  // alongside the FilterSheet. Tapping the active theme again clears it
+  // instead of re-entering the timeline — a quick way to back out without
   // detouring through the FilterSheet.
   const handleSelectThemeFromOverview = useCallback(
     (themeId: string) => {
@@ -134,11 +166,22 @@ export function TimelineScreen() {
         setThemeFilter(null);
         return;
       }
-      setThemeFilter(themeId);
-      setShowOverview(false);
-      setEpochRange(undefined);
+      applyThemeSelection(themeId);
     },
-    [themeFilter],
+    [themeFilter, applyThemeSelection],
+  );
+
+  // FilterSheet's theme rows are a plain radio selection (`null` = "all
+  // themes"), reachable both from the landing page and from the timeline.
+  const handleSelectThemeFromFilterSheet = useCallback(
+    (themeId: string | null) => {
+      if (themeId === null) {
+        setThemeFilter(null);
+        return;
+      }
+      applyThemeSelection(themeId);
+    },
+    [applyThemeSelection],
   );
 
   // Cultures available for the current continent, for the #163 filter sheet.
@@ -430,7 +473,7 @@ export function TimelineScreen() {
         activeCulture={cultureFilter}
         onSelectCulture={setCultureFilter}
         activeTheme={themeFilter}
-        onSelectTheme={setThemeFilter}
+        onSelectTheme={handleSelectThemeFromFilterSheet}
       />
     </>
   );

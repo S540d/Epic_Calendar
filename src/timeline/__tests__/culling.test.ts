@@ -58,6 +58,18 @@ describe('timeline/culling.filterVisible', () => {
     expect(filterVisible([e], base)).toEqual([]);
   });
 
+  it('with an active theme, keeps a matching event regardless of continent (#236)', () => {
+    const e = ev({
+      id: 'a',
+      startYear: 100,
+      endYear: 200,
+      continent: 'asien',
+      tags: ['kolonialismus'],
+    });
+    const f = { ...base, theme: 'kolonialismus' };
+    expect(filterVisible([e], f)).toEqual([e]);
+  });
+
   it('drops events whose minZoomLevel exceeds the current zoom band', () => {
     const e = ev({ id: 'a', startYear: 100, endYear: 200, minZoomLevel: 3 });
     const f = { ...base, zoomLevel: 1 as const };
