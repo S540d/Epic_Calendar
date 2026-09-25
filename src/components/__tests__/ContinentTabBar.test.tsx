@@ -4,30 +4,30 @@ import '@/i18n';
 import { ContinentTabBar } from '../ContinentTabBar';
 
 describe('ContinentTabBar (#163 culture filter wiring)', () => {
-  it('pressing an inactive tab calls onChange, not onPressActive', () => {
+  it('pressing an inactive tab calls onChange, not onPressActive', async () => {
     const onChange = jest.fn();
     const onPressActive = jest.fn();
-    const { getByLabelText } = render(
+    const { getByLabelText } = await render(
       <ContinentTabBar active="europa" onChange={onChange} onPressActive={onPressActive} />,
     );
-    fireEvent.press(getByLabelText('Asien'));
+    await fireEvent.press(getByLabelText('Asien'));
     expect(onChange).toHaveBeenCalledWith('asien');
     expect(onPressActive).not.toHaveBeenCalled();
   });
 
-  it('pressing the already-active tab calls onPressActive, not onChange', () => {
+  it('pressing the already-active tab calls onPressActive, not onChange', async () => {
     const onChange = jest.fn();
     const onPressActive = jest.fn();
-    const { getByLabelText } = render(
+    const { getByLabelText } = await render(
       <ContinentTabBar active="europa" onChange={onChange} onPressActive={onPressActive} />,
     );
-    fireEvent.press(getByLabelText(/Europa/));
+    await fireEvent.press(getByLabelText(/Europa/));
     expect(onPressActive).toHaveBeenCalledWith('europa');
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  it('marks the active tab as filtered in its accessibility label when cultureFilterActive is set', () => {
-    const { getByLabelText } = render(
+  it('marks the active tab as filtered in its accessibility label when cultureFilterActive is set', async () => {
+    const { getByLabelText } = await render(
       <ContinentTabBar active="europa" onChange={jest.fn()} cultureFilterActive />,
     );
     expect(getByLabelText(/Europa, gefiltert/)).toBeTruthy();

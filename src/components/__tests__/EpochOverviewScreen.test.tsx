@@ -5,7 +5,7 @@ import { EpochOverviewScreen } from '../EpochOverviewScreen';
 import { THEMES } from '@/data/themes';
 import de from '@/i18n/de.json';
 
-function setup(overrides?: { activeTheme?: string | null }) {
+async function setup(overrides?: { activeTheme?: string | null }) {
   const onSelectEpoch = jest.fn();
   const onShowFullTimeline = jest.fn();
   const onOpenSettings = jest.fn();
@@ -13,7 +13,7 @@ function setup(overrides?: { activeTheme?: string | null }) {
   const onOpenFilters = jest.fn();
   const onStartJourney = jest.fn();
   const onSelectTheme = jest.fn();
-  const utils = render(
+  const utils = await render(
     <EpochOverviewScreen
       onSelectEpoch={onSelectEpoch}
       onShowFullTimeline={onShowFullTimeline}
@@ -29,27 +29,27 @@ function setup(overrides?: { activeTheme?: string | null }) {
 }
 
 describe('EpochOverviewScreen — theme chips (#226)', () => {
-  it('renders the theme section with a chip per curated theme', () => {
-    const { getByText } = setup();
+  it('renders the theme section with a chip per curated theme', async () => {
+    const { getByText } = await setup();
     expect(getByText(de.themeSection.title)).toBeTruthy();
     for (const theme of THEMES) {
       expect(getByText(de.theme[theme.id as keyof typeof de.theme].label)).toBeTruthy();
     }
   });
 
-  it('tapping a theme chip calls onSelectTheme with its id', () => {
+  it('tapping a theme chip calls onSelectTheme with its id', async () => {
     const theme = THEMES[0]!;
     const label = de.theme[theme.id as keyof typeof de.theme].label;
-    const { getByLabelText, onSelectTheme } = setup();
-    fireEvent.press(getByLabelText(label));
+    const { getByLabelText, onSelectTheme } = await setup();
+    await fireEvent.press(getByLabelText(label));
     expect(onSelectTheme).toHaveBeenCalledWith(theme.id);
   });
 
-  it('tapping the already-active theme chip still calls onSelectTheme (toggle handled by the caller)', () => {
+  it('tapping the already-active theme chip still calls onSelectTheme (toggle handled by the caller)', async () => {
     const theme = THEMES[0]!;
     const label = de.theme[theme.id as keyof typeof de.theme].label;
-    const { getByLabelText, onSelectTheme } = setup({ activeTheme: theme.id });
-    fireEvent.press(getByLabelText(label));
+    const { getByLabelText, onSelectTheme } = await setup({ activeTheme: theme.id });
+    await fireEvent.press(getByLabelText(label));
     expect(onSelectTheme).toHaveBeenCalledWith(theme.id);
   });
 });
