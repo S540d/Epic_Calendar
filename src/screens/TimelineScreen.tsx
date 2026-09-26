@@ -136,21 +136,21 @@ export function TimelineScreen() {
   }, []);
 
   // Activating a theme (#226, #236 follow-up) needs two things the plain
-  // `setThemeFilter` never did: the matching events' categories must be
-  // active (otherwise a category the user has switched off hides them), and
-  // the viewport must zoom to fit their full year range — otherwise a theme
-  // with events spread across zoom levels only ever shows whichever slice
-  // happens to be in view. Cross-continent by design, so this scans all
-  // events rather than the current continent's slice.
+  // `setThemeFilter` never did: only the matching events' categories may be
+  // active (a leftover unrelated category doesn't add events — the theme tag
+  // check excludes them either way — but it does make the filter chips lie
+  // about what's actually relevant, and previous themes' categories would
+  // otherwise keep accumulating), and the viewport must zoom to fit their
+  // full year range — otherwise a theme with events spread across zoom
+  // levels only ever shows whichever slice happens to be in view.
+  // Cross-continent by design, so this scans all events rather than the
+  // current continent's slice.
   const applyThemeSelection = useCallback(
     (themeId: string) => {
       const matching = ALL_EVENTS.filter((ev) => eventMatchesTheme(ev, themeId));
       if (matching.length > 0) {
-        setPersistedCategories((prev) => {
-          const set = new Set(prev);
-          for (const ev of matching) set.add(ev.category);
-          return Array.from(set);
-        });
+        const matchingCategories = new Set(matching.map((ev) => ev.category));
+        setPersistedCategories(Array.from(matchingCategories));
         let startYear = Infinity;
         let endYear = -Infinity;
         for (const ev of matching) {
@@ -160,6 +160,12 @@ export function TimelineScreen() {
         }
         setEpochRange({ startYear, endYear });
       }
+      // A leftover culture filter is continent-scoped and would silently
+      // hide theme matches outside that culture — the theme filter itself
+      // already bypasses the continent gate (see eventIndex.queryVisible),
+      // so this only needs to drop the culture restriction to guarantee
+      // every matching event is actually visible.
+      setCultureFilter(null);
       setThemeFilter(themeId);
       setShowOverview(false);
     },
@@ -216,18 +222,26 @@ export function TimelineScreen() {
   // target is actually visible under the current filters, leaves the overview,
   // and triggers the zoom-to-fit jump in TimelineView. Shared by search (#146 A)
   // and the guided learning journey — the latter passes `openDetail: false`
-  // because its own bar shows the station content.
+  // because its own bar shows the station content, and `exclusiveCategory: true`
+  // so the journey's "near context" is exactly the station's category (not a
+  // growing union of every category a prior station happened to touch).
   const focusEvent = useCallback(
-    (event: TimelineEvent, openDetail: boolean) => {
+    (event: TimelineEvent, openDetail: boolean, exclusiveCategory = false) => {
       setPersistedCategories((prev) =>
-        prev.includes(event.category) ? prev : [...prev, event.category],
+        exclusiveCategory
+          ? [event.category]
+          : prev.includes(event.category)
+            ? prev
+            : [...prev, event.category],
       );
       // On 'all' the target is already visible on every continent — switching
       // away would only narrow the view, so skip the continent change there.
       if (continent !== 'all' && event.continent !== 'global') {
         setContinent(event.continent);
-        setCultureFilter(null);
       }
+      // The culture filter can hide the jump target even on the right
+      // continent — always clear it to guarantee the target is visible.
+      setCultureFilter(null);
       // The theme filter is cross-continent, so it can hide the jump target on
       // any continent — always clear it to guarantee the target is visible.
       setThemeFilter(null);
@@ -278,7 +292,7 @@ export function TimelineScreen() {
       setActiveJourneyId(journeyId);
       setShowOverview(false);
       const target = steps[index];
-      if (target) focusEvent(target, false);
+      if (target) focusEvent(target, false, true);
     },
     [journeyProgress, focusEvent],
   );
@@ -291,7 +305,7 @@ export function TimelineScreen() {
       const clamped = Math.max(0, Math.min(next, journeySteps.length - 1));
       setJourneyProgress((prev) => ({ ...prev, [activeJourneyId]: clamped }));
       const target = journeySteps[clamped];
-      if (target) focusEvent(target, false);
+      if (target) focusEvent(target, false, true);
     },
     [activeJourneyId, journeySteps, setJourneyProgress, focusEvent],
   );
