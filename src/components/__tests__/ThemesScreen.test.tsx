@@ -2,8 +2,10 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import '@/i18n';
 import { ThemesScreen } from '../ThemesScreen';
-import { THEMES } from '@/data/themes';
+import { topLevelThemes } from '@/data/themes';
 import de from '@/i18n/de.json';
+
+const THEMES = topLevelThemes();
 
 async function setup(overrides?: { activeTheme?: string | null }) {
   const onBack = jest.fn();

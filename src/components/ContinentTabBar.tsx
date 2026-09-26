@@ -2,24 +2,35 @@ import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import { type Continent } from '@/data/schema';
+import { type ContinentFilter } from '@/data/schema';
 import { radii, spacing, typography } from '@/theme/tokens';
 import { useTheme, type ThemeColors } from '@/theme/ThemeContext';
 
 type Props = {
-  active: Continent;
-  onChange: (c: Continent) => void;
+  active: ContinentFilter;
+  onChange: (c: ContinentFilter) => void;
   /**
    * Pressing the already-active tab again opens the culture/country filter
    * for that continent (#163) instead of a no-op `onChange`.
    */
-  onPressActive?: (c: Continent) => void;
+  onPressActive?: (c: ContinentFilter) => void;
   /** Shows a small filter-active indicator on the active tab (#163). */
   cultureFilterActive?: boolean;
 };
 
-const TABS: Continent[] = ['global', 'europa', 'asien', 'afrika', 'amerika', 'ozeanien'];
-const ENABLED: Continent[] = ['global', 'europa', 'asien', 'afrika', 'amerika'];
+// 'all' shows every continent at once — the counterpart to real continent
+// tagging in the data (natur-wissenschaft.json no longer dumps everything
+// into 'global'; 'all' is how a viewer sees it all together again).
+const TABS: ContinentFilter[] = [
+  'all',
+  'global',
+  'europa',
+  'asien',
+  'afrika',
+  'amerika',
+  'ozeanien',
+];
+const ENABLED: ContinentFilter[] = ['all', 'global', 'europa', 'asien', 'afrika', 'amerika'];
 
 export function ContinentTabBar({ active, onChange, onPressActive, cultureFilterActive }: Props) {
   const { t } = useTranslation();

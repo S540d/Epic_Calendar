@@ -23,7 +23,7 @@ import { usePersistedState } from '@/hooks/usePersistedState';
 import { ALL_EVENTS } from '@/data/events';
 import { journeyById, resolveJourneySteps } from '@/data/learningJourneys';
 import { eventMatchesTheme } from '@/data/themes';
-import type { Continent, ImportanceLevel, TimelineEvent } from '@/data/schema';
+import type { ContinentFilter, ImportanceLevel, TimelineEvent } from '@/data/schema';
 import { globalEventIndex } from '@/timeline/globalEventIndex';
 import { spacing, typography, type Category } from '@/theme/tokens';
 import { CHIP_CATEGORIES, DEFAULT_CATEGORIES } from '@/theme/categories';
@@ -39,7 +39,10 @@ export function TimelineScreen() {
   );
   const activeCategories = new Set<Category>(persistedCategories);
 
-  const [continent, setContinent] = usePersistedState<Continent>('selectedContinent', 'europa');
+  const [continent, setContinent] = usePersistedState<ContinentFilter>(
+    'selectedContinent',
+    'europa',
+  );
   const [cultureFilter, setCultureFilter] = useState<string | null>(null);
   // Cross-continent theme filter (#226) — unlike cultureFilter, not scoped to
   // a continent, so it survives continent switches.
@@ -132,7 +135,7 @@ export function TimelineScreen() {
   // Switching continents invalidates the culture filter — cultures are scoped
   // per continent, so a stale filter would silently hide everything (#163).
   const handleContinentChange = useCallback(
-    (c: Continent) => {
+    (c: ContinentFilter) => {
       setContinent(c);
       setCultureFilter(null);
     },
@@ -205,7 +208,10 @@ export function TimelineScreen() {
 
   // Cultures available for the current continent, for the #163 filter sheet.
   const availableCultures = useMemo(
-    () => (continent === 'global' ? [] : globalEventIndex.culturesForContinent(continent)),
+    () =>
+      continent === 'global' || continent === 'all'
+        ? []
+        : globalEventIndex.culturesForContinent(continent),
     [continent],
   );
 
@@ -228,7 +234,9 @@ export function TimelineScreen() {
       setPersistedCategories((prev) =>
         prev.includes(event.category) ? prev : [...prev, event.category],
       );
-      if (event.continent !== 'global') {
+      // On 'all' the target is already visible on every continent — switching
+      // away would only narrow the view, so skip the continent change there.
+      if (continent !== 'all' && event.continent !== 'global') {
         setContinent(event.continent);
         setCultureFilter(null);
       }
@@ -240,7 +248,7 @@ export function TimelineScreen() {
       jumpRequestIdRef.current += 1;
       setJumpToEvent({ event, requestId: jumpRequestIdRef.current, openDetail });
     },
-    [setContinent, setPersistedCategories],
+    [continent, setContinent, setPersistedCategories],
   );
 
   const handleSearchSelectEvent = useCallback(
