@@ -198,8 +198,19 @@ export function EpochOverviewScreen({
     return render(NAVIGATION_EPOCHS, 0);
   }, [expandedKeys, handleEpochPress, handleToggle, colors]);
 
-  // "Eigener Filter" — leaf tile, sibling of Lernreisen/Themen under Erkunden
-  // (#212 badge shown as its meta line, same text the old Explore-card meta used).
+  // "Ganzer Zeitstrahl" and "Eigener Filter" — leaf tiles at the very bottom
+  // of Erkunden, siblings of Lernreisen/Themen but with no children of their
+  // own (#212 badge shown as the filter tile's meta line, same text the old
+  // Explore-card meta used).
+  const fullTimelineNode: TileNode = useMemo(
+    () => ({
+      key: 'full-timeline',
+      label: t('epochNav.allTime'),
+      onPress: onShowFullTimeline,
+    }),
+    [t, onShowFullTimeline],
+  );
+
   const ownFilterNode: TileNode = useMemo(
     () => ({
       key: 'own-filter',
@@ -285,9 +296,10 @@ export function EpochOverviewScreen({
     () => [
       { key: 'lernreisen', label: t('learning.sectionTitle'), children: journeyNodes },
       { key: 'themen', label: t('themeSection.title'), children: themeNodes },
+      fullTimelineNode,
       ownFilterNode,
     ],
-    [t, journeyNodes, themeNodes, ownFilterNode],
+    [t, journeyNodes, themeNodes, fullTimelineNode, ownFilterNode],
   );
 
   const [expandedErkundenKeys, setExpandedErkundenKeys] = useState<ReadonlySet<string>>(
@@ -344,17 +356,6 @@ export function EpochOverviewScreen({
       >
         <Text style={styles.sectionTitle}>{t('epochNav.title')}</Text>
         {tiles}
-
-        <Pressable
-          style={({ pressed }) => [
-            styles.fullTimelineButton,
-            pressed && styles.fullTimelinePressed,
-          ]}
-          onPress={onShowFullTimeline}
-          accessibilityRole="button"
-        >
-          <Text style={styles.fullTimelineText}>{t('epochNav.allTime')} →</Text>
-        </Pressable>
 
         <Text style={styles.sectionTitle}>{t('explore.title')}</Text>
         {erkundenTiles.map(({ node, level }) => (
@@ -504,23 +505,6 @@ function makeStyles(colors: ThemeColors) {
       paddingHorizontal: spacing.md,
       paddingTop: spacing.sm,
       paddingBottom: spacing.md,
-    },
-    fullTimelineButton: {
-      marginTop: spacing.md,
-      padding: spacing.md,
-      borderRadius: radii.sm,
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.accent,
-      alignItems: 'center',
-    },
-    fullTimelinePressed: {
-      opacity: 0.75,
-    },
-    fullTimelineText: {
-      ...typography.body,
-      color: colors.accent,
-      fontWeight: '600',
     },
     sectionTitle: {
       ...typography.caption,
