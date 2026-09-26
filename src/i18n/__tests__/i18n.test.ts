@@ -106,6 +106,7 @@ describe('i18n resources', () => {
   it.each(THEMES.map((th) => th.id))('labels theme "%s" in both languages', (id) => {
     for (const keys of [deKeys, enKeys]) {
       expect(keys).toContain(`theme.${id}.label`);
+      expect(keys).toContain(`theme.${id}.description`);
     }
   });
 });
