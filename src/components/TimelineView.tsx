@@ -26,7 +26,7 @@ import {
 import { viewportYearRange, yearToT, T_PRESENT as T_HEUTE } from '@/timeline/scale';
 import {
   IMPORTANCE_RANK,
-  type Continent,
+  type ContinentFilter,
   type ImportanceLevel,
   type TimelineEvent,
 } from '@/data/schema';
@@ -41,7 +41,7 @@ import { LANE_ORDER } from '@/theme/categories';
 
 type Props = {
   activeCategories: Set<Category>;
-  continent: Continent;
+  continent: ContinentFilter;
   /** When set, only events with this exact `culture` value are shown (#163 country/culture filter). */
   culture?: string | null;
   /** When set, only events matching this theme id are shown (#226 theme filter, cross-continent). */

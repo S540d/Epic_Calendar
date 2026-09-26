@@ -58,6 +58,12 @@ describe('timeline/culling.filterVisible', () => {
     expect(filterVisible([e], base)).toEqual([]);
   });
 
+  it('continent "all" bypasses the continent gate for every continent', () => {
+    const e = ev({ id: 'a', startYear: 100, endYear: 200, continent: 'asien' });
+    const f = { ...base, continent: 'all' as const };
+    expect(filterVisible([e], f)).toEqual([e]);
+  });
+
   it('with an active theme, keeps a matching event regardless of continent (#236)', () => {
     const e = ev({
       id: 'a',

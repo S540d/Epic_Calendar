@@ -3,6 +3,7 @@ import {
   type TimelineEvent,
   type ZoomLevel,
   type Continent,
+  type ContinentFilter,
 } from '@/data/schema';
 import { eventMatchesTheme } from '@/data/themes';
 import type { Category } from '@/theme/tokens';
@@ -12,7 +13,7 @@ export type IndexQuery = {
   endYear: number;
   zoomLevel: ZoomLevel;
   categories: Set<Category>;
-  continent: Continent;
+  continent: ContinentFilter;
   /** Highest importance rank to show (cumulative). Default 2 (= show all). */
   maxImportanceRank?: number;
   /** When set, only events with this exact `culture` value pass (#163 country/culture filter). */
@@ -24,7 +25,7 @@ export type IndexQuery = {
 /** Query without a year range — used to derive the full (viewport-independent) event set for stable track assignment. */
 export type CategoryQuery = {
   category: Category;
-  continent: Continent;
+  continent: ContinentFilter;
   /** Highest importance rank to show (cumulative). Default 2 (= show all). */
   maxImportanceRank?: number;
   /** When set, only events with this exact `culture` value pass (#163 country/culture filter). */
@@ -77,7 +78,9 @@ export class EventIndex {
         // A theme is cross-continent by design (#226) — skip the continent gate
         // entirely while one is active, otherwise only the currently selected
         // continent's share of the theme's events would ever be visible.
-        if (!theme && ev.continent !== 'global' && ev.continent !== continent) continue;
+        // 'all' (the "Alle" continent tab) is the same kind of wildcard.
+        if (!theme && continent !== 'all' && ev.continent !== 'global' && ev.continent !== continent)
+          continue;
         if (ev.minZoomLevel > zoomLevel) continue;
         if (!passesImportance(ev, maxImportanceRank)) continue;
         if (culture && ev.culture !== culture) continue;
@@ -103,8 +106,10 @@ export class EventIndex {
 
     const result: TimelineEvent[] = [];
     for (const ev of arr) {
-      // See queryVisible: a theme is cross-continent, so it bypasses the gate.
-      if (!theme && ev.continent !== 'global' && ev.continent !== continent) continue;
+      // See queryVisible: a theme is cross-continent, so it bypasses the gate;
+      // 'all' bypasses it the same way.
+      if (!theme && continent !== 'all' && ev.continent !== 'global' && ev.continent !== continent)
+        continue;
       if (!passesImportance(ev, maxImportanceRank)) continue;
       if (culture && ev.culture !== culture) continue;
       if (theme && !eventMatchesTheme(ev, theme)) continue;

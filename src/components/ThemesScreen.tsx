@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { ALL_EVENTS } from '@/data/events';
-import { THEMES, eventMatchesTheme } from '@/data/themes';
+import { eventMatchesTheme, topLevelThemes } from '@/data/themes';
 import { spacing, typography } from '@/theme/tokens';
 import { makeCardGridStyles } from '@/theme/cardGrid';
 import { useTheme, type ThemeColors } from '@/theme/ThemeContext';
@@ -30,13 +30,14 @@ export function ThemesScreen({ onBack, onSelectTheme, activeTheme }: Props) {
 
   // Event count per theme (#226) — cheap over 605 events, so computed inline
   // rather than threaded through props like journey progress.
+  const themes = useMemo(() => topLevelThemes(), []);
   const themeEventCounts = useMemo(() => {
     const counts = new Map<string, number>();
-    for (const theme of THEMES) {
+    for (const theme of themes) {
       counts.set(theme.id, ALL_EVENTS.filter((ev) => eventMatchesTheme(ev, theme.id)).length);
     }
     return counts;
-  }, []);
+  }, [themes]);
 
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
@@ -60,7 +61,7 @@ export function ThemesScreen({ onBack, onSelectTheme, activeTheme }: Props) {
         showsVerticalScrollIndicator={false}
       >
         <View style={cardStyles.cardGrid}>
-          {THEMES.map((theme) => {
+          {themes.map((theme) => {
             const isActive = activeTheme === theme.id;
             return (
               <Pressable

@@ -2,6 +2,14 @@ import type { Category } from '@/theme/tokens';
 
 export type Continent = 'europa' | 'asien' | 'afrika' | 'amerika' | 'ozeanien' | 'global';
 
+/**
+ * Continent-tab selection value. Adds `'all'` on top of `Continent` — a
+ * pure UI/filter-selection value meaning "show every continent at once",
+ * never a valid `TimelineEvent.continent` (kept out of `VALID_CONTINENTS`/
+ * `validateEvent` on purpose).
+ */
+export type ContinentFilter = Continent | 'all';
+
 export type ZoomLevel = 0 | 1 | 2 | 3 | 4;
 
 export type TimelineEvent = {
