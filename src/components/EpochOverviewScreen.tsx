@@ -236,6 +236,7 @@ export function EpochOverviewScreen({
         return {
           key: journey.id,
           label: t(journey.labelKey),
+          description: t(journey.descriptionKey),
           meta: inProgress
             ? `${t('learning.continue')} · ${t('learning.progress', {
                 current: Math.min(stored + 1, stepCount),
@@ -269,6 +270,7 @@ export function EpochOverviewScreen({
       return {
         key: theme.id,
         label: t(theme.labelKey),
+        description: t(theme.descriptionKey),
         meta: t('themeSection.eventCount', { count: themeEventCounts.get(theme.id) ?? 0 }),
         onPress: () => onSelectTheme(theme.id),
         children:

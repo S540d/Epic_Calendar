@@ -79,6 +79,15 @@ describe('EpochOverviewScreen — Erkunden mirrors Zeitreise (Lernreisen/Themen/
     expect(renderedOrder).toEqual([...labels].sort((a, b) => a.localeCompare(b, 'de')));
   });
 
+  it("shows each journey's short description once expanded", async () => {
+    const journey = LEARNING_JOURNEYS[0]!;
+    const description = de.learning.journey[journey.id as keyof typeof de.learning.journey]
+      .description as string;
+    const { getByLabelText, getByText } = await setup();
+    await fireEvent.press(getByLabelText(de.learning.sectionTitle));
+    expect(getByText(description)).toBeTruthy();
+  });
+
   it('tapping the "Lernreisen" tile has no jump action (it only toggles, unlike a parent epoch)', async () => {
     const { queryByLabelText } = await setup();
     expect(
@@ -107,6 +116,12 @@ describe('EpochOverviewScreen — Erkunden mirrors Zeitreise (Lernreisen/Themen/
     await fireEvent.press(getByLabelText(de.themeSection.title));
     expect(getByLabelText(de.theme.kolonialismus.label)).toBeTruthy();
     expect(getByLabelText(de.theme.aufklaerung.label)).toBeTruthy();
+  });
+
+  it("shows each theme's short description once expanded", async () => {
+    const { getByLabelText, getByText } = await setup();
+    await fireEvent.press(getByLabelText(de.themeSection.title));
+    expect(getByText(de.theme.kolonialismus.description)).toBeTruthy();
   });
 
   it('tapping a leaf theme (no sub-themes) calls onSelectTheme directly', async () => {
