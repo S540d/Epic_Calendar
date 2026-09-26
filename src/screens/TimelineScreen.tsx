@@ -34,7 +34,6 @@ export function TimelineScreen() {
     'activeCategories',
     [...DEFAULT_CATEGORIES],
   );
-  const activeCategories = new Set<Category>(persistedCategories);
 
   const [continent, setContinent] = usePersistedState<ContinentFilter>(
     'selectedContinent',
@@ -44,6 +43,22 @@ export function TimelineScreen() {
   // Cross-continent theme filter (#226) — unlike cultureFilter, not scoped to
   // a continent, so it survives continent switches.
   const [themeFilter, setThemeFilter] = useState<string | null>(null);
+
+  // A theme's own event set decides which lanes are relevant while it's
+  // active — categories the theme has no events in (e.g. "Nationen" for
+  // "Aufklärung & Wissenschaft") stay hidden instead of cluttering the
+  // canvas. Derived, not merged into `persistedCategories`: clearing the
+  // theme must fall back to exactly what the user had selected before,
+  // without permanently mutating their stored category preference.
+  const themeCategories = useMemo(() => {
+    if (!themeFilter) return null;
+    const set = new Set<Category>();
+    for (const ev of ALL_EVENTS) {
+      if (eventMatchesTheme(ev, themeFilter)) set.add(ev.category);
+    }
+    return set;
+  }, [themeFilter]);
+  const activeCategories = themeCategories ?? new Set<Category>(persistedCategories);
   const [filterSheetVisible, setFilterSheetVisible] = useState(false);
   const [detailLevel, setDetailLevel] = usePersistedState<ImportanceLevel>('detailLevel', 'detail');
   const [showFpsMonitor, setShowFpsMonitor] = usePersistedState<boolean>('showFpsMonitor', false);
@@ -128,36 +143,28 @@ export function TimelineScreen() {
   const handleOpenFilterSheet = useCallback(() => setFilterSheetVisible(true), []);
   const handleCloseFilterSheet = useCallback(() => setFilterSheetVisible(false), []);
 
-  // Activating a theme (#226, #236 follow-up) needs two things the plain
-  // `setThemeFilter` never did: the matching events' categories must be
-  // active (otherwise a category the user has switched off hides them), and
-  // the viewport must zoom to fit their full year range — otherwise a theme
-  // with events spread across zoom levels only ever shows whichever slice
-  // happens to be in view. Cross-continent by design, so this scans all
-  // events rather than the current continent's slice.
-  const applyThemeSelection = useCallback(
-    (themeId: string) => {
-      const matching = ALL_EVENTS.filter((ev) => eventMatchesTheme(ev, themeId));
-      if (matching.length > 0) {
-        setPersistedCategories((prev) => {
-          const set = new Set(prev);
-          for (const ev of matching) set.add(ev.category);
-          return Array.from(set);
-        });
-        let startYear = Infinity;
-        let endYear = -Infinity;
-        for (const ev of matching) {
-          if (ev.startYear < startYear) startYear = ev.startYear;
-          const evEnd = ev.endYear ?? ev.startYear;
-          if (evEnd > endYear) endYear = evEnd;
-        }
-        setEpochRange({ startYear, endYear });
+  // Activating a theme (#226, #236 follow-up) needs the viewport to zoom to
+  // fit the matching events' full year range — otherwise a theme with events
+  // spread across zoom levels only ever shows whichever slice happens to be
+  // in view. Cross-continent by design, so this scans all events rather than
+  // the current continent's slice. Which categories are visible is handled
+  // separately by `themeCategories` above — a theme shows exactly its own
+  // categories, not the union with whatever was active before.
+  const applyThemeSelection = useCallback((themeId: string) => {
+    const matching = ALL_EVENTS.filter((ev) => eventMatchesTheme(ev, themeId));
+    if (matching.length > 0) {
+      let startYear = Infinity;
+      let endYear = -Infinity;
+      for (const ev of matching) {
+        if (ev.startYear < startYear) startYear = ev.startYear;
+        const evEnd = ev.endYear ?? ev.startYear;
+        if (evEnd > endYear) endYear = evEnd;
       }
-      setThemeFilter(themeId);
-      setShowOverview(false);
-    },
-    [setPersistedCategories],
-  );
+      setEpochRange({ startYear, endYear });
+    }
+    setThemeFilter(themeId);
+    setShowOverview(false);
+  }, []);
 
   // Landing-page theme chips are a second entry point into the theme filter,
   // alongside the FilterSheet. Tapping the active theme again clears it
