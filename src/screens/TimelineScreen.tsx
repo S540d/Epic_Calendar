@@ -126,7 +126,14 @@ export function TimelineScreen() {
   // continent tab, #163) and the new explicit filter icon both open the same
   // FilterSheet — the tab gesture is kept as a shortcut, not the only way in.
   const handleOpenFilterSheet = useCallback(() => setFilterSheetVisible(true), []);
-  const handleCloseFilterSheet = useCallback(() => setFilterSheetVisible(false), []);
+  // Opened from the landing page, closing the sheet must also leave the
+  // overview — otherwise a category/culture change (which only updates
+  // state, unlike selecting a theme) never becomes visible to the user.
+  // Opened from within the timeline itself, showOverview is already false.
+  const handleCloseFilterSheet = useCallback(() => {
+    setFilterSheetVisible(false);
+    setShowOverview(false);
+  }, []);
 
   // Activating a theme (#226, #236 follow-up) needs two things the plain
   // `setThemeFilter` never did: the matching events' categories must be

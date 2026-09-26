@@ -13,6 +13,12 @@ describe('themes (theme filter, #226)', () => {
     }
   });
 
+  it('every theme has a description i18n key derived from its id', () => {
+    for (const th of THEMES) {
+      expect(th.descriptionKey).toBe(`theme.${th.id}.description`);
+    }
+  });
+
   it('every theme declares at least one tag', () => {
     for (const th of THEMES) {
       expect(th.tagIds.length).toBeGreaterThan(0);
