@@ -9,12 +9,16 @@ import {
   View,
 } from 'react-native';
 import { LandmarkTimeline } from './LandmarkTimeline';
+import { DiscoveryTile, flattenTiles, type TileNode } from './DiscoveryTile';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import type { NavigationEpoch } from '@/timeline/epoch';
 import { NAVIGATION_EPOCHS } from '@/timeline/epoch';
 import { formatEventYear } from '@/timeline/formatYear';
+import { ALL_EVENTS } from '@/data/events';
+import { LEARNING_JOURNEYS } from '@/data/learningJourneys';
+import { childrenOf, eventMatchesTheme, topLevelThemes, type Theme } from '@/data/themes';
 import { radii, spacing, typography } from '@/theme/tokens';
 import { useTheme, type ThemeColors } from '@/theme/ThemeContext';
 
@@ -24,13 +28,23 @@ type Props = {
   onOpenSettings: () => void;
   onOpenSearch: () => void;
   onOpenFilters: () => void;
-  /** #212: shown as a badge on the filter icon when the selection deviates
-   *  from the default (quantitative, e.g. "3/6"). */
+  /** #212: shown as a meta line on the "Eigener Filter" tiles when the
+   *  selection deviates from the default (quantitative, e.g. "3/6"). */
   filterBadgeLabel?: string;
-  /** Opens the Explore screen (#239) — filtering, learning journeys and
-   *  themes now live there instead of competing for space on this page. */
-  onOpenExplore: () => void;
+  /** Starts (or resumes) a guided learning journey by id. */
+  onStartJourney: (journeyId: string) => void;
+  /** Persisted station index per journey id; absent = not started yet. */
+  journeyProgress?: Record<string, number>;
+  /** Activates (or, if already active, clears) the cross-continent theme filter (#226). */
+  onSelectTheme: (themeId: string) => void;
+  /** Currently active theme filter id, if any — highlights the matching tile. */
+  activeTheme?: string | null;
 };
+
+/** Sorts by a translated label in the given locale — used to order Lernreisen/Themen alphabetically in the active app language (reactive to language switches). */
+function sortByLabel<T>(items: readonly T[], labelOf: (item: T) => string, locale: string): T[] {
+  return [...items].sort((a, b) => labelOf(a).localeCompare(labelOf(b), locale));
+}
 
 function formatDuration(startYear: number, endYear: number, t: TFunction): string {
   const durationYears = Math.abs(endYear - startYear);
@@ -128,9 +142,12 @@ export function EpochOverviewScreen({
   onOpenSearch,
   onOpenFilters,
   filterBadgeLabel,
-  onOpenExplore,
+  onStartJourney,
+  journeyProgress,
+  onSelectTheme,
+  activeTheme,
 }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
@@ -181,6 +198,98 @@ export function EpochOverviewScreen({
     return render(NAVIGATION_EPOCHS, 0);
   }, [expandedKeys, handleEpochPress, handleToggle, colors]);
 
+  // "Eigener Filter" tile — same leaf node, rendered once per section (#212
+  // badge shown as its meta line, same text the old Explore-card meta used).
+  const ownFilterNode: TileNode = useMemo(
+    () => ({
+      key: 'own-filter',
+      label: t('filterSheet.setOwnFilters'),
+      meta: filterBadgeLabel
+        ? t('filterSheet.iconLabelActive', { badge: filterBadgeLabel })
+        : undefined,
+      onPress: onOpenFilters,
+    }),
+    [t, filterBadgeLabel, onOpenFilters],
+  );
+
+  // Lernreisen section — flat, no children, alphabetical in the active
+  // language.
+  const journeyNodes: TileNode[] = useMemo(
+    () =>
+      sortByLabel(LEARNING_JOURNEYS, (j) => t(j.labelKey), i18n.language).map((journey) => {
+        const stepCount = journey.eventIds.length;
+        const stored = journeyProgress?.[journey.id];
+        const inProgress = stored !== undefined && stored > 0;
+        return {
+          key: journey.id,
+          label: t(journey.labelKey),
+          meta: inProgress
+            ? `${t('learning.continue')} · ${t('learning.progress', {
+                current: Math.min(stored + 1, stepCount),
+                total: stepCount,
+              })}`
+            : t('learning.stations', { count: stepCount }),
+          onPress: () => onStartJourney(journey.id),
+        };
+      }),
+    [t, i18n.language, journeyProgress, onStartJourney],
+  );
+
+  // Themen section — top-level themes + their sub-themes (#226-Folge),
+  // alphabetical at every level. A theme with children can still be selected
+  // directly (trailing action / EpochTile-style "→" jump), matching all its
+  // descendants via `eventMatchesTheme`'s tag union.
+  const themeEventCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const th of topLevelThemes()) {
+      counts.set(th.id, ALL_EVENTS.filter((ev) => eventMatchesTheme(ev, th.id)).length);
+      for (const child of childrenOf(th.id)) {
+        counts.set(child.id, ALL_EVENTS.filter((ev) => eventMatchesTheme(ev, child.id)).length);
+      }
+    }
+    return counts;
+  }, []);
+
+  const buildThemeNode = useCallback(
+    (theme: Theme): TileNode => {
+      const children = childrenOf(theme.id);
+      return {
+        key: theme.id,
+        label: t(theme.labelKey),
+        meta: t('themeSection.eventCount', { count: themeEventCounts.get(theme.id) ?? 0 }),
+        onPress: () => onSelectTheme(theme.id),
+        children:
+          children.length > 0
+            ? sortByLabel(children, (c) => t(c.labelKey), i18n.language).map(buildThemeNode)
+            : undefined,
+      };
+    },
+    [t, i18n.language, themeEventCounts, onSelectTheme],
+  );
+
+  const themeNodes: TileNode[] = useMemo(
+    () => sortByLabel(topLevelThemes(), (th) => t(th.labelKey), i18n.language).map(buildThemeNode),
+    [t, i18n.language, buildThemeNode],
+  );
+
+  const [expandedThemeKeys, setExpandedThemeKeys] = useState<ReadonlySet<string>>(() => new Set());
+  const toggleThemeExpanded = useCallback((key: string) => {
+    if (Platform.OS !== 'web') {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    }
+    setExpandedThemeKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
+
+  const themeTiles = useMemo(
+    () => flattenTiles(themeNodes, expandedThemeKeys),
+    [themeNodes, expandedThemeKeys],
+  );
+
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
@@ -195,23 +304,6 @@ export function EpochOverviewScreen({
           accessibilityRole="button"
         >
           <Text style={styles.iconButtonText}>🔍</Text>
-        </Pressable>
-        <Pressable
-          style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
-          onPress={onOpenFilters}
-          accessibilityLabel={
-            filterBadgeLabel
-              ? t('filterSheet.iconLabelActive', { badge: filterBadgeLabel })
-              : t('filterSheet.iconLabel')
-          }
-          accessibilityRole="button"
-        >
-          <Text style={styles.iconButtonText}>🏷</Text>
-          {filterBadgeLabel && (
-            <View style={styles.filterBadge}>
-              <Text style={styles.filterBadgeText}>{filterBadgeLabel}</Text>
-            </View>
-          )}
         </Pressable>
         <Pressable
           style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
@@ -230,20 +322,6 @@ export function EpochOverviewScreen({
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Pressable
-          style={({ pressed }) => [styles.exploreCard, pressed && styles.tilePressed]}
-          onPress={onOpenExplore}
-          accessibilityRole="button"
-          accessibilityLabel={t('explore.title')}
-          accessibilityHint={t('explore.hint')}
-        >
-          <View style={styles.exploreCardText}>
-            <Text style={styles.exploreCardTitle}>{t('explore.title')}</Text>
-            <Text style={styles.exploreCardHint}>{t('explore.hint')}</Text>
-          </View>
-          <Text style={styles.exploreCardArrow}>›</Text>
-        </Pressable>
-
         <Text style={styles.sectionTitle}>{t('epochNav.title')}</Text>
         {tiles}
 
@@ -257,6 +335,26 @@ export function EpochOverviewScreen({
         >
           <Text style={styles.fullTimelineText}>{t('epochNav.allTime')} →</Text>
         </Pressable>
+        <DiscoveryTile key="own-filter-zeitreise" node={ownFilterNode} />
+
+        <Text style={styles.sectionTitle}>{t('learning.sectionTitle')}</Text>
+        {journeyNodes.map((node) => (
+          <DiscoveryTile key={node.key} node={node} />
+        ))}
+        <DiscoveryTile key="own-filter-lernreisen" node={ownFilterNode} />
+
+        <Text style={styles.sectionTitle}>{t('themeSection.title')}</Text>
+        {themeTiles.map(({ node, level }) => (
+          <DiscoveryTile
+            key={node.key}
+            node={node}
+            level={level}
+            isExpanded={expandedThemeKeys.has(node.key)}
+            onToggle={toggleThemeExpanded}
+            isActive={activeTheme === node.key}
+          />
+        ))}
+        <DiscoveryTile key="own-filter-themen" node={ownFilterNode} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -387,23 +485,6 @@ function makeStyles(colors: ThemeColors) {
       fontSize: 20,
       color: colors.textSecondary,
     },
-    filterBadge: {
-      position: 'absolute',
-      top: -4,
-      right: -4,
-      minWidth: 20,
-      height: 16,
-      borderRadius: 8,
-      paddingHorizontal: 4,
-      backgroundColor: colors.accent,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    filterBadgeText: {
-      fontSize: 10,
-      fontWeight: '700',
-      color: colors.bg,
-    },
     scroll: {
       flex: 1,
     },
@@ -437,45 +518,6 @@ function makeStyles(colors: ThemeColors) {
       fontWeight: '700',
       marginTop: spacing.md,
       marginBottom: spacing.xs,
-    },
-    tilePressed: {
-      opacity: 0.75,
-    },
-    tileArrow: {
-      ...typography.body,
-      color: colors.textMuted,
-      marginLeft: spacing.sm,
-    },
-    // Single entry point into ExploreScreen (#239), replacing the two card
-    // grids (learning journeys, themes) that used to compete for space here
-    // (#236). Styled like `fullTimelineButton` below, but with an icon +
-    // two-line text block instead of a single centered label.
-    exploreCard: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: colors.bgElevated,
-      borderRadius: radii.sm,
-      borderWidth: 1,
-      borderColor: colors.accent,
-      padding: spacing.sm,
-      marginBottom: spacing.md,
-      gap: spacing.sm,
-    },
-    exploreCardText: {
-      flex: 1,
-    },
-    exploreCardTitle: {
-      ...typography.subtitle,
-      color: colors.textPrimary,
-    },
-    exploreCardHint: {
-      ...typography.caption,
-      color: colors.textMuted,
-      marginTop: 2,
-    },
-    exploreCardArrow: {
-      fontSize: 22,
-      color: colors.accent,
     },
   });
 }

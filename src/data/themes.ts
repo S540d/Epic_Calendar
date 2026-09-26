@@ -115,7 +115,7 @@ export function themeById(id: string): Theme | undefined {
   return BY_ID.get(id);
 }
 
-/** Themes without a parent — the top level shown as cards on `ThemesScreen`. */
+/** Themes without a parent — the top level shown in the landing page's Themen section. */
 export function topLevelThemes(): Theme[] {
   return THEMES.filter((th) => !th.parentId);
 }
