@@ -79,6 +79,9 @@
       }
     }
   },
+  "explore": {
+    "title": "Explore"
+  },
   "event": {
     "unknownDate": "Date unknown",
     "present": "present",
