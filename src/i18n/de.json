@@ -79,11 +79,6 @@
       }
     }
   },
-  "explore": {
-    "title": "Erkunden",
-    "hint": "Filtern, Lernreisen oder Themen entdecken",
-    "filterHint": "Kategorien, Kontinent und Kultur frei einstellen"
-  },
   "event": {
     "unknownDate": "Datum unbekannt",
     "present": "heute",
@@ -142,9 +137,6 @@
     "firstHominids": "Erste Hominide",
     "quietEon": "Milliarden Jahre nur Mikroben"
   },
-  "nav": {
-    "back": "Zurück"
-  },
   "minimap": {
     "label": "Zeitstrahl-Übersicht",
     "scrollForward": "Vorwärts scrollen",
@@ -174,7 +166,8 @@
     "iconLabel": "Filter",
     "iconLabelActive": "Filter, {{badge}} Kategorien aktiv",
     "expand": "Unterthemen anzeigen",
-    "collapse": "Unterthemen verbergen"
+    "collapse": "Unterthemen verbergen",
+    "setOwnFilters": "Eigener Filter"
   },
   "cultureFilter": {
     "title": "{{continent}} filtern",

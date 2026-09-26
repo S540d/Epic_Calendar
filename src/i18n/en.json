@@ -79,11 +79,6 @@
       }
     }
   },
-  "explore": {
-    "title": "Explore",
-    "hint": "Filter, browse learning journeys or discover themes",
-    "filterHint": "Freely set categories, continent and culture"
-  },
   "event": {
     "unknownDate": "Date unknown",
     "present": "present",
@@ -142,9 +137,6 @@
     "firstHominids": "First Hominids",
     "quietEon": "Billions of years: just microbes"
   },
-  "nav": {
-    "back": "Back"
-  },
   "minimap": {
     "label": "Timeline overview",
     "scrollForward": "Scroll forward",
@@ -174,7 +166,8 @@
     "iconLabel": "Filters",
     "iconLabelActive": "Filters, {{badge}} categories active",
     "expand": "Show sub-themes",
-    "collapse": "Hide sub-themes"
+    "collapse": "Hide sub-themes",
+    "setOwnFilters": "Custom filter"
   },
   "cultureFilter": {
     "title": "Filter {{continent}}",
