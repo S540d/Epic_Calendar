@@ -12,10 +12,11 @@ import { useTheme, type ThemeColors } from '@/theme/ThemeContext';
  * (body tap toggles when there are children, otherwise triggers `onPress`;
  * a trailing button triggers `onPress` directly when there are children —
  * omitted entirely when a node has children but no `onPress`, e.g. the
- * "Lernreisen"/"Themen" wrapper nodes, which are pure toggles) but with a
- * plain text `meta` line instead of the epoch-specific year range + duration
- * badge — epochs keep their own richer tile/styles, since that display
- * doesn't generalize to journeys/themes.
+ * "Lernreisen"/"Themen" wrapper nodes, which are pure toggles). Visually
+ * matches `EpochTile` on purpose (same accent bar + bordered meta badge) so
+ * the "Erkunden" section reads as the same kind of list as "Zeitreise" —
+ * `node.color` defaults to the app's accent color when unset, since these
+ * nodes (unlike epochs) have no meaningful per-item color of their own.
  */
 export type TileNode = {
   key: string;
@@ -59,12 +60,13 @@ export function DiscoveryTile({ node, level = 0, isExpanded = false, onToggle, i
   const hasChildren = (node.children?.length ?? 0) > 0;
   const indentStyle =
     level === 1 ? styles.tileIndent : level === 2 ? styles.tileIndent2 : undefined;
+  const color = node.color ?? colors.accent;
 
   const handleToggle = () => onToggle?.(node.key);
 
   return (
     <View style={[styles.tile, indentStyle, isActive && styles.tileActive]}>
-      <View style={[styles.tileAccent, node.color ? { backgroundColor: node.color } : undefined]} />
+      <View style={[styles.tileAccent, { backgroundColor: color }]} />
       <Pressable
         style={({ pressed }) => [styles.tileBody, pressed && styles.tilePressed]}
         onPress={hasChildren ? handleToggle : node.onPress}
@@ -82,7 +84,9 @@ export function DiscoveryTile({ node, level = 0, isExpanded = false, onToggle, i
           <Text style={[styles.tileName, isActive && styles.tileNameActive]}>{node.label}</Text>
         </View>
         {node.meta && (
-          <Text style={[styles.tileMeta, isActive && styles.tileMetaActive]}>{node.meta}</Text>
+          <View style={[styles.metaBadge, { borderColor: color }]}>
+            <Text style={[styles.metaBadgeText, { color }]}>{node.meta}</Text>
+          </View>
         )}
       </Pressable>
       {hasChildren && node.onPress ? (
@@ -153,13 +157,17 @@ function makeDiscoveryTileStyles(colors: ThemeColors) {
     tileNameActive: {
       color: colors.accent,
     },
-    tileMeta: {
-      ...typography.caption,
-      color: colors.textMuted,
-      marginTop: 2,
+    metaBadge: {
+      alignSelf: 'flex-start',
+      marginTop: spacing.xs,
+      paddingHorizontal: spacing.xs,
+      paddingVertical: 2,
+      borderRadius: radii.pill,
+      borderWidth: 1,
     },
-    tileMetaActive: {
-      color: colors.accent,
+    metaBadgeText: {
+      fontSize: 11,
+      fontWeight: '600',
     },
     jumpButton: {
       minWidth: 44,

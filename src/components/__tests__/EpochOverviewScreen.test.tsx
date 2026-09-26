@@ -147,6 +147,19 @@ describe('EpochOverviewScreen — Erkunden mirrors Zeitreise (Lernreisen/Themen/
     expect(onOpenFilters).toHaveBeenCalledTimes(1);
   });
 
+  it('renders "Ganzen Zeitstrahl" as an Erkunden tile (not a separate button under Zeitreise) and calls onShowFullTimeline', async () => {
+    const { getByLabelText, onShowFullTimeline } = await setup();
+    await fireEvent.press(getByLabelText(de.epochNav.allTime));
+    expect(onShowFullTimeline).toHaveBeenCalledTimes(1);
+  });
+
+  it('"Ganzen Zeitstrahl" and "Eigener Filter" are the last two tiles under Erkunden', async () => {
+    const { getAllByRole } = await setup();
+    const labels = getAllByRole('button').map((b) => b.props.accessibilityLabel as string);
+    const lastTwo = labels.slice(-2);
+    expect(lastTwo).toEqual([de.epochNav.allTime, de.filterSheet.setOwnFilters]);
+  });
+
   it('re-sorts journeys/themes when the app language changes', async () => {
     await act(async () => {
       await i18n.changeLanguage('en');
