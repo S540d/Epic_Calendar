@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   FlatList,
   Modal,
@@ -11,8 +11,8 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import type { Continent } from '@/data/schema';
-import { THEMES } from '@/data/themes';
+import type { ContinentFilter } from '@/data/schema';
+import { childrenOf, topLevelThemes } from '@/data/themes';
 import { useTheme, type ThemeColors } from '@/theme/ThemeContext';
 import { radii, spacing, typography, type Category } from '@/theme/tokens';
 import { CHIP_CATEGORIES, DISABLED_CATEGORIES } from '@/theme/categories';
@@ -24,7 +24,7 @@ type Props = {
   activeCategories: Set<Category>;
   onToggleCategory: (cat: Category) => void;
   /** Culture/country filter (formerly `CultureFilterModal`), #163. */
-  continent: Continent;
+  continent: ContinentFilter;
   cultures: string[];
   activeCulture: string | null;
   onSelectCulture: (culture: string | null) => void;
@@ -59,6 +59,18 @@ export function FilterSheet({
 
   const handleSelectCulture = (culture: string | null) => {
     onSelectCulture(culture);
+  };
+
+  // Which top-level themes show their sub-themes — UI-local, not persisted;
+  // the sheet always opens collapsed.
+  const [expandedThemeIds, setExpandedThemeIds] = useState<ReadonlySet<string>>(() => new Set());
+  const toggleThemeExpanded = (id: string) => {
+    setExpandedThemeIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   };
 
   return (
@@ -128,7 +140,7 @@ export function FilterSheet({
               })}
             </View>
 
-            {continent !== 'global' && (
+            {continent !== 'global' && continent !== 'all' && (
               <>
                 <Text style={styles.sectionLabel}>
                   {t('cultureFilter.title', { continent: t(`continent.${continent}`) })}
@@ -176,37 +188,70 @@ export function FilterSheet({
             )}
 
             <Text style={styles.sectionLabel}>{t('filterSheet.themes')}</Text>
-            <FlatList
-              data={THEMES}
-              keyExtractor={(th) => th.id}
-              scrollEnabled={false}
-              ListHeaderComponent={
-                <TouchableOpacity
-                  style={styles.row}
-                  onPress={() => onSelectTheme(null)}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: activeTheme === null }}
-                >
-                  <Text style={[styles.rowText, activeTheme === null && styles.rowTextActive]}>
-                    {t('themeFilter.all')}
-                  </Text>
-                  {activeTheme === null && <Text style={styles.checkmark}>✓</Text>}
-                </TouchableOpacity>
-              }
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.row}
-                  onPress={() => onSelectTheme(item.id)}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: activeTheme === item.id }}
-                >
-                  <Text style={[styles.rowText, activeTheme === item.id && styles.rowTextActive]}>
-                    {t(item.labelKey)}
-                  </Text>
-                  {activeTheme === item.id && <Text style={styles.checkmark}>✓</Text>}
-                </TouchableOpacity>
-              )}
-            />
+            <TouchableOpacity
+              style={styles.row}
+              onPress={() => onSelectTheme(null)}
+              accessibilityRole="button"
+              accessibilityState={{ selected: activeTheme === null }}
+            >
+              <Text style={[styles.rowText, activeTheme === null && styles.rowTextActive]}>
+                {t('themeFilter.all')}
+              </Text>
+              {activeTheme === null && <Text style={styles.checkmark}>✓</Text>}
+            </TouchableOpacity>
+            {topLevelThemes().map((theme) => {
+              const children = childrenOf(theme.id);
+              const isExpanded = expandedThemeIds.has(theme.id);
+              return (
+                <View key={theme.id}>
+                  <View style={styles.row}>
+                    <TouchableOpacity
+                      style={styles.rowMain}
+                      onPress={() => onSelectTheme(theme.id)}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: activeTheme === theme.id }}
+                    >
+                      <Text
+                        style={[styles.rowText, activeTheme === theme.id && styles.rowTextActive]}
+                      >
+                        {t(theme.labelKey)}
+                      </Text>
+                      {activeTheme === theme.id && <Text style={styles.checkmark}>✓</Text>}
+                    </TouchableOpacity>
+                    {children.length > 0 && (
+                      <TouchableOpacity
+                        style={styles.chevronButton}
+                        onPress={() => toggleThemeExpanded(theme.id)}
+                        accessibilityRole="button"
+                        accessibilityState={{ expanded: isExpanded }}
+                        accessibilityLabel={t(
+                          isExpanded ? 'filterSheet.collapse' : 'filterSheet.expand',
+                        )}
+                      >
+                        <Text style={styles.chevron}>{isExpanded ? '▾' : '▸'}</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  {isExpanded &&
+                    children.map((child) => (
+                      <TouchableOpacity
+                        key={child.id}
+                        style={[styles.row, styles.rowChild]}
+                        onPress={() => onSelectTheme(child.id)}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: activeTheme === child.id }}
+                      >
+                        <Text
+                          style={[styles.rowText, activeTheme === child.id && styles.rowTextActive]}
+                        >
+                          {t(child.labelKey)}
+                        </Text>
+                        {activeTheme === child.id && <Text style={styles.checkmark}>✓</Text>}
+                      </TouchableOpacity>
+                    ))}
+                </View>
+              );
+            })}
           </ScrollView>
 
           <TouchableOpacity style={styles.doneButton} onPress={onClose} accessibilityRole="button">
@@ -314,6 +359,23 @@ function makeStyles(colors: ThemeColors) {
       paddingVertical: spacing.sm,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: colors.border,
+    },
+    rowMain: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    rowChild: {
+      paddingLeft: spacing.lg,
+    },
+    chevronButton: {
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs,
+    },
+    chevron: {
+      ...typography.body,
+      color: colors.textMuted,
     },
     rowText: {
       ...typography.body,

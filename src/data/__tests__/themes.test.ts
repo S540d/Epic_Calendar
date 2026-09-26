@@ -1,5 +1,5 @@
 import { ALL_EVENTS } from '@/data/events';
-import { THEMES, eventMatchesTheme, themeById } from '../themes';
+import { THEMES, childrenOf, eventMatchesTheme, themeById, topLevelThemes } from '../themes';
 
 describe('themes (theme filter, #226)', () => {
   it('every theme has a unique id', () => {
@@ -20,14 +20,38 @@ describe('themes (theme filter, #226)', () => {
   });
 
   it.each(THEMES.map((th) => [th.id, th] as const))(
-    '%s matches at least 3 events across at least 2 continents',
+    '%s matches at least 3 events',
     (_id, theme) => {
+      // Continent diversity is deliberately not required: themes are about a
+      // cross-cutting development (e.g. the history of medicine), not about
+      // geographic spread — many science-history events are legitimately
+      // tagged continent: 'global'.
       const matches = ALL_EVENTS.filter((ev) => eventMatchesTheme(ev, theme.id));
       expect(matches.length).toBeGreaterThanOrEqual(3);
-      const continents = new Set(matches.map((ev) => ev.continent));
-      expect(continents.size).toBeGreaterThanOrEqual(2);
     },
   );
+
+  it('every parentId references an existing theme', () => {
+    for (const th of THEMES) {
+      if (th.parentId) expect(themeById(th.parentId)).toBeDefined();
+    }
+  });
+
+  it("a parent theme matches a superset of each child's matches", () => {
+    for (const parent of topLevelThemes()) {
+      const children = childrenOf(parent.id);
+      if (children.length === 0) continue;
+      const parentMatches = new Set(
+        ALL_EVENTS.filter((ev) => eventMatchesTheme(ev, parent.id)).map((ev) => ev.id),
+      );
+      for (const child of children) {
+        const childMatches = ALL_EVENTS.filter((ev) => eventMatchesTheme(ev, child.id));
+        for (const ev of childMatches) {
+          expect(parentMatches.has(ev.id)).toBe(true);
+        }
+      }
+    }
+  });
 
   it('themeById resolves known ids and returns undefined for unknown ones', () => {
     expect(themeById('kolonialismus')?.id).toBe('kolonialismus');

@@ -3,7 +3,7 @@ import {
   tierRank,
   type TimelineEvent,
   type ZoomLevel,
-  type Continent,
+  type ContinentFilter,
 } from '@/data/schema';
 import { eventMatchesTheme } from '@/data/themes';
 import type { Category } from '@/theme/tokens';
@@ -200,7 +200,7 @@ export type VisibilityFilter = {
   endYear: number;
   zoomLevel: ZoomLevel;
   categories: Set<Category>;
-  continent: Continent;
+  continent: ContinentFilter;
   /** Highest importance rank to show (cumulative). Default 2 (= show all). */
   maxImportanceRank?: number;
   /** When set, only events with this exact `culture` value pass (#163 country/culture filter). */
@@ -215,7 +215,15 @@ export function filterVisible(events: TimelineEvent[], f: VisibilityFilter): Tim
   for (const ev of events) {
     if (!f.categories.has(ev.category)) continue;
     // A theme is cross-continent by design (#226) — see EventIndex.queryVisible.
-    if (!f.theme && ev.continent !== 'global' && ev.continent !== f.continent) continue;
+    // 'all' (the "Alle"/All continent tab) is likewise a wildcard: it bypasses
+    // the continent gate entirely instead of matching a specific continent.
+    if (
+      !f.theme &&
+      f.continent !== 'all' &&
+      ev.continent !== 'global' &&
+      ev.continent !== f.continent
+    )
+      continue;
     if (ev.minZoomLevel > f.zoomLevel) continue;
     if (!passesImportance(ev, maxImportanceRank)) continue;
     if (f.culture && ev.culture !== f.culture) continue;
@@ -250,7 +258,7 @@ export type LaneDataInput = {
   zoomLevel: ZoomLevel;
   /** Active lanes (categories), in render order. */
   lanes: Category[];
-  continent: Continent;
+  continent: ContinentFilter;
   /** Cap on rendered events per lane; excess is counted into `overflowCounts`. */
   maxEventsPerLane: number;
   /** Highest importance rank to show (cumulative). Default 2 (= show all). */
@@ -280,7 +288,7 @@ export type LaneDataInput = {
  */
 export function buildStableTracksByLane(
   lanes: Category[],
-  continent: Continent,
+  continent: ContinentFilter,
   maxImportanceRank: number | undefined,
   eventIndex: EventIndex,
   culture?: string | null,

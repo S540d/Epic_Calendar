@@ -78,6 +78,17 @@ describe('EventIndex.queryVisible matches filterVisible', () => {
     expect(sortedIds(index.queryVisible(f))).toEqual(sortedIds(filterVisible(events, f)));
   });
 
+  it('continent "all" bypasses the continent filter for every continent', () => {
+    const events = [
+      ev({ id: 'eu', startYear: 100, continent: 'europa' }),
+      ev({ id: 'as', startYear: 100, continent: 'asien' }),
+      ev({ id: 'gl', startYear: 100, continent: 'global' }),
+    ];
+    const f = { ...baseFilter, continent: 'all' as const };
+    const index = buildEventIndex(events);
+    expect(sortedIds(index.queryVisible(f))).toEqual(['as', 'eu', 'gl']);
+  });
+
   it('respects zoomLevel filter', () => {
     const events = [
       ev({ id: 'low', startYear: 100, minZoomLevel: 0 }),

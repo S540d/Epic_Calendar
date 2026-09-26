@@ -172,7 +172,9 @@
     "themes": "Themen",
     "done": "Fertig",
     "iconLabel": "Filter",
-    "iconLabelActive": "Filter, {{badge}} Kategorien aktiv"
+    "iconLabelActive": "Filter, {{badge}} Kategorien aktiv",
+    "expand": "Unterthemen anzeigen",
+    "collapse": "Unterthemen verbergen"
   },
   "cultureFilter": {
     "title": "{{continent}} filtern",
@@ -197,7 +199,13 @@
     "seefahrt": { "label": "Seefahrt & Entdeckungen" },
     "demokratie": { "label": "Demokratiebewegungen" },
     "aufklaerung": { "label": "Aufklärung & Wissenschaft" },
-    "kalter-krieg": { "label": "Kalter Krieg" }
+    "kalter-krieg": { "label": "Kalter Krieg" },
+    "mathematik": { "label": "Geschichte der Mathematik" },
+    "medizin": { "label": "Geschichte der Medizin" },
+    "physik": { "label": "Physik & Astronomie" },
+    "technologie": { "label": "Geschichte der Technologie" },
+    "pandemien": { "label": "Pandemien" },
+    "klima": { "label": "Klimageschichte" }
   },
   "axis": {
     "billion": "Mrd",

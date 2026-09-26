@@ -32,4 +32,13 @@ describe('ContinentTabBar (#163 culture filter wiring)', () => {
     );
     expect(getByLabelText(/Europa, gefiltert/)).toBeTruthy();
   });
+
+  it('renders an enabled "Alle" tab that selects all continents at once', async () => {
+    const onChange = jest.fn();
+    const { getByLabelText } = await render(
+      <ContinentTabBar active="europa" onChange={onChange} onPressActive={jest.fn()} />,
+    );
+    await fireEvent.press(getByLabelText('Alle'));
+    expect(onChange).toHaveBeenCalledWith('all');
+  });
 });
