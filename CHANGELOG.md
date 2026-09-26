@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Themen und Lernreisen filtern jetzt konsequent exklusiv:** Ein aktiviertes Thema ersetzt die aktiven Kategorien (statt sie nur zu ergänzen) durch genau die Kategorien seiner treffenden Ereignisse und löscht einen evtl. aktiven Kultur-Filter, der sonst — obwohl Themen kontinentübergreifend sind — trotzdem einzelne Treffer versteckt hätte. Eine Lernreise-Station aktiviert weiterhin genau den Kontinent und jetzt auch **nur noch** die Kategorie des Ziel-Ereignisses (statt sie zu den bisher aktiven zu addieren) — der „nähere Kontext" bleibt dadurch exakt Kategorie + Kontinent der aktuellen Station, ohne dass sich über mehrere Stationen hinweg immer mehr Kategorien ansammeln. Ein Kultur-Filter wird beim Sprung zu einem Such-/Lernreise-Ziel jetzt unabhängig vom Kontinentwechsel gelöscht (vorher blieb er bei gleichbleibendem Kontinent bestehen und konnte das Ziel-Ereignis verdecken).
+
 ### Added
 
 - **Kurzbeschreibungen für Lernreisen und Themen:** Unter „Erkunden" zeigte jede Lernreise-/Themen-Kachel bisher nur Titel + Meta-Badge (Stationen/Fortschritt bzw. Event-Anzahl) ohne erklärenden Text. Lernreisen nutzten dafür schon ein befülltes, aber bislang ungenutztes `descriptionKey`-Feld; Themen erhalten ein neues `descriptionKey`-Feld samt Übersetzungen (`theme.<id>.description`, DE+EN, für alle 12 Themen). `DiscoveryTile` rendert die Beschreibung jetzt als gedämpfte Zeile unterhalb des Titels.
