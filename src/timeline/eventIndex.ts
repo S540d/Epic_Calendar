@@ -79,7 +79,12 @@ export class EventIndex {
         // entirely while one is active, otherwise only the currently selected
         // continent's share of the theme's events would ever be visible.
         // 'all' (the "Alle" continent tab) is the same kind of wildcard.
-        if (!theme && continent !== 'all' && ev.continent !== 'global' && ev.continent !== continent)
+        if (
+          !theme &&
+          continent !== 'all' &&
+          ev.continent !== 'global' &&
+          ev.continent !== continent
+        )
           continue;
         if (ev.minZoomLevel > zoomLevel) continue;
         if (!passesImportance(ev, maxImportanceRank)) continue;

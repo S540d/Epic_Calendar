@@ -217,7 +217,12 @@ export function filterVisible(events: TimelineEvent[], f: VisibilityFilter): Tim
     // A theme is cross-continent by design (#226) — see EventIndex.queryVisible.
     // 'all' (the "Alle"/All continent tab) is likewise a wildcard: it bypasses
     // the continent gate entirely instead of matching a specific continent.
-    if (!f.theme && f.continent !== 'all' && ev.continent !== 'global' && ev.continent !== f.continent)
+    if (
+      !f.theme &&
+      f.continent !== 'all' &&
+      ev.continent !== 'global' &&
+      ev.continent !== f.continent
+    )
       continue;
     if (ev.minZoomLevel > f.zoomLevel) continue;
     if (!passesImportance(ev, maxImportanceRank)) continue;

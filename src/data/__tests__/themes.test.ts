@@ -37,7 +37,7 @@ describe('themes (theme filter, #226)', () => {
     }
   });
 
-  it('a parent theme matches a superset of each child\'s matches', () => {
+  it("a parent theme matches a superset of each child's matches", () => {
     for (const parent of topLevelThemes()) {
       const children = childrenOf(parent.id);
       if (children.length === 0) continue;

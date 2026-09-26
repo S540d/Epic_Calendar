@@ -21,7 +21,15 @@ type Props = {
 // 'all' shows every continent at once — the counterpart to real continent
 // tagging in the data (natur-wissenschaft.json no longer dumps everything
 // into 'global'; 'all' is how a viewer sees it all together again).
-const TABS: ContinentFilter[] = ['all', 'global', 'europa', 'asien', 'afrika', 'amerika', 'ozeanien'];
+const TABS: ContinentFilter[] = [
+  'all',
+  'global',
+  'europa',
+  'asien',
+  'afrika',
+  'amerika',
+  'ozeanien',
+];
 const ENABLED: ContinentFilter[] = ['all', 'global', 'europa', 'asien', 'afrika', 'amerika'];
 
 export function ContinentTabBar({ active, onChange, onPressActive, cultureFilterActive }: Props) {

@@ -224,7 +224,9 @@ export function FilterSheet({
                         onPress={() => toggleThemeExpanded(theme.id)}
                         accessibilityRole="button"
                         accessibilityState={{ expanded: isExpanded }}
-                        accessibilityLabel={t(isExpanded ? 'filterSheet.collapse' : 'filterSheet.expand')}
+                        accessibilityLabel={t(
+                          isExpanded ? 'filterSheet.collapse' : 'filterSheet.expand',
+                        )}
                       >
                         <Text style={styles.chevron}>{isExpanded ? '▾' : '▸'}</Text>
                       </TouchableOpacity>
