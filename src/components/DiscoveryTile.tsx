@@ -5,13 +5,17 @@ import { radii, spacing, typography } from '@/theme/tokens';
 import { useTheme, type ThemeColors } from '@/theme/ThemeContext';
 
 /**
- * Generic accordion node shared by the landing page's Lernreisen/Themen
- * sections. Mirrors `EpochOverviewScreen`'s `EpochTile`/`NavigationEpoch`
- * pattern (body tap toggles when there are children, otherwise triggers
- * `onPress`; a trailing button triggers `onPress` directly when there are
- * children) but with a plain text `meta` line instead of the epoch-specific
- * year range + duration badge — epochs keep their own richer tile/styles,
- * since that display doesn't generalize to journeys/themes.
+ * Generic accordion node powering the landing page's "Erkunden" section
+ * (Lernreisen/Themen/Eigener Filter), which mirrors "Zeitreise": a heading
+ * followed by top-level categories that expand exactly like the epoch tiles
+ * do. Mirrors `EpochOverviewScreen`'s `EpochTile`/`NavigationEpoch` pattern
+ * (body tap toggles when there are children, otherwise triggers `onPress`;
+ * a trailing button triggers `onPress` directly when there are children —
+ * omitted entirely when a node has children but no `onPress`, e.g. the
+ * "Lernreisen"/"Themen" wrapper nodes, which are pure toggles) but with a
+ * plain text `meta` line instead of the epoch-specific year range + duration
+ * badge — epochs keep their own richer tile/styles, since that display
+ * doesn't generalize to journeys/themes.
  */
 export type TileNode = {
   key: string;
@@ -81,7 +85,7 @@ export function DiscoveryTile({ node, level = 0, isExpanded = false, onToggle, i
           <Text style={[styles.tileMeta, isActive && styles.tileMetaActive]}>{node.meta}</Text>
         )}
       </Pressable>
-      {hasChildren ? (
+      {hasChildren && node.onPress ? (
         <Pressable
           style={({ pressed }) => [styles.jumpButton, pressed && styles.tilePressed]}
           onPress={node.onPress}
@@ -91,7 +95,7 @@ export function DiscoveryTile({ node, level = 0, isExpanded = false, onToggle, i
           <Text style={styles.jumpArrow}>→</Text>
         </Pressable>
       ) : (
-        <Text style={styles.tileArrow}>›</Text>
+        !hasChildren && <Text style={styles.tileArrow}>›</Text>
       )}
     </View>
   );

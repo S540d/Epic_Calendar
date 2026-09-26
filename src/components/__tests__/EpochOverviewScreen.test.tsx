@@ -45,26 +45,32 @@ async function setup(overrides?: {
   };
 }
 
-describe('EpochOverviewScreen — Lernreisen/Themen sections (Erkunden-redesign)', () => {
-  it('renders all three section titles (Zeitreise, Lernreisen, Themen) on one page', async () => {
+describe('EpochOverviewScreen — Erkunden mirrors Zeitreise (Lernreisen/Themen/Eigener Filter as level-0 categories)', () => {
+  it('renders Zeitreise and Erkunden as the only two section titles', async () => {
     const { getAllByText, getByText } = await setup();
     // "Zeitreise" appears twice: the page header and the section title above the epoch tiles.
     expect(getAllByText(de.epochNav.title)).toHaveLength(2);
-    expect(getByText(de.learning.sectionTitle)).toBeTruthy();
-    expect(getByText(de.themeSection.title)).toBeTruthy();
+    expect(getByText(de.explore.title)).toBeTruthy();
   });
 
-  it('renders a tile per learning journey', async () => {
-    const { getByLabelText } = await setup();
+  it('shows Lernreisen, Themen and Eigener Filter as collapsed top-level tiles under Erkunden', async () => {
+    const { getByLabelText, queryByLabelText } = await setup();
+    expect(getByLabelText(de.learning.sectionTitle)).toBeTruthy();
+    expect(getByLabelText(de.themeSection.title)).toBeTruthy();
+    expect(getByLabelText(de.filterSheet.setOwnFilters)).toBeTruthy();
+    // Individual journeys/themes are hidden until their parent tile is expanded.
+    expect(queryByLabelText(de.learning.journey['grosse-reise'].label)).toBeNull();
+    expect(queryByLabelText(de.theme.kolonialismus.label)).toBeNull();
+  });
+
+  it('tapping the "Lernreisen" tile body expands it to reveal every journey, alphabetically', async () => {
+    const { getByLabelText, getAllByRole } = await setup();
+    await fireEvent.press(getByLabelText(de.learning.sectionTitle));
     for (const journey of LEARNING_JOURNEYS) {
       expect(
         getByLabelText(de.learning.journey[journey.id as keyof typeof de.learning.journey].label),
       ).toBeTruthy();
     }
-  });
-
-  it('orders journey tiles alphabetically by their German label', async () => {
-    const { getAllByRole } = await setup();
     const labels = LEARNING_JOURNEYS.map(
       (j) => de.learning.journey[j.id as keyof typeof de.learning.journey].label,
     );
@@ -73,39 +79,52 @@ describe('EpochOverviewScreen — Lernreisen/Themen sections (Erkunden-redesign)
     expect(renderedOrder).toEqual([...labels].sort((a, b) => a.localeCompare(b, 'de')));
   });
 
-  it('tapping a journey tile calls onStartJourney with its id', async () => {
+  it('tapping the "Lernreisen" tile has no jump action (it only toggles, unlike a parent epoch)', async () => {
+    const { queryByLabelText } = await setup();
+    expect(
+      queryByLabelText(`${de.learning.sectionTitle} – ${de.epochNav.openTimeline}`),
+    ).toBeNull();
+  });
+
+  it('tapping an expanded journey tile calls onStartJourney with its id', async () => {
     const journey = LEARNING_JOURNEYS[0]!;
     const label = de.learning.journey[journey.id as keyof typeof de.learning.journey].label;
     const { getByLabelText, onStartJourney } = await setup();
+    await fireEvent.press(getByLabelText(de.learning.sectionTitle));
     await fireEvent.press(getByLabelText(label));
     expect(onStartJourney).toHaveBeenCalledWith(journey.id);
   });
 
   it('shows journey progress when a station index is stored', async () => {
     const journey = LEARNING_JOURNEYS[0]!;
-    const { getByText } = await setup({ journeyProgress: { [journey.id]: 1 } });
+    const { getByLabelText, getByText } = await setup({ journeyProgress: { [journey.id]: 1 } });
+    await fireEvent.press(getByLabelText(de.learning.sectionTitle));
     expect(getByText(new RegExp(de.learning.continue))).toBeTruthy();
   });
 
-  it('renders a tile per top-level theme, including ones with sub-themes', async () => {
+  it('tapping the "Themen" tile body expands it to reveal every top-level theme, alphabetically', async () => {
     const { getByLabelText } = await setup();
+    await fireEvent.press(getByLabelText(de.themeSection.title));
     expect(getByLabelText(de.theme.kolonialismus.label)).toBeTruthy();
     expect(getByLabelText(de.theme.aufklaerung.label)).toBeTruthy();
   });
 
-  it('tapping a leaf theme (no children) calls onSelectTheme directly', async () => {
+  it('tapping a leaf theme (no sub-themes) calls onSelectTheme directly', async () => {
     const { getByLabelText, onSelectTheme } = await setup();
+    await fireEvent.press(getByLabelText(de.themeSection.title));
     await fireEvent.press(getByLabelText(de.theme.kolonialismus.label));
     expect(onSelectTheme).toHaveBeenCalledWith('kolonialismus');
   });
 
   it('a theme with sub-themes is not expanded by default, and its sub-themes are hidden', async () => {
-    const { queryByLabelText } = await setup();
+    const { getByLabelText, queryByLabelText } = await setup();
+    await fireEvent.press(getByLabelText(de.themeSection.title));
     expect(queryByLabelText(de.theme.mathematik.label)).toBeNull();
   });
 
   it('tapping the body of a parent theme expands it to reveal its sub-themes, alphabetically', async () => {
     const { getByLabelText, queryByLabelText } = await setup();
+    await fireEvent.press(getByLabelText(de.themeSection.title));
     await fireEvent.press(getByLabelText(de.theme.aufklaerung.label));
     expect(getByLabelText(de.theme.mathematik.label)).toBeTruthy();
     expect(queryByLabelText(de.theme.klima.label)).toBeTruthy();
@@ -113,20 +132,19 @@ describe('EpochOverviewScreen — Lernreisen/Themen sections (Erkunden-redesign)
 
   it('the trailing jump action on a parent theme selects it directly without requiring expansion', async () => {
     const { getByLabelText, onSelectTheme } = await setup();
+    await fireEvent.press(getByLabelText(de.themeSection.title));
     await fireEvent.press(
       getByLabelText(`${de.theme.aufklaerung.label} – ${de.epochNav.openTimeline}`),
     );
     expect(onSelectTheme).toHaveBeenCalledWith('aufklaerung');
   });
 
-  it('renders three "Eigener Filter" tiles (one per section), all opening the same FilterSheet', async () => {
+  it('renders exactly one "Eigener Filter" tile, opening the FilterSheet', async () => {
     const { getAllByLabelText, onOpenFilters } = await setup();
     const tiles = getAllByLabelText(de.filterSheet.setOwnFilters);
-    expect(tiles).toHaveLength(3);
-    for (const tile of tiles) {
-      await fireEvent.press(tile);
-    }
-    expect(onOpenFilters).toHaveBeenCalledTimes(3);
+    expect(tiles).toHaveLength(1);
+    await fireEvent.press(tiles[0]!);
+    expect(onOpenFilters).toHaveBeenCalledTimes(1);
   });
 
   it('re-sorts journeys/themes when the app language changes', async () => {
@@ -135,6 +153,7 @@ describe('EpochOverviewScreen — Lernreisen/Themen sections (Erkunden-redesign)
     });
     try {
       const { getByLabelText } = await setup();
+      await fireEvent.press(getByLabelText(en.themeSection.title));
       expect(getByLabelText(en.theme.kolonialismus.label)).toBeTruthy();
     } finally {
       await act(async () => {

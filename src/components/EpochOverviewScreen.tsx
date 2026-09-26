@@ -198,8 +198,8 @@ export function EpochOverviewScreen({
     return render(NAVIGATION_EPOCHS, 0);
   }, [expandedKeys, handleEpochPress, handleToggle, colors]);
 
-  // "Eigener Filter" tile — same leaf node, rendered once per section (#212
-  // badge shown as its meta line, same text the old Explore-card meta used).
+  // "Eigener Filter" — leaf tile, sibling of Lernreisen/Themen under Erkunden
+  // (#212 badge shown as its meta line, same text the old Explore-card meta used).
   const ownFilterNode: TileNode = useMemo(
     () => ({
       key: 'own-filter',
@@ -212,8 +212,10 @@ export function EpochOverviewScreen({
     [t, filterBadgeLabel, onOpenFilters],
   );
 
-  // Lernreisen section — flat, no children, alphabetical in the active
-  // language.
+  // Lernreisen — flat, no children, alphabetical in the active language.
+  // Wrapped one level deeper (children of the "Lernreisen" node below) so
+  // Erkunden mirrors Zeitreise: a heading, then top-level categories that
+  // expand like "Menschheitsgeschichte" does.
   const journeyNodes: TileNode[] = useMemo(
     () =>
       sortByLabel(LEARNING_JOURNEYS, (j) => t(j.labelKey), i18n.language).map((journey) => {
@@ -272,12 +274,30 @@ export function EpochOverviewScreen({
     [t, i18n.language, buildThemeNode],
   );
 
-  const [expandedThemeKeys, setExpandedThemeKeys] = useState<ReadonlySet<string>>(() => new Set());
-  const toggleThemeExpanded = useCallback((key: string) => {
+  // Erkunden — mirrors the Zeitreise section exactly: one heading, then
+  // top-level categories (Lernreisen, Themen, Eigener Filter) at level 0.
+  // "Lernreisen"/"Themen" have no direct action of their own (no trailing
+  // "→" button, see DiscoveryTile) — tapping their body only expands them,
+  // exactly like a parent epoch such as "Menschheitsgeschichte". A theme
+  // with its own sub-themes (e.g. "Aufklärung & Wissenschaft") still gets
+  // the trailing action, since selecting it directly makes sense there.
+  const erkundenNodes: TileNode[] = useMemo(
+    () => [
+      { key: 'lernreisen', label: t('learning.sectionTitle'), children: journeyNodes },
+      { key: 'themen', label: t('themeSection.title'), children: themeNodes },
+      ownFilterNode,
+    ],
+    [t, journeyNodes, themeNodes, ownFilterNode],
+  );
+
+  const [expandedErkundenKeys, setExpandedErkundenKeys] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
+  const toggleErkundenExpanded = useCallback((key: string) => {
     if (Platform.OS !== 'web') {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     }
-    setExpandedThemeKeys((prev) => {
+    setExpandedErkundenKeys((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
@@ -285,9 +305,9 @@ export function EpochOverviewScreen({
     });
   }, []);
 
-  const themeTiles = useMemo(
-    () => flattenTiles(themeNodes, expandedThemeKeys),
-    [themeNodes, expandedThemeKeys],
+  const erkundenTiles = useMemo(
+    () => flattenTiles(erkundenNodes, expandedErkundenKeys),
+    [erkundenNodes, expandedErkundenKeys],
   );
 
   return (
@@ -335,26 +355,18 @@ export function EpochOverviewScreen({
         >
           <Text style={styles.fullTimelineText}>{t('epochNav.allTime')} →</Text>
         </Pressable>
-        <DiscoveryTile key="own-filter-zeitreise" node={ownFilterNode} />
 
-        <Text style={styles.sectionTitle}>{t('learning.sectionTitle')}</Text>
-        {journeyNodes.map((node) => (
-          <DiscoveryTile key={node.key} node={node} />
-        ))}
-        <DiscoveryTile key="own-filter-lernreisen" node={ownFilterNode} />
-
-        <Text style={styles.sectionTitle}>{t('themeSection.title')}</Text>
-        {themeTiles.map(({ node, level }) => (
+        <Text style={styles.sectionTitle}>{t('explore.title')}</Text>
+        {erkundenTiles.map(({ node, level }) => (
           <DiscoveryTile
             key={node.key}
             node={node}
             level={level}
-            isExpanded={expandedThemeKeys.has(node.key)}
-            onToggle={toggleThemeExpanded}
+            isExpanded={expandedErkundenKeys.has(node.key)}
+            onToggle={toggleErkundenExpanded}
             isActive={activeTheme === node.key}
           />
         ))}
-        <DiscoveryTile key="own-filter-themen" node={ownFilterNode} />
       </ScrollView>
     </SafeAreaView>
   );
