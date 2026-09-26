@@ -63,7 +63,6 @@ export function ExploreScreen({
             accessibilityLabel={t('filterSheet.title')}
             accessibilityHint={t('explore.filterHint')}
           >
-            <Text style={cardStyles.cardIcon}>🏷</Text>
             <Text style={cardStyles.cardTitle} numberOfLines={2}>
               {t('filterSheet.title')}
             </Text>
@@ -81,7 +80,6 @@ export function ExploreScreen({
             accessibilityLabel={t('learning.sectionTitle')}
             accessibilityHint={t('learning.sectionHint')}
           >
-            <Text style={cardStyles.cardIcon}>🗺</Text>
             <Text style={cardStyles.cardTitle} numberOfLines={2}>
               {t('learning.sectionTitle')}
             </Text>
@@ -97,7 +95,6 @@ export function ExploreScreen({
             accessibilityLabel={t('themeSection.title')}
             accessibilityHint={t('themeSection.hint')}
           >
-            <Text style={cardStyles.cardIcon}>🏛</Text>
             <Text style={cardStyles.cardTitle} numberOfLines={2}>
               {t('themeSection.title')}
             </Text>

@@ -18,8 +18,6 @@ export type LearningJourney = {
   labelKey: string;
   /** i18n key for the one-line description shown on the landing page. */
   descriptionKey: string;
-  /** Emoji shown on the journey card. */
-  icon: string;
   /**
    * Ordered event ids — the journey's narrative sequence. Normally
    * chronological; `learningJourneys.test.ts` enforces that every id resolves
@@ -33,7 +31,6 @@ export const LEARNING_JOURNEYS: readonly LearningJourney[] = [
     id: 'grosse-reise',
     labelKey: 'learning.journey.grosse-reise.label',
     descriptionKey: 'learning.journey.grosse-reise.description',
-    icon: '🌌',
     eventIds: [
       'geo-urknall',
       'geo-hadaikum',
@@ -58,7 +55,6 @@ export const LEARNING_JOURNEYS: readonly LearningJourney[] = [
     id: 'beruehmte-geschichten',
     labelKey: 'learning.journey.beruehmte-geschichten.label',
     descriptionKey: 'learning.journey.beruehmte-geschichten.description',
-    icon: '📖',
     // Every station here carries a `story` — this journey is the guided tour
     // through the anecdotes (#171 follow-up).
     eventIds: [
@@ -79,7 +75,6 @@ export const LEARNING_JOURNEYS: readonly LearningJourney[] = [
     id: 'erfindungen',
     labelKey: 'learning.journey.erfindungen.label',
     descriptionKey: 'learning.journey.erfindungen.description',
-    icon: '💡',
     eventIds: [
       'rad-erfindung',
       'papier-erfindung',

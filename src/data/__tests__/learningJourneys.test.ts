@@ -14,9 +14,8 @@ describe('learning journeys (Lernreise)', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('every journey has an icon and i18n keys derived from its id', () => {
+  it('every journey has i18n keys derived from its id', () => {
     for (const j of LEARNING_JOURNEYS) {
-      expect(j.icon.length).toBeGreaterThan(0);
       expect(j.labelKey).toBe(`learning.journey.${j.id}.label`);
       expect(j.descriptionKey).toBe(`learning.journey.${j.id}.description`);
     }
@@ -74,7 +73,6 @@ describe('learning journeys (Lernreise)', () => {
       id: 'test',
       labelKey: 'learning.journey.test.label',
       descriptionKey: 'learning.journey.test.description',
-      icon: '🧪',
       eventIds: ['b', 'a'],
     };
     const events = [
@@ -89,7 +87,6 @@ describe('learning journeys (Lernreise)', () => {
       id: 'test',
       labelKey: 'learning.journey.test.label',
       descriptionKey: 'learning.journey.test.description',
-      icon: '🧪',
       eventIds: ['a', 'gibt-es-nicht', 'b'],
     };
     const events = [

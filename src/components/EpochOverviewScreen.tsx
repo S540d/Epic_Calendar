@@ -237,7 +237,6 @@ export function EpochOverviewScreen({
           accessibilityLabel={t('explore.title')}
           accessibilityHint={t('explore.hint')}
         >
-          <Text style={styles.exploreCardIcon}>🧭</Text>
           <View style={styles.exploreCardText}>
             <Text style={styles.exploreCardTitle}>{t('explore.title')}</Text>
             <Text style={styles.exploreCardHint}>{t('explore.hint')}</Text>
@@ -461,9 +460,6 @@ function makeStyles(colors: ThemeColors) {
       padding: spacing.sm,
       marginBottom: spacing.md,
       gap: spacing.sm,
-    },
-    exploreCardIcon: {
-      fontSize: 28,
     },
     exploreCardText: {
       flex: 1,

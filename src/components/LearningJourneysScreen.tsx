@@ -62,7 +62,6 @@ export function LearningJourneysScreen({ onBack, onStartJourney, journeyProgress
                 accessibilityLabel={t(journey.labelKey)}
                 accessibilityHint={t(journey.descriptionKey)}
               >
-                <Text style={cardStyles.cardIcon}>{journey.icon}</Text>
                 <Text style={cardStyles.cardTitle} numberOfLines={2}>
                   {t(journey.labelKey)}
                 </Text>

@@ -33,10 +33,6 @@ export function makeCardGridStyles(colors: ThemeColors) {
       backgroundColor: colors.accent,
       borderColor: colors.accent,
     },
-    cardIcon: {
-      fontSize: 22,
-      marginBottom: spacing.xs,
-    },
     cardTitle: {
       ...typography.body,
       color: colors.textPrimary,
