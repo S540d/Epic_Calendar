@@ -79,6 +79,11 @@
       }
     }
   },
+  "explore": {
+    "title": "Erkunden",
+    "hint": "Filtern, Lernreisen oder Themen entdecken",
+    "filterHint": "Kategorien, Kontinent und Kultur frei einstellen"
+  },
   "event": {
     "unknownDate": "Datum unbekannt",
     "present": "heute",
@@ -136,6 +141,9 @@
     "dinosaurs": "Dinos",
     "firstHominids": "Erste Hominide",
     "quietEon": "Milliarden Jahre nur Mikroben"
+  },
+  "nav": {
+    "back": "Zurück"
   },
   "minimap": {
     "label": "Zeitstrahl-Übersicht",

@@ -15,9 +15,6 @@ import type { TFunction } from 'i18next';
 import type { NavigationEpoch } from '@/timeline/epoch';
 import { NAVIGATION_EPOCHS } from '@/timeline/epoch';
 import { formatEventYear } from '@/timeline/formatYear';
-import { LEARNING_JOURNEYS } from '@/data/learningJourneys';
-import { ALL_EVENTS } from '@/data/events';
-import { THEMES, eventMatchesTheme } from '@/data/themes';
 import { radii, spacing, typography } from '@/theme/tokens';
 import { useTheme, type ThemeColors } from '@/theme/ThemeContext';
 
@@ -30,14 +27,9 @@ type Props = {
   /** #212: shown as a badge on the filter icon when the selection deviates
    *  from the default (quantitative, e.g. "3/6"). */
   filterBadgeLabel?: string;
-  /** Starts (or resumes) a guided learning journey by id. */
-  onStartJourney: (journeyId: string) => void;
-  /** Persisted station index per journey id; absent = not started yet. */
-  journeyProgress?: Record<string, number>;
-  /** Activates (or, if already active, clears) the cross-continent theme filter (#226) and leaves the overview. */
-  onSelectTheme: (themeId: string) => void;
-  /** Currently active theme filter id, if any — highlights the matching chip. */
-  activeTheme?: string | null;
+  /** Opens the Explore screen (#239) — filtering, learning journeys and
+   *  themes now live there instead of competing for space on this page. */
+  onOpenExplore: () => void;
 };
 
 function formatDuration(startYear: number, endYear: number, t: TFunction): string {
@@ -136,24 +128,11 @@ export function EpochOverviewScreen({
   onOpenSearch,
   onOpenFilters,
   filterBadgeLabel,
-  onStartJourney,
-  journeyProgress,
-  onSelectTheme,
-  activeTheme,
+  onOpenExplore,
 }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
-
-  // Event count per theme (#226) — cheap over 605 events, so computed inline
-  // rather than threaded through props like journey progress.
-  const themeEventCounts = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const theme of THEMES) {
-      counts.set(theme.id, ALL_EVENTS.filter((ev) => eventMatchesTheme(ev, theme.id)).length);
-    }
-    return counts;
-  }, []);
 
   const handleEpochPress = useCallback(
     (startYear: number, endYear: number) => {
@@ -251,73 +230,19 @@ export function EpochOverviewScreen({
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.sectionTitle}>{t('learning.sectionTitle')}</Text>
-        <Text style={styles.sectionHint}>{t('learning.sectionHint')}</Text>
-        <View style={styles.cardGrid}>
-          {LEARNING_JOURNEYS.map((journey) => {
-            const stepCount = journey.eventIds.length;
-            const stored = journeyProgress?.[journey.id];
-            const inProgress = stored !== undefined && stored > 0;
-            return (
-              <Pressable
-                key={journey.id}
-                style={({ pressed }) => [styles.card, pressed && styles.tilePressed]}
-                onPress={() => onStartJourney(journey.id)}
-                accessibilityRole="button"
-                accessibilityLabel={t(journey.labelKey)}
-                accessibilityHint={t(journey.descriptionKey)}
-              >
-                <Text style={styles.cardIcon}>{journey.icon}</Text>
-                <Text style={styles.cardTitle} numberOfLines={2}>
-                  {t(journey.labelKey)}
-                </Text>
-                <Text style={styles.cardMeta} numberOfLines={1}>
-                  {inProgress
-                    ? `${t('learning.continue')} · ${t('learning.progress', {
-                        current: Math.min(stored + 1, stepCount),
-                        total: stepCount,
-                      })}`
-                    : t('learning.stations', { count: stepCount })}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        <Text style={styles.sectionTitle}>{t('themeSection.title')}</Text>
-        <Text style={styles.sectionHint}>{t('themeSection.hint')}</Text>
-        <View style={styles.cardGrid}>
-          {THEMES.map((theme) => {
-            const isActive = activeTheme === theme.id;
-            return (
-              <Pressable
-                key={theme.id}
-                style={({ pressed }) => [
-                  styles.card,
-                  isActive && styles.cardActive,
-                  pressed && styles.tilePressed,
-                ]}
-                onPress={() => onSelectTheme(theme.id)}
-                accessibilityRole="button"
-                accessibilityState={{ selected: isActive }}
-                accessibilityLabel={t(theme.labelKey)}
-                accessibilityHint={t('themeSection.eventCount', {
-                  count: themeEventCounts.get(theme.id) ?? 0,
-                })}
-              >
-                <Text
-                  style={[styles.cardTitle, isActive && styles.cardTitleActive]}
-                  numberOfLines={2}
-                >
-                  {t(theme.labelKey)}
-                </Text>
-                <Text style={[styles.cardMeta, isActive && styles.cardMetaActive]}>
-                  {t('themeSection.eventCount', { count: themeEventCounts.get(theme.id) ?? 0 })}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        <Pressable
+          style={({ pressed }) => [styles.exploreCard, pressed && styles.tilePressed]}
+          onPress={onOpenExplore}
+          accessibilityRole="button"
+          accessibilityLabel={t('explore.title')}
+          accessibilityHint={t('explore.hint')}
+        >
+          <View style={styles.exploreCardText}>
+            <Text style={styles.exploreCardTitle}>{t('explore.title')}</Text>
+            <Text style={styles.exploreCardHint}>{t('explore.hint')}</Text>
+          </View>
+          <Text style={styles.exploreCardArrow}>›</Text>
+        </Pressable>
 
         <Text style={styles.sectionTitle}>{t('epochNav.title')}</Text>
         {tiles}
@@ -513,11 +438,6 @@ function makeStyles(colors: ThemeColors) {
       marginTop: spacing.md,
       marginBottom: spacing.xs,
     },
-    sectionHint: {
-      ...typography.caption,
-      color: colors.textMuted,
-      marginBottom: spacing.sm,
-    },
     tilePressed: {
       opacity: 0.75,
     },
@@ -526,47 +446,36 @@ function makeStyles(colors: ThemeColors) {
       color: colors.textMuted,
       marginLeft: spacing.sm,
     },
-    // Shared 2-column card grid for both the learning-journey and theme
-    // sections (#236) — one visual language instead of a full-width journey
-    // card next to a single-line theme chip row.
-    cardGrid: {
+    // Single entry point into ExploreScreen (#239), replacing the two card
+    // grids (learning journeys, themes) that used to compete for space here
+    // (#236). Styled like `fullTimelineButton` below, but with an icon +
+    // two-line text block instead of a single centered label.
+    exploreCard: {
       flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: spacing.sm,
-      marginBottom: spacing.sm,
-    },
-    card: {
-      flexBasis: '47%',
-      flexGrow: 1,
+      alignItems: 'center',
       backgroundColor: colors.bgElevated,
       borderRadius: radii.sm,
       borderWidth: 1,
-      borderColor: colors.border,
-      padding: spacing.sm,
-    },
-    cardActive: {
-      backgroundColor: colors.accent,
       borderColor: colors.accent,
+      padding: spacing.sm,
+      marginBottom: spacing.md,
+      gap: spacing.sm,
     },
-    cardIcon: {
-      fontSize: 22,
-      marginBottom: spacing.xs,
+    exploreCardText: {
+      flex: 1,
     },
-    cardTitle: {
-      ...typography.body,
+    exploreCardTitle: {
+      ...typography.subtitle,
       color: colors.textPrimary,
-      fontWeight: '700',
     },
-    cardTitleActive: {
-      color: colors.bg,
-    },
-    cardMeta: {
+    exploreCardHint: {
       ...typography.caption,
       color: colors.textMuted,
-      marginTop: spacing.xs,
+      marginTop: 2,
     },
-    cardMetaActive: {
-      color: colors.bg,
+    exploreCardArrow: {
+      fontSize: 22,
+      color: colors.accent,
     },
   });
 }
