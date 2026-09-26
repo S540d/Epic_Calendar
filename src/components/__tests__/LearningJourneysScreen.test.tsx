@@ -5,18 +5,18 @@ import { LearningJourneysScreen } from '../LearningJourneysScreen';
 import { LEARNING_JOURNEYS } from '@/data/learningJourneys';
 import de from '@/i18n/de.json';
 
-function setup() {
+async function setup() {
   const onBack = jest.fn();
   const onStartJourney = jest.fn();
-  const utils = render(
+  const utils = await render(
     <LearningJourneysScreen onBack={onBack} onStartJourney={onStartJourney} journeyProgress={{}} />,
   );
   return { ...utils, onBack, onStartJourney };
 }
 
 describe('LearningJourneysScreen (#239, moved from EpochOverviewScreen)', () => {
-  it('renders a card per curated journey', () => {
-    const { getByLabelText } = setup();
+  it('renders a card per curated journey', async () => {
+    const { getByLabelText } = await setup();
     for (const journey of LEARNING_JOURNEYS) {
       expect(
         getByLabelText(de.learning.journey[journey.id as keyof typeof de.learning.journey].label),
@@ -24,17 +24,17 @@ describe('LearningJourneysScreen (#239, moved from EpochOverviewScreen)', () => 
     }
   });
 
-  it('tapping a journey card calls onStartJourney with its id', () => {
+  it('tapping a journey card calls onStartJourney with its id', async () => {
     const journey = LEARNING_JOURNEYS[0]!;
     const label = de.learning.journey[journey.id as keyof typeof de.learning.journey].label;
-    const { getByLabelText, onStartJourney } = setup();
-    fireEvent.press(getByLabelText(label));
+    const { getByLabelText, onStartJourney } = await setup();
+    await fireEvent.press(getByLabelText(label));
     expect(onStartJourney).toHaveBeenCalledWith(journey.id);
   });
 
-  it('tapping the back button calls onBack', () => {
-    const { getByLabelText, onBack } = setup();
-    fireEvent.press(getByLabelText(de.nav.back));
+  it('tapping the back button calls onBack', async () => {
+    const { getByLabelText, onBack } = await setup();
+    await fireEvent.press(getByLabelText(de.nav.back));
     expect(onBack).toHaveBeenCalled();
   });
 });

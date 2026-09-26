@@ -10,12 +10,12 @@ import { TimelineChrome } from '../TimelineChrome';
  */
 const HELLENISM = { startYear: -320, endYear: -280 };
 
-function renderChrome(overrides: Partial<React.ComponentProps<typeof TimelineChrome>> = {}) {
+async function renderChrome(overrides: Partial<React.ComponentProps<typeof TimelineChrome>> = {}) {
   const zoomToFit = jest.fn();
   const handleMinimapJump = jest.fn();
   const span = HELLENISM;
   const canvasWidth = 800;
-  const utils = render(
+  const utils = await render(
     <TimelineChrome
       jsOffsetX={span.startYear}
       jsPixelsPerUnit={canvasWidth / (span.endYear - span.startYear)}
@@ -30,8 +30,8 @@ function renderChrome(overrides: Partial<React.ComponentProps<typeof TimelineChr
 }
 
 describe('TimelineChrome (#213)', () => {
-  it('renders the header stack: minimap, epoch band and its ancestor prefix', () => {
-    const { getByLabelText, getAllByLabelText } = renderChrome();
+  it('renders the header stack: minimap, epoch band and its ancestor prefix', async () => {
+    const { getByLabelText, getAllByLabelText } = await renderChrome();
 
     // Ancestor prefix chip on EpochBand (levels above what the band itself shows).
     expect(getByLabelText('Menschheitsgeschichte')).toBeTruthy();
@@ -42,23 +42,23 @@ describe('TimelineChrome (#213)', () => {
     expect(getByLabelText(/Zeitstrahl/i)).toBeTruthy();
   });
 
-  it('there is no separate breadcrumb row with a zoom-level pill', () => {
-    const { queryByText } = renderChrome();
+  it('there is no separate breadcrumb row with a zoom-level pill', async () => {
+    const { queryByText } = await renderChrome();
     // Former internal LOD naming ("Jahre" for zoomLevel 4) must not leak into the UI.
     expect(queryByText('Jahre')).toBeNull();
   });
 
-  it('zooms to the tapped ancestor rather than the current viewport', () => {
-    const { getByLabelText, zoomToFit } = renderChrome();
+  it('zooms to the tapped ancestor rather than the current viewport', async () => {
+    const { getByLabelText, zoomToFit } = await renderChrome();
 
-    fireEvent.press(getByLabelText('Antike'));
+    await fireEvent.press(getByLabelText('Antike'));
 
     expect(zoomToFit).toHaveBeenCalledTimes(1);
     expect(zoomToFit).toHaveBeenCalledWith(-800, 600);
   });
 
-  it('shows no ancestor prefix when zoomed all the way out', () => {
-    const { queryByLabelText } = renderChrome({
+  it('shows no ancestor prefix when zoomed all the way out', async () => {
+    const { queryByLabelText } = await renderChrome({
       jsOffsetX: -13_800_000_000,
       jsPixelsPerUnit: 800 / (2026 - -13_800_000_000),
     });
@@ -69,8 +69,8 @@ describe('TimelineChrome (#213)', () => {
     expect(queryByLabelText('Antike')).toBeNull();
   });
 
-  it('hides the FPS pill unless explicitly enabled', () => {
-    const { queryByText } = renderChrome();
+  it('hides the FPS pill unless explicitly enabled', async () => {
+    const { queryByText } = await renderChrome();
     expect(queryByText(/FPS$/)).toBeNull();
   });
 });
