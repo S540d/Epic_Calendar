@@ -79,6 +79,11 @@
       }
     }
   },
+  "explore": {
+    "title": "Explore",
+    "hint": "Filter, browse learning journeys or discover themes",
+    "filterHint": "Freely set categories, continent and culture"
+  },
   "event": {
     "unknownDate": "Date unknown",
     "present": "present",
@@ -136,6 +141,9 @@
     "dinosaurs": "Dinosaurs",
     "firstHominids": "First Hominids",
     "quietEon": "Billions of years: just microbes"
+  },
+  "nav": {
+    "back": "Back"
   },
   "minimap": {
     "label": "Timeline overview",

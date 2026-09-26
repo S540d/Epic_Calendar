@@ -6,10 +6,13 @@ import { useTranslation } from 'react-i18next';
 import { ContinentTabBar } from '@/components/ContinentTabBar';
 import { DetailLevelPrompt } from '@/components/DetailLevelPrompt';
 import { EpochOverviewScreen } from '@/components/EpochOverviewScreen';
+import { ExploreScreen } from '@/components/ExploreScreen';
 import { FilterSheet } from '@/components/FilterSheet';
 import { LearningJourneyBar } from '@/components/LearningJourneyBar';
+import { LearningJourneysScreen } from '@/components/LearningJourneysScreen';
 import { SearchModal } from '@/components/SearchModal';
 import { SettingsModal } from '@/components/SettingsModal';
+import { ThemesScreen } from '@/components/ThemesScreen';
 import { TimelineView, type TimelineViewHandle } from '@/components/TimelineView';
 import {
   TimelineZoomCluster,
@@ -46,6 +49,12 @@ export function TimelineScreen() {
   const [showFpsMonitor, setShowFpsMonitor] = usePersistedState<boolean>('showFpsMonitor', false);
   const [selected, setSelected] = useState<TimelineEvent | null>(null);
   const [showOverview, setShowOverview] = useState(true);
+  // Which page of the landing area is shown while `showOverview` is true
+  // (#239): the epoch tiles ('main'), the three discovery entry points
+  // ('explore'), or one of their full-width destination screens.
+  const [overviewScreen, setOverviewScreen] = useState<'main' | 'explore' | 'journeys' | 'themes'>(
+    'main',
+  );
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
   const [detailPromptSeen, setDetailPromptSeen] = usePersistedState<boolean>(
@@ -99,11 +108,21 @@ export function TimelineScreen() {
 
   const handleHomePress = useCallback(() => {
     setShowOverview(true);
+    setOverviewScreen('main');
     setEpochRange(undefined);
     // Going home leaves the journey mode but keeps its progress, so it can be
     // resumed from the landing page.
     setActiveJourneyId(null);
   }, []);
+
+  // #239: three discovery entry points reached via ExploreScreen, each with
+  // its own full-width destination screen instead of competing for space on
+  // the landing page (#236's deferred "vorgeschaltete Seite" idea).
+  const handleOpenExplore = useCallback(() => setOverviewScreen('explore'), []);
+  const handleBackToMain = useCallback(() => setOverviewScreen('main'), []);
+  const handleOpenJourneysScreen = useCallback(() => setOverviewScreen('journeys'), []);
+  const handleOpenThemesScreen = useCallback(() => setOverviewScreen('themes'), []);
+  const handleBackToExplore = useCallback(() => setOverviewScreen('explore'), []);
 
   const handleOpenSettings = useCallback(() => setSettingsVisible(true), []);
   const handleCloseSettings = useCallback(() => setSettingsVisible(false), []);
@@ -324,18 +343,40 @@ export function TimelineScreen() {
     <>
       {showOverview ? (
         <>
-          <EpochOverviewScreen
-            onSelectEpoch={handleSelectEpoch}
-            onShowFullTimeline={handleShowFullTimeline}
-            onOpenSettings={handleOpenSettings}
-            onOpenSearch={handleOpenSearch}
-            onOpenFilters={handleOpenFilterSheet}
-            filterBadgeLabel={showFilterBadge ? filterBadgeLabel : undefined}
-            onStartJourney={handleStartJourney}
-            journeyProgress={journeyProgress}
-            onSelectTheme={handleSelectThemeFromOverview}
-            activeTheme={themeFilter}
-          />
+          {overviewScreen === 'main' && (
+            <EpochOverviewScreen
+              onSelectEpoch={handleSelectEpoch}
+              onShowFullTimeline={handleShowFullTimeline}
+              onOpenSettings={handleOpenSettings}
+              onOpenSearch={handleOpenSearch}
+              onOpenFilters={handleOpenFilterSheet}
+              filterBadgeLabel={showFilterBadge ? filterBadgeLabel : undefined}
+              onOpenExplore={handleOpenExplore}
+            />
+          )}
+          {overviewScreen === 'explore' && (
+            <ExploreScreen
+              onBack={handleBackToMain}
+              onOpenFilters={handleOpenFilterSheet}
+              filterBadgeLabel={showFilterBadge ? filterBadgeLabel : undefined}
+              onOpenJourneys={handleOpenJourneysScreen}
+              onOpenThemes={handleOpenThemesScreen}
+            />
+          )}
+          {overviewScreen === 'journeys' && (
+            <LearningJourneysScreen
+              onBack={handleBackToExplore}
+              onStartJourney={handleStartJourney}
+              journeyProgress={journeyProgress}
+            />
+          )}
+          {overviewScreen === 'themes' && (
+            <ThemesScreen
+              onBack={handleBackToExplore}
+              onSelectTheme={handleSelectThemeFromOverview}
+              activeTheme={themeFilter}
+            />
+          )}
           <DetailLevelPrompt
             visible={!detailPromptSeen}
             onOpenSettings={handleOpenSettingsFromPrompt}

@@ -2,17 +2,15 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import '@/i18n';
 import { EpochOverviewScreen } from '../EpochOverviewScreen';
-import { THEMES } from '@/data/themes';
 import de from '@/i18n/de.json';
 
-async function setup(overrides?: { activeTheme?: string | null }) {
+async function setup() {
   const onSelectEpoch = jest.fn();
   const onShowFullTimeline = jest.fn();
   const onOpenSettings = jest.fn();
   const onOpenSearch = jest.fn();
   const onOpenFilters = jest.fn();
-  const onStartJourney = jest.fn();
-  const onSelectTheme = jest.fn();
+  const onOpenExplore = jest.fn();
   const utils = await render(
     <EpochOverviewScreen
       onSelectEpoch={onSelectEpoch}
@@ -20,36 +18,24 @@ async function setup(overrides?: { activeTheme?: string | null }) {
       onOpenSettings={onOpenSettings}
       onOpenSearch={onOpenSearch}
       onOpenFilters={onOpenFilters}
-      onStartJourney={onStartJourney}
-      onSelectTheme={onSelectTheme}
-      activeTheme={overrides?.activeTheme ?? null}
+      onOpenExplore={onOpenExplore}
     />,
   );
-  return { ...utils, onSelectTheme };
+  return { ...utils, onOpenExplore };
 }
 
-describe('EpochOverviewScreen — theme chips (#226)', () => {
-  it('renders the theme section with a chip per curated theme', async () => {
-    const { getByText } = await setup();
-    expect(getByText(de.themeSection.title)).toBeTruthy();
-    for (const theme of THEMES) {
-      expect(getByText(de.theme[theme.id as keyof typeof de.theme].label)).toBeTruthy();
-    }
+describe('EpochOverviewScreen — Explore entry point (#239)', () => {
+  it('renders a single Explore card instead of the learning-journey/theme grids', async () => {
+    const { getByLabelText, queryByText } = await setup();
+    expect(getByLabelText(de.explore.title)).toBeTruthy();
+    // Journeys/themes moved to their own screens behind the Explore card.
+    expect(queryByText(de.themeSection.title)).toBeNull();
+    expect(queryByText(de.learning.sectionTitle)).toBeNull();
   });
 
-  it('tapping a theme chip calls onSelectTheme with its id', async () => {
-    const theme = THEMES[0]!;
-    const label = de.theme[theme.id as keyof typeof de.theme].label;
-    const { getByLabelText, onSelectTheme } = await setup();
-    await fireEvent.press(getByLabelText(label));
-    expect(onSelectTheme).toHaveBeenCalledWith(theme.id);
-  });
-
-  it('tapping the already-active theme chip still calls onSelectTheme (toggle handled by the caller)', async () => {
-    const theme = THEMES[0]!;
-    const label = de.theme[theme.id as keyof typeof de.theme].label;
-    const { getByLabelText, onSelectTheme } = await setup({ activeTheme: theme.id });
-    await fireEvent.press(getByLabelText(label));
-    expect(onSelectTheme).toHaveBeenCalledWith(theme.id);
+  it('tapping the Explore card calls onOpenExplore', async () => {
+    const { getByLabelText, onOpenExplore } = await setup();
+    await fireEvent.press(getByLabelText(de.explore.title));
+    expect(onOpenExplore).toHaveBeenCalled();
   });
 });
