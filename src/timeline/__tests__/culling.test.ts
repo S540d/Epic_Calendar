@@ -388,11 +388,40 @@ describe('timeline/culling.computeLaneData', () => {
       continent: 'europa',
       maxEventsPerLane: 2,
     });
-    // visibleByLane stays uncapped (used for overflow accounting).
-    expect(result.visibleByLane.get('zivilisation')).toHaveLength(3);
+    // overflowCounts is based on the uncapped count...
     expect(result.overflowCounts.get('zivilisation')).toBe(1);
-    // Tracks only for the capped set.
+    // ...but visibleByLane itself is capped, and in lockstep with tracksByLane
+    // (#258: these used to be capped independently and could disagree, leaving
+    // some rendered events with no track entry).
+    expect(result.visibleByLane.get('zivilisation')).toHaveLength(2);
     expect(result.tracksByLane.get('zivilisation')?.size).toBe(2);
+    for (const event of result.visibleByLane.get('zivilisation') ?? []) {
+      expect(result.tracksByLane.get('zivilisation')?.get(event.id)).toBeDefined();
+    }
+  });
+
+  it('keeps visibleByLane and tracksByLane in the same capped set with stableTracksByLane too (#258)', () => {
+    // 5 non-overlapping events sharing a lane, cap at 3.
+    const events = Array.from({ length: 5 }, (_, i) =>
+      ev({ id: `e${i}`, startYear: i * 100, endYear: i * 100 + 10 }),
+    );
+    const stableTracksByLane = new Map([['zivilisation', assignTracks(events)]] as const);
+    const result = computeLaneData({
+      events,
+      startYear: -100,
+      endYear: 1000,
+      zoomLevel: 4,
+      lanes: ['zivilisation'],
+      continent: 'europa',
+      maxEventsPerLane: 3,
+      stableTracksByLane,
+    });
+    const visible = result.visibleByLane.get('zivilisation') ?? [];
+    expect(visible).toHaveLength(3);
+    expect(result.tracksByLane.get('zivilisation')?.size).toBe(3);
+    for (const event of visible) {
+      expect(result.tracksByLane.get('zivilisation')?.get(event.id)).toBeDefined();
+    }
   });
 
   it('only includes the requested lanes', () => {
