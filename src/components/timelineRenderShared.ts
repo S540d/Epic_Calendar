@@ -55,7 +55,7 @@ export function computeLabelVisibleIds(
     const byTrack = new Map<number, TimelineEvent[]>();
     for (const ev of events) {
       const t = trackMap?.get(ev.id);
-      if (t === undefined) continue; // event beyond MAX_EVENTS_PER_LANE cap — no bar rendered
+      if (t === undefined) continue; // not in the capped visibleByLane/tracksByLane set (#258) — no bar rendered
       if (!byTrack.has(t)) byTrack.set(t, []);
       byTrack.get(t)!.push(ev);
     }
