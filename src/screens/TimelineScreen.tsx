@@ -58,7 +58,6 @@ export function TimelineScreen() {
     }
     return set;
   }, [themeFilter]);
-  const activeCategories = themeCategories ?? new Set<Category>(persistedCategories);
   const [filterSheetVisible, setFilterSheetVisible] = useState(false);
   const [detailLevel, setDetailLevel] = usePersistedState<ImportanceLevel>('detailLevel', 'detail');
   const [showFpsMonitor, setShowFpsMonitor] = usePersistedState<boolean>('showFpsMonitor', false);
@@ -78,6 +77,24 @@ export function TimelineScreen() {
     'learningJourneyProgress',
     {},
   );
+  // Leaving the timeline for the landing page also leaves the journey mode.
+  const isJourneyActive = activeJourneyId !== null && !showOverview;
+  // Session-only nudge set by `focusEvent` (search jumps, journey stations) so
+  // the jump target's category is visible without permanently mutating
+  // `persistedCategories` — the same class of bug the theme filter had before
+  // it was fixed to derive `themeCategories` instead of merging into storage.
+  // During a journey it's the *only* visible category (a growing union of
+  // every category a prior station happened to touch would defeat the
+  // "near context" purpose); otherwise it's additive on top of the user's
+  // actual selection.
+  const [focusCategory, setFocusCategory] = useState<Category | null>(null);
+  const activeCategories = useMemo(() => {
+    if (themeCategories) return themeCategories;
+    if (isJourneyActive && focusCategory) return new Set<Category>([focusCategory]);
+    const set = new Set<Category>(persistedCategories);
+    if (focusCategory) set.add(focusCategory);
+    return set;
+  }, [themeCategories, isJourneyActive, focusCategory, persistedCategories]);
   const [epochRange, setEpochRange] = useState<{ startYear: number; endYear: number } | undefined>(
     undefined,
   );
@@ -97,6 +114,10 @@ export function TimelineScreen() {
   const zoomClusterRef = useRef<TimelineZoomClusterHandle>(null);
 
   const toggleCategory = (cat: Category) => {
+    // Manual edit takes precedence over a lingering focus nudge — otherwise
+    // unchecking a category the user just jumped to would appear to do
+    // nothing.
+    setFocusCategory(null);
     setPersistedCategories((prev) => {
       const set = new Set(prev);
       if (set.has(cat)) set.delete(cat);
@@ -121,6 +142,7 @@ export function TimelineScreen() {
     // Going home leaves the journey mode but keeps its progress, so it can be
     // resumed from the landing page.
     setActiveJourneyId(null);
+    setFocusCategory(null);
   }, []);
 
   const handleOpenSettings = useCallback(() => setSettingsVisible(true), []);
@@ -229,18 +251,15 @@ export function TimelineScreen() {
   // target is actually visible under the current filters, leaves the overview,
   // and triggers the zoom-to-fit jump in TimelineView. Shared by search (#146 A)
   // and the guided learning journey — the latter passes `openDetail: false`
-  // because its own bar shows the station content, and `exclusiveCategory: true`
-  // so the journey's "near context" is exactly the station's category (not a
-  // growing union of every category a prior station happened to touch).
+  // because its own bar shows the station content. `focusCategory` (not
+  // `persistedCategories`, see the state's own comment above) makes the
+  // target's category visible for this session only; exclusivity during a
+  // journey (station category is the *only* one shown) falls out of
+  // `isJourneyActive` in the `activeCategories` memo, so this doesn't need
+  // its own exclusivity flag.
   const focusEvent = useCallback(
-    (event: TimelineEvent, openDetail: boolean, exclusiveCategory = false) => {
-      setPersistedCategories((prev) =>
-        exclusiveCategory
-          ? [event.category]
-          : prev.includes(event.category)
-            ? prev
-            : [...prev, event.category],
-      );
+    (event: TimelineEvent, openDetail: boolean) => {
+      setFocusCategory(event.category);
       // On 'all' the target is already visible on every continent — switching
       // away would only narrow the view, so skip the continent change there.
       if (continent !== 'all' && event.continent !== 'global') {
@@ -257,7 +276,7 @@ export function TimelineScreen() {
       jumpRequestIdRef.current += 1;
       setJumpToEvent({ event, requestId: jumpRequestIdRef.current, openDetail });
     },
-    [continent, setContinent, setPersistedCategories],
+    [continent, setContinent],
   );
 
   const handleSearchSelectEvent = useCallback(
@@ -299,7 +318,7 @@ export function TimelineScreen() {
       setActiveJourneyId(journeyId);
       setShowOverview(false);
       const target = steps[index];
-      if (target) focusEvent(target, false, true);
+      if (target) focusEvent(target, false);
     },
     [journeyProgress, focusEvent],
   );
@@ -312,7 +331,7 @@ export function TimelineScreen() {
       const clamped = Math.max(0, Math.min(next, journeySteps.length - 1));
       setJourneyProgress((prev) => ({ ...prev, [activeJourneyId]: clamped }));
       const target = journeySteps[clamped];
-      if (target) focusEvent(target, false, true);
+      if (target) focusEvent(target, false);
     },
     [activeJourneyId, journeySteps, setJourneyProgress, focusEvent],
   );
@@ -337,10 +356,8 @@ export function TimelineScreen() {
       });
     }
     setActiveJourneyId(null);
+    setFocusCategory(null);
   }, [activeJourneyId, journeyStep, journeySteps.length, setJourneyProgress]);
-
-  // Leaving the timeline for the landing page also leaves the journey mode.
-  const isJourneyActive = activeJourneyId !== null && !showOverview;
 
   // #212: the filter icon's badge is quantitative ("n/m") and only shown when
   // the selection deviates from the default — otherwise it would be
