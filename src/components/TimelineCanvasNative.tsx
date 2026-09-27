@@ -24,7 +24,6 @@ import type { LineageConnector, TrackMap } from '@/timeline/culling';
 import {
   LABEL_MAX_WIDTH,
   LABEL_MIN_BAR_PX,
-  MAX_EVENTS_PER_LANE,
   POPOVER_MAX_HEIGHT,
   POPOVER_MAX_WIDTH,
   laneHeightForTracks,
@@ -145,8 +144,9 @@ export const TimelineCanvasNative = forwardRef<View, Props>(function TimelineCan
               {lanes.map((cat, idx) => {
                 const laneTop = laneTops[idx] ?? 0;
                 const laneH = laneHeightForTracks(laneTrackCounts.get(cat) ?? 1);
-                // Clip to MAX_EVENTS_PER_LANE; excess is shown as badge in lane label.
-                const events = (visibleByLane.get(cat) ?? []).slice(0, MAX_EVENTS_PER_LANE);
+                // visibleByLane is already capped at MAX_EVENTS_PER_LANE, consistent
+                // with tracksByLane (#258); excess is shown as badge in lane label.
+                const events = visibleByLane.get(cat) ?? [];
                 const trackMap = tracksByLane.get(cat);
                 const connectors = connectorsByLane.get(cat) ?? [];
                 return (
@@ -178,11 +178,12 @@ export const TimelineCanvasNative = forwardRef<View, Props>(function TimelineCan
                       );
                     })}
                     {events.map((ev) => {
+                      const trackIdx = trackMap?.get(ev.id);
+                      if (trackIdx === undefined) return null; // beyond MAX_EVENTS_PER_LANE cap
                       const startT = yearToT(ev.startYear);
                       const endT = yearToT(ev.endYear ?? ev.startYear);
                       const x = (startT - jsOffsetX) * jsPixelsPerUnit;
                       const w = Math.max(2, (endT - startT) * jsPixelsPerUnit);
-                      const trackIdx = trackMap?.get(ev.id) ?? 0;
                       const barY = laneTop + LANE_PADDING_V + trackIdx * TRACK_HEIGHT + 4;
                       const barH = TRACK_HEIGHT - 8;
                       return (
@@ -218,8 +219,9 @@ export const TimelineCanvasNative = forwardRef<View, Props>(function TimelineCan
             <View style={StyleSheet.absoluteFill} pointerEvents="none">
               {lanes.map((cat, idx) => {
                 const laneTop = laneTops[idx] ?? 0;
-                // Cap to match the Skia bar-drawing loop so labels only appear over real bars.
-                const events = (visibleByLane.get(cat) ?? []).slice(0, MAX_EVENTS_PER_LANE);
+                // visibleByLane is already capped, matching the Skia bar-drawing loop
+                // so labels only appear over real bars.
+                const events = visibleByLane.get(cat) ?? [];
                 const trackMap = tracksByLane.get(cat);
                 const lblSize = eventLabelFontSize(zoomLevel);
                 const maxLines = eventLabelMaxLines(zoomLevel);
@@ -232,7 +234,8 @@ export const TimelineCanvasNative = forwardRef<View, Props>(function TimelineCan
                     const x = (startT - jsOffsetX) * jsPixelsPerUnit;
                     const w = Math.max(2, (endT - startT) * jsPixelsPerUnit);
                     if (x + w < 0 || x > canvasWidth) return null;
-                    const trackIdx = trackMap?.get(ev.id) ?? 0;
+                    const trackIdx = trackMap?.get(ev.id);
+                    if (trackIdx === undefined) return null; // beyond MAX_EVENTS_PER_LANE cap
                     const barY = laneTop + LANE_PADDING_V + trackIdx * TRACK_HEIGHT + 4;
                     const barH = TRACK_HEIGHT - 8;
                     const labelTop = maxLines === 1 ? barY + barH / 2 - lblSize / 2 : barY + 4;

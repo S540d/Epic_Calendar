@@ -240,9 +240,13 @@ export function filterVisible(events: TimelineEvent[], f: VisibilityFilter): Tim
 
 /** Per-lane visibility, overflow and track data for one viewport. */
 export type LaneData = {
-  /** Events overlapping the viewport, per lane (uncapped). */
+  /**
+   * Events overlapping the viewport, per lane — capped at `maxEventsPerLane`,
+   * the same capped set `tracksByLane` assigns rows for (#258: the two used
+   * to be capped independently and could disagree).
+   */
   visibleByLane: Map<Category, TimelineEvent[]>;
-  /** Events hidden per lane because the lane exceeds `maxEventsPerLane`. */
+  /** Events hidden per lane because the lane exceeds `maxEventsPerLane` (based on the uncapped count). */
   overflowCounts: Map<Category, number>;
   /** Track assignment per lane, computed on the capped event set. */
   tracksByLane: Map<Category, TrackMap>;
@@ -345,7 +349,6 @@ export function computeLaneData(input: LaneDataInput): LaneData {
       theme,
     };
     const visible = eventIndex ? eventIndex.queryVisible(query) : filterVisible(events, query);
-    visibleByLane.set(cat, visible);
     if (visible.length > maxEventsPerLane) {
       overflowCounts.set(cat, visible.length - maxEventsPerLane);
     }
@@ -362,6 +365,10 @@ export function computeLaneData(input: LaneDataInput): LaneData {
           (a, b) => (stableTracks.get(a.id) ?? Infinity) - (stableTracks.get(b.id) ?? Infinity),
         );
       const capped = sortedByGlobalTrack.slice(0, maxEventsPerLane);
+      // visibleByLane and tracksByLane MUST cover the same capped set — the
+      // renderers zip them by event id and drop anything without a track
+      // entry, so a mismatch here would silently reintroduce #258.
+      visibleByLane.set(cat, capped);
 
       // Remap global track numbers to a dense 0..k range for rendering, so a
       // lane with e.g. only rows {3, 7} visible in this viewport still renders
@@ -385,6 +392,7 @@ export function computeLaneData(input: LaneDataInput): LaneData {
     } else {
       // Fallback: viewport-local track assignment (legacy behavior, still used by tests).
       const capped = visible.slice(0, maxEventsPerLane);
+      visibleByLane.set(cat, capped);
       const tracks = assignTracks(capped);
       tracksByLane.set(cat, tracks);
       connectorsByLane.set(cat, computeLineageConnectors(capped, tracks));

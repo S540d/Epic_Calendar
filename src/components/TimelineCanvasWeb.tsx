@@ -24,7 +24,6 @@ import type { LineageConnector, TrackMap } from '@/timeline/culling';
 import {
   LABEL_MAX_WIDTH,
   LABEL_MIN_BAR_PX,
-  MAX_EVENTS_PER_LANE,
   MIN_HIT_PX,
   laneHeightForTracks,
   timelineStyles as styles,
@@ -188,8 +187,9 @@ export const TimelineCanvasWeb = forwardRef<View, Props>(function TimelineCanvas
               {lanes.map((cat, idx) => {
                 const laneTop = laneTops[idx] ?? 0;
                 const laneH = laneHeightForTracks(laneTrackCounts.get(cat) ?? 1);
-                // Clip to MAX_EVENTS_PER_LANE; excess is shown as badge in lane label.
-                const events = (visibleByLane.get(cat) ?? []).slice(0, MAX_EVENTS_PER_LANE);
+                // visibleByLane is already capped at MAX_EVENTS_PER_LANE, consistent
+                // with tracksByLane (#258); excess is shown as badge in lane label.
+                const events = visibleByLane.get(cat) ?? [];
                 const trackMap = tracksByLane.get(cat);
                 const connectors = connectorsByLane.get(cat) ?? [];
                 const lblSize = eventLabelFontSize(zoomLevel);
@@ -234,12 +234,13 @@ export const TimelineCanvasWeb = forwardRef<View, Props>(function TimelineCanvas
                       );
                     })}
                     {events.map((ev) => {
+                      const trackIdx = trackMap?.get(ev.id);
+                      if (trackIdx === undefined) return null; // beyond MAX_EVENTS_PER_LANE cap
                       const startT = yearToT(ev.startYear);
                       const endT = yearToT(ev.endYear ?? ev.startYear);
                       // Viewport-relative: bar at 0 = left edge of the visible area.
                       const x = (startT - jsOffsetX) * WEB_PPU;
                       const w = Math.max(2, (endT - startT) * WEB_PPU);
-                      const trackIdx = trackMap?.get(ev.id) ?? 0;
                       const barTop = laneTop + LANE_PADDING_V + trackIdx * TRACK_HEIGHT + 4;
                       const barHeight = TRACK_HEIGHT - 8;
 
