@@ -21,6 +21,8 @@ export type Theme = {
   id: string;
   /** i18n key for the theme's display name. */
   labelKey: string;
+  /** i18n key for the one-line description shown on the landing page. */
+  descriptionKey: string;
   /**
    * Underlying `TimelineEvent.tags` values this theme matches. An event
    * qualifies if it carries at least one of these tags.
@@ -40,31 +42,37 @@ export const THEMES: readonly Theme[] = [
   {
     id: 'voelkerwanderungen',
     labelKey: 'theme.voelkerwanderungen.label',
+    descriptionKey: 'theme.voelkerwanderungen.description',
     tagIds: ['migration', 'besiedlung'],
   },
   {
     id: 'kolonialismus',
     labelKey: 'theme.kolonialismus.label',
+    descriptionKey: 'theme.kolonialismus.description',
     tagIds: ['kolonialismus'],
   },
   {
     id: 'seefahrt',
     labelKey: 'theme.seefahrt.label',
+    descriptionKey: 'theme.seefahrt.description',
     tagIds: ['seefahrt', 'entdeckung'],
   },
   {
     id: 'demokratie',
     labelKey: 'theme.demokratie.label',
+    descriptionKey: 'theme.demokratie.description',
     tagIds: ['demokratie'],
   },
   {
     id: 'aufklaerung',
     labelKey: 'theme.aufklaerung.label',
+    descriptionKey: 'theme.aufklaerung.description',
     tagIds: ['aufklärung'],
   },
   {
     id: 'kalter-krieg',
     labelKey: 'theme.kalter-krieg.label',
+    descriptionKey: 'theme.kalter-krieg.description',
     tagIds: ['kalter-krieg'],
   },
   // Sub-themes of "Aufklärung & Wissenschaft" — first batch of a growing set
@@ -73,36 +81,42 @@ export const THEMES: readonly Theme[] = [
   {
     id: 'mathematik',
     labelKey: 'theme.mathematik.label',
+    descriptionKey: 'theme.mathematik.description',
     parentId: 'aufklaerung',
     tagIds: ['mathematik'],
   },
   {
     id: 'medizin',
     labelKey: 'theme.medizin.label',
+    descriptionKey: 'theme.medizin.description',
     parentId: 'aufklaerung',
     tagIds: ['medizin'],
   },
   {
     id: 'physik',
     labelKey: 'theme.physik.label',
+    descriptionKey: 'theme.physik.description',
     parentId: 'aufklaerung',
     tagIds: ['physik', 'astronomie'],
   },
   {
     id: 'technologie',
     labelKey: 'theme.technologie.label',
+    descriptionKey: 'theme.technologie.description',
     parentId: 'aufklaerung',
     tagIds: ['technologie'],
   },
   {
     id: 'pandemien',
     labelKey: 'theme.pandemien.label',
+    descriptionKey: 'theme.pandemien.description',
     parentId: 'aufklaerung',
     tagIds: ['pandemie'],
   },
   {
     id: 'klima',
     labelKey: 'theme.klima.label',
+    descriptionKey: 'theme.klima.description',
     parentId: 'aufklaerung',
     tagIds: ['klima'],
   },

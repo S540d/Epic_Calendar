@@ -22,6 +22,8 @@ export type TileNode = {
   key: string;
   label: string;
   color?: string;
+  /** Short one-line explanation shown under the label (e.g. a journey's or theme's blurb). */
+  description?: string;
   meta?: string;
   children?: readonly TileNode[];
   onPress?: () => void;
@@ -83,6 +85,7 @@ export function DiscoveryTile({ node, level = 0, isExpanded = false, onToggle, i
           {hasChildren && <Text style={styles.chevron}>{isExpanded ? '▾' : '▸'}</Text>}
           <Text style={[styles.tileName, isActive && styles.tileNameActive]}>{node.label}</Text>
         </View>
+        {node.description && <Text style={styles.tileDescription}>{node.description}</Text>}
         {node.meta && (
           <View style={[styles.metaBadge, { borderColor: color }]}>
             <Text style={[styles.metaBadgeText, { color }]}>{node.meta}</Text>
@@ -156,6 +159,11 @@ function makeDiscoveryTileStyles(colors: ThemeColors) {
     },
     tileNameActive: {
       color: colors.accent,
+    },
+    tileDescription: {
+      fontSize: 12,
+      color: colors.textMuted,
+      marginTop: 2,
     },
     metaBadge: {
       alignSelf: 'flex-start',

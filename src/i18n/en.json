@@ -190,18 +190,54 @@
     "eventCount": "{{count}} events"
   },
   "theme": {
-    "voelkerwanderungen": { "label": "Migrations & Settlement" },
-    "kolonialismus": { "label": "Colonialism & Conquest" },
-    "seefahrt": { "label": "Seafaring & Exploration" },
-    "demokratie": { "label": "Democracy Movements" },
-    "aufklaerung": { "label": "Enlightenment & Science" },
-    "kalter-krieg": { "label": "Cold War" },
-    "mathematik": { "label": "History of Mathematics" },
-    "medizin": { "label": "History of Medicine" },
-    "physik": { "label": "Physics & Astronomy" },
-    "technologie": { "label": "History of Technology" },
-    "pandemien": { "label": "Pandemics" },
-    "klima": { "label": "Climate History" }
+    "voelkerwanderungen": {
+      "label": "Migrations & Settlement",
+      "description": "How peoples moved, settled and mixed across the continents."
+    },
+    "kolonialismus": {
+      "label": "Colonialism & Conquest",
+      "description": "Conquest, colonial rule and the movements that resisted it."
+    },
+    "seefahrt": {
+      "label": "Seafaring & Exploration",
+      "description": "Voyages, sea routes and the explorers who opened them up."
+    },
+    "demokratie": {
+      "label": "Democracy Movements",
+      "description": "Revolutions, constitutions and the fight for self-government."
+    },
+    "aufklaerung": {
+      "label": "Enlightenment & Science",
+      "description": "Reason, discovery and the ideas that reshaped how we think."
+    },
+    "kalter-krieg": {
+      "label": "Cold War",
+      "description": "The decades-long standoff between East and West."
+    },
+    "mathematik": {
+      "label": "History of Mathematics",
+      "description": "From counting and geometry to the foundations of modern math."
+    },
+    "medizin": {
+      "label": "History of Medicine",
+      "description": "Discoveries and breakthroughs that reshaped healing and health."
+    },
+    "physik": {
+      "label": "Physics & Astronomy",
+      "description": "Milestones in understanding matter, motion and the cosmos."
+    },
+    "technologie": {
+      "label": "History of Technology",
+      "description": "Inventions and tools that changed how people live and work."
+    },
+    "pandemien": {
+      "label": "Pandemics",
+      "description": "Outbreaks that shaped societies — and the fight against them."
+    },
+    "klima": {
+      "label": "Climate History",
+      "description": "How the climate has shifted, and how we came to understand it."
+    }
   },
   "axis": {
     "billion": "Bn",

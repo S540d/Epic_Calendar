@@ -190,18 +190,54 @@
     "eventCount": "{{count}} Ereignisse"
   },
   "theme": {
-    "voelkerwanderungen": { "label": "Völkerwanderungen & Besiedlung" },
-    "kolonialismus": { "label": "Kolonialismus & Eroberung" },
-    "seefahrt": { "label": "Seefahrt & Entdeckungen" },
-    "demokratie": { "label": "Demokratiebewegungen" },
-    "aufklaerung": { "label": "Aufklärung & Wissenschaft" },
-    "kalter-krieg": { "label": "Kalter Krieg" },
-    "mathematik": { "label": "Geschichte der Mathematik" },
-    "medizin": { "label": "Geschichte der Medizin" },
-    "physik": { "label": "Physik & Astronomie" },
-    "technologie": { "label": "Geschichte der Technologie" },
-    "pandemien": { "label": "Pandemien" },
-    "klima": { "label": "Klimageschichte" }
+    "voelkerwanderungen": {
+      "label": "Völkerwanderungen & Besiedlung",
+      "description": "Wie Völker wanderten, sich ansiedelten und über Kontinente hinweg vermischten."
+    },
+    "kolonialismus": {
+      "label": "Kolonialismus & Eroberung",
+      "description": "Eroberung, Kolonialherrschaft und der Widerstand dagegen."
+    },
+    "seefahrt": {
+      "label": "Seefahrt & Entdeckungen",
+      "description": "Seewege, Expeditionen und die Entdecker, die sie erschlossen."
+    },
+    "demokratie": {
+      "label": "Demokratiebewegungen",
+      "description": "Revolutionen, Verfassungen und der Kampf um Selbstbestimmung."
+    },
+    "aufklaerung": {
+      "label": "Aufklärung & Wissenschaft",
+      "description": "Vernunft, Entdeckungen und die Ideen, die unser Denken veränderten."
+    },
+    "kalter-krieg": {
+      "label": "Kalter Krieg",
+      "description": "Der jahrzehntelange Konflikt zwischen Ost und West."
+    },
+    "mathematik": {
+      "label": "Geschichte der Mathematik",
+      "description": "Vom Zählen und der Geometrie bis zu den Grundlagen moderner Mathematik."
+    },
+    "medizin": {
+      "label": "Geschichte der Medizin",
+      "description": "Entdeckungen und Durchbrüche, die Heilkunde und Gesundheit veränderten."
+    },
+    "physik": {
+      "label": "Physik & Astronomie",
+      "description": "Meilensteine im Verständnis von Materie, Bewegung und Kosmos."
+    },
+    "technologie": {
+      "label": "Geschichte der Technologie",
+      "description": "Erfindungen und Werkzeuge, die Leben und Arbeiten der Menschen veränderten."
+    },
+    "pandemien": {
+      "label": "Pandemien",
+      "description": "Ausbrüche, die Gesellschaften prägten – und der Kampf dagegen."
+    },
+    "klima": {
+      "label": "Klimageschichte",
+      "description": "Wie sich das Klima wandelte und wie wir es zu verstehen lernten."
+    }
   },
   "axis": {
     "billion": "Mrd",

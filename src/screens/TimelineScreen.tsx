@@ -34,7 +34,6 @@ export function TimelineScreen() {
     'activeCategories',
     [...DEFAULT_CATEGORIES],
   );
-  const activeCategories = new Set<Category>(persistedCategories);
 
   const [continent, setContinent] = usePersistedState<ContinentFilter>(
     'selectedContinent',
@@ -44,6 +43,21 @@ export function TimelineScreen() {
   // Cross-continent theme filter (#226) — unlike cultureFilter, not scoped to
   // a continent, so it survives continent switches.
   const [themeFilter, setThemeFilter] = useState<string | null>(null);
+
+  // A theme's own event set decides which lanes are relevant while it's
+  // active — categories the theme has no events in (e.g. "Nationen" for
+  // "Aufklärung & Wissenschaft") stay hidden instead of cluttering the
+  // canvas. Derived, not merged into `persistedCategories`: clearing the
+  // theme must fall back to exactly what the user had selected before,
+  // without permanently mutating their stored category preference.
+  const themeCategories = useMemo(() => {
+    if (!themeFilter) return null;
+    const set = new Set<Category>();
+    for (const ev of ALL_EVENTS) {
+      if (eventMatchesTheme(ev, themeFilter)) set.add(ev.category);
+    }
+    return set;
+  }, [themeFilter]);
   const [filterSheetVisible, setFilterSheetVisible] = useState(false);
   const [detailLevel, setDetailLevel] = usePersistedState<ImportanceLevel>('detailLevel', 'detail');
   const [showFpsMonitor, setShowFpsMonitor] = usePersistedState<boolean>('showFpsMonitor', false);
@@ -63,6 +77,24 @@ export function TimelineScreen() {
     'learningJourneyProgress',
     {},
   );
+  // Leaving the timeline for the landing page also leaves the journey mode.
+  const isJourneyActive = activeJourneyId !== null && !showOverview;
+  // Session-only nudge set by `focusEvent` (search jumps, journey stations) so
+  // the jump target's category is visible without permanently mutating
+  // `persistedCategories` — the same class of bug the theme filter had before
+  // it was fixed to derive `themeCategories` instead of merging into storage.
+  // During a journey it's the *only* visible category (a growing union of
+  // every category a prior station happened to touch would defeat the
+  // "near context" purpose); otherwise it's additive on top of the user's
+  // actual selection.
+  const [focusCategory, setFocusCategory] = useState<Category | null>(null);
+  const activeCategories = useMemo(() => {
+    if (themeCategories) return themeCategories;
+    if (isJourneyActive && focusCategory) return new Set<Category>([focusCategory]);
+    const set = new Set<Category>(persistedCategories);
+    if (focusCategory) set.add(focusCategory);
+    return set;
+  }, [themeCategories, isJourneyActive, focusCategory, persistedCategories]);
   const [epochRange, setEpochRange] = useState<{ startYear: number; endYear: number } | undefined>(
     undefined,
   );
@@ -82,6 +114,10 @@ export function TimelineScreen() {
   const zoomClusterRef = useRef<TimelineZoomClusterHandle>(null);
 
   const toggleCategory = (cat: Category) => {
+    // Manual edit takes precedence over a lingering focus nudge — otherwise
+    // unchecking a category the user just jumped to would appear to do
+    // nothing.
+    setFocusCategory(null);
     setPersistedCategories((prev) => {
       const set = new Set(prev);
       if (set.has(cat)) set.delete(cat);
@@ -106,6 +142,7 @@ export function TimelineScreen() {
     // Going home leaves the journey mode but keeps its progress, so it can be
     // resumed from the landing page.
     setActiveJourneyId(null);
+    setFocusCategory(null);
   }, []);
 
   const handleOpenSettings = useCallback(() => setSettingsVisible(true), []);
@@ -126,38 +163,43 @@ export function TimelineScreen() {
   // continent tab, #163) and the new explicit filter icon both open the same
   // FilterSheet — the tab gesture is kept as a shortcut, not the only way in.
   const handleOpenFilterSheet = useCallback(() => setFilterSheetVisible(true), []);
-  const handleCloseFilterSheet = useCallback(() => setFilterSheetVisible(false), []);
+  // Opened from the landing page, closing the sheet must also leave the
+  // overview — otherwise a category/culture change (which only updates
+  // state, unlike selecting a theme) never becomes visible to the user.
+  // Opened from within the timeline itself, showOverview is already false.
+  const handleCloseFilterSheet = useCallback(() => {
+    setFilterSheetVisible(false);
+    setShowOverview(false);
+  }, []);
 
-  // Activating a theme (#226, #236 follow-up) needs two things the plain
-  // `setThemeFilter` never did: the matching events' categories must be
-  // active (otherwise a category the user has switched off hides them), and
-  // the viewport must zoom to fit their full year range — otherwise a theme
-  // with events spread across zoom levels only ever shows whichever slice
-  // happens to be in view. Cross-continent by design, so this scans all
-  // events rather than the current continent's slice.
-  const applyThemeSelection = useCallback(
-    (themeId: string) => {
-      const matching = ALL_EVENTS.filter((ev) => eventMatchesTheme(ev, themeId));
-      if (matching.length > 0) {
-        setPersistedCategories((prev) => {
-          const set = new Set(prev);
-          for (const ev of matching) set.add(ev.category);
-          return Array.from(set);
-        });
-        let startYear = Infinity;
-        let endYear = -Infinity;
-        for (const ev of matching) {
-          if (ev.startYear < startYear) startYear = ev.startYear;
-          const evEnd = ev.endYear ?? ev.startYear;
-          if (evEnd > endYear) endYear = evEnd;
-        }
-        setEpochRange({ startYear, endYear });
+  // Activating a theme (#226, #236 follow-up) needs the viewport to zoom to
+  // fit the matching events' full year range — otherwise a theme with events
+  // spread across zoom levels only ever shows whichever slice happens to be
+  // in view. Cross-continent by design, so this scans all events rather than
+  // the current continent's slice. Which categories are visible is handled
+  // separately by `themeCategories` above — a theme shows exactly its own
+  // categories, not the union with whatever was active before.
+  const applyThemeSelection = useCallback((themeId: string) => {
+    const matching = ALL_EVENTS.filter((ev) => eventMatchesTheme(ev, themeId));
+    if (matching.length > 0) {
+      let startYear = Infinity;
+      let endYear = -Infinity;
+      for (const ev of matching) {
+        if (ev.startYear < startYear) startYear = ev.startYear;
+        const evEnd = ev.endYear ?? ev.startYear;
+        if (evEnd > endYear) endYear = evEnd;
       }
-      setThemeFilter(themeId);
-      setShowOverview(false);
-    },
-    [setPersistedCategories],
-  );
+      setEpochRange({ startYear, endYear });
+    }
+    // A leftover culture filter is continent-scoped and would silently hide
+    // theme matches outside that culture — the theme filter itself already
+    // bypasses the continent gate (see eventIndex.queryVisible), so this
+    // only needs to drop the culture restriction to guarantee every matching
+    // event is actually visible.
+    setCultureFilter(null);
+    setThemeFilter(themeId);
+    setShowOverview(false);
+  }, []);
 
   // Landing-page theme chips are a second entry point into the theme filter,
   // alongside the FilterSheet. Tapping the active theme again clears it
@@ -209,18 +251,23 @@ export function TimelineScreen() {
   // target is actually visible under the current filters, leaves the overview,
   // and triggers the zoom-to-fit jump in TimelineView. Shared by search (#146 A)
   // and the guided learning journey — the latter passes `openDetail: false`
-  // because its own bar shows the station content.
+  // because its own bar shows the station content. `focusCategory` (not
+  // `persistedCategories`, see the state's own comment above) makes the
+  // target's category visible for this session only; exclusivity during a
+  // journey (station category is the *only* one shown) falls out of
+  // `isJourneyActive` in the `activeCategories` memo, so this doesn't need
+  // its own exclusivity flag.
   const focusEvent = useCallback(
     (event: TimelineEvent, openDetail: boolean) => {
-      setPersistedCategories((prev) =>
-        prev.includes(event.category) ? prev : [...prev, event.category],
-      );
+      setFocusCategory(event.category);
       // On 'all' the target is already visible on every continent — switching
       // away would only narrow the view, so skip the continent change there.
       if (continent !== 'all' && event.continent !== 'global') {
         setContinent(event.continent);
-        setCultureFilter(null);
       }
+      // The culture filter can hide the jump target even on the right
+      // continent — always clear it to guarantee the target is visible.
+      setCultureFilter(null);
       // The theme filter is cross-continent, so it can hide the jump target on
       // any continent — always clear it to guarantee the target is visible.
       setThemeFilter(null);
@@ -229,7 +276,7 @@ export function TimelineScreen() {
       jumpRequestIdRef.current += 1;
       setJumpToEvent({ event, requestId: jumpRequestIdRef.current, openDetail });
     },
-    [continent, setContinent, setPersistedCategories],
+    [continent, setContinent],
   );
 
   const handleSearchSelectEvent = useCallback(
@@ -309,10 +356,8 @@ export function TimelineScreen() {
       });
     }
     setActiveJourneyId(null);
+    setFocusCategory(null);
   }, [activeJourneyId, journeyStep, journeySteps.length, setJourneyProgress]);
-
-  // Leaving the timeline for the landing page also leaves the journey mode.
-  const isJourneyActive = activeJourneyId !== null && !showOverview;
 
   // #212: the filter icon's badge is quantitative ("n/m") and only shown when
   // the selection deviates from the default — otherwise it would be
