@@ -176,6 +176,10 @@
       "klima-umwelt": {
         "label": "Climate and environment",
         "description": "From the end of the Ice Age through Krakatoa and the ozone hole to the Paris Agreement."
+      },
+      "wiege-der-menschheit": {
+        "label": "Africa – cradle of humankind",
+        "description": "From the Laetoli footprints through Lucy to the dispersal of Homo sapiens – the beginnings of humanity in Africa."
       }
     }
   },
