@@ -1171,5 +1171,79 @@
     "minZoomLevel": 2,
     "lineageId": "japan-edo-kultur",
     "tags": ["dichtung", "haiku", "basho", "japan"]
+  },
+  {
+    "id": "as-kultur-genji",
+    "title": "Genji Monogatari",
+    "description": "Murasaki Shikibu schreibt um 1008 am Heian-Hof die „Geschichte vom Prinzen Genji“, oft als erster Roman der Weltliteratur bezeichnet.",
+    "startYear": 1008,
+    "category": "kultur",
+    "continent": "asien",
+    "culture": "japanisch",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "tags": ["literatur", "japan", "roman"]
+  },
+  {
+    "id": "as-kultur-tang-dichtung",
+    "title": "Tang-Dichtung",
+    "description": "Li Bai und Du Fu prägen im 8. Jahrhundert die klassische chinesische Lyrik, die bis heute auswendig gelernt wird.",
+    "startYear": 700,
+    "endYear": 800,
+    "category": "kultur",
+    "continent": "asien",
+    "culture": "chinesisch",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "tags": ["literatur", "china", "lyrik"]
+  },
+  {
+    "id": "as-kultur-kabuki",
+    "title": "Kabuki",
+    "description": "Zu Beginn der Edo-Zeit entsteht um 1603 das Kabuki-Theater, zunächst mit Izumo no Okuni, später ausschließlich von Männern gespielt.",
+    "startYear": 1603,
+    "category": "kultur",
+    "continent": "asien",
+    "culture": "japanisch",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "tags": ["theater", "japan", "edo"]
+  },
+  {
+    "id": "as-kultur-taj-mahal",
+    "title": "Taj Mahal",
+    "description": "Großmogul Shah Jahan lässt 1632–1653 in Agra das Mausoleum für seine Frau Mumtaz Mahal errichten – ein Höhepunkt der Mogul-Architektur.",
+    "startYear": 1632,
+    "endYear": 1653,
+    "category": "kultur",
+    "continent": "asien",
+    "culture": "indisch",
+    "importance": "core",
+    "minZoomLevel": 3,
+    "tags": ["architektur", "indien", "mogul"]
+  },
+  {
+    "id": "as-kultur-peking-oper",
+    "title": "Peking-Oper",
+    "description": "1790 kommen anhuische Theatertruppen zum Geburtstag des Qianlong-Kaisers nach Peking – Ausgangspunkt der Peking-Oper.",
+    "startYear": 1790,
+    "category": "kultur",
+    "continent": "asien",
+    "culture": "chinesisch",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "tags": ["theater", "china", "oper"]
+  },
+  {
+    "id": "as-kultur-bollywood",
+    "title": "Bollywood",
+    "description": "Mit „Alam Ara“ (1931) beginnt in Indien die Tonfilm-Ära; Mumbai wird zum Zentrum einer der größten Filmindustrien der Welt.",
+    "startYear": 1931,
+    "category": "kultur",
+    "continent": "asien",
+    "culture": "indisch",
+    "importance": "extended",
+    "minZoomLevel": 4,
+    "tags": ["film", "indien", "populärkultur"]
   }
 ]
