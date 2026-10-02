@@ -21,7 +21,7 @@
     "category": "erdzeitalter",
     "continent": "global",
     "culture": "Periode",
-    "importance": "detail",
+    "importance": "extended",
     "minZoomLevel": 2,
     "tags": ["paläozoikum", "kambrische-explosion"]
   },
@@ -73,7 +73,7 @@
     "category": "erdzeitalter",
     "continent": "global",
     "culture": "Periode",
-    "importance": "detail",
+    "importance": "extended",
     "minZoomLevel": 2,
     "tags": ["paläozoikum", "kohle", "pangäa"]
   },
@@ -86,7 +86,7 @@
     "category": "erdzeitalter",
     "continent": "global",
     "culture": "Periode",
-    "importance": "detail",
+    "importance": "extended",
     "minZoomLevel": 2,
     "tags": ["paläozoikum", "massenaussterben"]
   },
@@ -99,7 +99,7 @@
     "category": "erdzeitalter",
     "continent": "global",
     "culture": "Periode",
-    "importance": "detail",
+    "importance": "extended",
     "minZoomLevel": 2,
     "tags": ["mesozoikum", "dinosaurier"]
   },
@@ -112,7 +112,7 @@
     "category": "erdzeitalter",
     "continent": "global",
     "culture": "Periode",
-    "importance": "detail",
+    "importance": "core",
     "minZoomLevel": 2,
     "tags": ["mesozoikum", "dinosaurier", "vögel"]
   },
@@ -125,7 +125,7 @@
     "category": "erdzeitalter",
     "continent": "global",
     "culture": "Periode",
-    "importance": "detail",
+    "importance": "core",
     "minZoomLevel": 2,
     "tags": ["mesozoikum", "blütenpflanzen", "chicxulub"]
   },
@@ -138,7 +138,7 @@
     "category": "erdzeitalter",
     "continent": "global",
     "culture": "Periode",
-    "importance": "detail",
+    "importance": "extended",
     "minZoomLevel": 2,
     "tags": ["känozoikum", "säugetiere"]
   },
@@ -151,7 +151,7 @@
     "category": "erdzeitalter",
     "continent": "global",
     "culture": "Periode",
-    "importance": "detail",
+    "importance": "extended",
     "minZoomLevel": 2,
     "tags": ["känozoikum", "homininen"]
   },
@@ -164,7 +164,7 @@
     "category": "erdzeitalter",
     "continent": "global",
     "culture": "Periode",
-    "importance": "detail",
+    "importance": "extended",
     "minZoomLevel": 2,
     "tags": ["känozoikum", "eiszeiten"]
   },
@@ -177,7 +177,7 @@
     "category": "erdzeitalter",
     "continent": "global",
     "culture": "Epoche",
-    "importance": "detail",
+    "importance": "extended",
     "minZoomLevel": 2,
     "tags": ["eiszeit", "megafauna"]
   },
@@ -189,7 +189,7 @@
     "category": "erdzeitalter",
     "continent": "global",
     "culture": "Ereignis",
-    "importance": "detail",
+    "importance": "extended",
     "minZoomLevel": 2,
     "tags": ["massenaussterben", "sibirische-trapps"]
   },
