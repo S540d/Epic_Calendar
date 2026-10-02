@@ -372,6 +372,27 @@ describe('timeline/culling.computeLaneData', () => {
     expect(result.overflowCounts.size).toBe(0);
   });
 
+  it('fillToCap tops a sparse lane up with deeper-level events (#254)', () => {
+    const base = ev({ id: 'base', startYear: 0, endYear: 10, minZoomLevel: 1 });
+    const deep3 = ev({ id: 'deep3', startYear: 100, endYear: 110, minZoomLevel: 3 });
+    const deep4 = ev({ id: 'deep4', startYear: 200, endYear: 210, minZoomLevel: 4 });
+    const input = {
+      events: [base, deep3, deep4],
+      startYear: -100,
+      endYear: 1000,
+      zoomLevel: 2 as const,
+      lanes: ['zivilisation'] as Category[],
+      continent: 'europa' as const,
+      maxEventsPerLane: 2,
+    };
+    expect(computeLaneData(input).visibleByLane.get('zivilisation')).toEqual([base]);
+    const filled = computeLaneData({ ...input, fillToCap: true });
+    // cap 2 → base + lowest-level extra only; no overflow recorded.
+    expect(filled.visibleByLane.get('zivilisation')?.map((e) => e.id)).toEqual(['base', 'deep3']);
+    expect(filled.tracksByLane.get('zivilisation')?.has('deep3')).toBe(true);
+    expect(filled.overflowCounts.size).toBe(0);
+  });
+
   it('caps tracks at maxEventsPerLane and records overflow', () => {
     // 3 non-overlapping events, cap at 2 → one overflow, only 2 get tracks.
     const events = [

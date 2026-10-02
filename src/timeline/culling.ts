@@ -1,4 +1,5 @@
 import {
+  importanceRank,
   passesImportance,
   tierRank,
   type TimelineEvent,
@@ -274,6 +275,13 @@ export type LaneDataInput = {
   /** Optional pre-built index for O(hits + log n) queries instead of O(n) full scan. */
   eventIndex?: EventIndex;
   /**
+   * Adaptive density (#254): when a lane has fewer than `maxEventsPerLane`
+   * events at the current zoom level, top it up with events of deeper
+   * `minZoomLevel` (lowest level first, then importance, then start year) so
+   * zooming in keeps lanes filled up to the cap. Default off.
+   */
+  fillToCap?: boolean;
+  /**
    * Pre-computed, viewport-independent track assignment per lane (see
    * `buildStableTracksByLane`). When provided, `computeLaneData` looks up track
    * numbers here instead of recomputing them from the visible-in-viewport set —
@@ -331,6 +339,7 @@ export function computeLaneData(input: LaneDataInput): LaneData {
     theme,
     eventIndex,
     stableTracksByLane,
+    fillToCap,
   } = input;
   const visibleByLane = new Map<Category, TimelineEvent[]>();
   const overflowCounts = new Map<Category, number>();
@@ -348,9 +357,23 @@ export function computeLaneData(input: LaneDataInput): LaneData {
       culture,
       theme,
     };
-    const visible = eventIndex ? eventIndex.queryVisible(query) : filterVisible(events, query);
+    const runQuery = (q: typeof query) =>
+      eventIndex ? eventIndex.queryVisible(q) : filterVisible(events, q);
+    let visible = runQuery(query);
     if (visible.length > maxEventsPerLane) {
       overflowCounts.set(cat, visible.length - maxEventsPerLane);
+    } else if (fillToCap && zoomLevel < 4 && visible.length < maxEventsPerLane) {
+      const shown = new Set(visible.map((ev) => ev.id));
+      const extras = runQuery({ ...query, zoomLevel: 4 })
+        .filter((ev) => !shown.has(ev.id))
+        .sort(
+          (a, b) =>
+            a.minZoomLevel - b.minZoomLevel ||
+            importanceRank(a) - importanceRank(b) ||
+            a.startYear - b.startYear,
+        )
+        .slice(0, maxEventsPerLane - visible.length);
+      visible = visible.concat(extras);
     }
 
     const stableTracks = stableTracksByLane?.get(cat);
