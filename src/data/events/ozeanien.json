@@ -610,5 +610,53 @@
     "importance": "core",
     "minZoomLevel": 2,
     "tags": ["haka", "ta-moko", "maori", "tanz"]
+  },
+  {
+    "id": "oz-kultur-sydney-opera",
+    "title": "Sydney Opera House",
+    "description": "Das 1973 eröffnete Opernhaus nach dem Entwurf von Jørn Utzon wird zum Wahrzeichen Australiens und UNESCO-Welterbe.",
+    "startYear": 1973,
+    "category": "kultur",
+    "continent": "ozeanien",
+    "culture": "australisch",
+    "importance": "extended",
+    "minZoomLevel": 4,
+    "tags": ["architektur", "australien", "oper"]
+  },
+  {
+    "id": "oz-kultur-hokulea",
+    "title": "Hōkūle‘a – Navigation ohne Instrumente",
+    "description": "1976 segelt das Doppelrumpfkanu Hōkūle‘a von Hawaii nach Tahiti nur nach Sternen und Wellen und belebt die polynesische Navigationstradition neu.",
+    "startYear": 1976,
+    "category": "kultur",
+    "continent": "ozeanien",
+    "culture": "hawaiisch",
+    "importance": "extended",
+    "minZoomLevel": 4,
+    "tags": ["navigation", "polynesien", "tradition"]
+  },
+  {
+    "id": "oz-kultur-uluru-rueckgabe",
+    "title": "Rückgabe von Uluru",
+    "description": "Am 26. Oktober 1985 geht der Uluru (Ayers Rock) an die Anangu zurück und wird gemeinsam mit ihnen als Nationalpark verwaltet.",
+    "startYear": 1985,
+    "category": "kultur",
+    "continent": "ozeanien",
+    "culture": "aboriginal",
+    "importance": "extended",
+    "minZoomLevel": 4,
+    "tags": ["aborigines", "australien", "landrechte"]
+  },
+  {
+    "id": "oz-kultur-te-reo-maori",
+    "title": "Te Reo Māori wird Amtssprache",
+    "description": "1987 erklärt der Māori Language Act Te Reo Māori zur offiziellen Sprache Neuseelands – Teil der kulturellen Wiederbelebung.",
+    "startYear": 1987,
+    "category": "kultur",
+    "continent": "ozeanien",
+    "culture": "maori",
+    "importance": "extended",
+    "minZoomLevel": 4,
+    "tags": ["sprache", "neuseeland", "maori"]
   }
 ]

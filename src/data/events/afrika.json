@@ -935,5 +935,66 @@
     "importance": "core",
     "minZoomLevel": 2,
     "tags": ["kunst", "bronze", "benin", "restitution"]
+  },
+  {
+    "id": "af-kultur-hieroglyphen",
+    "title": "Ägyptische Hieroglyphen",
+    "description": "Eines der ältesten Schriftsysteme der Welt entsteht in Ägypten (frühe Zeichen ab ca. 3200 v. Chr.); entziffert wird es erst 1822 durch Champollion.",
+    "startYear": -3200,
+    "category": "kultur",
+    "continent": "afrika",
+    "culture": "ägyptisch",
+    "importance": "core",
+    "minZoomLevel": 2,
+    "tags": ["schrift", "aegypten", "antike"]
+  },
+  {
+    "id": "af-kultur-ife-bronzen",
+    "title": "Ife-Bronzeköpfe",
+    "description": "Die Yoruba-Stadt Ife (Nigeria) bringt zwischen dem 12. und 15. Jahrhundert naturalistische Köpfe aus Kupferlegierungen hervor.",
+    "startYear": 1100,
+    "endYear": 1400,
+    "category": "kultur",
+    "continent": "afrika",
+    "culture": "yoruba",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "tags": ["kunst", "nigeria", "bronze"]
+  },
+  {
+    "id": "af-kultur-lalibela",
+    "title": "Felsenkirchen von Lalibela",
+    "description": "Im äthiopischen Hochland werden um 1200 elf Kirchen aus dem Fels geschlagen – bis heute Pilgerstätte und UNESCO-Welterbe.",
+    "startYear": 1200,
+    "category": "kultur",
+    "continent": "afrika",
+    "culture": "äthiopisch",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "tags": ["architektur", "religion", "aethiopien"]
+  },
+  {
+    "id": "af-kultur-griot-epos",
+    "title": "Griots und das Sundiata-Epos",
+    "description": "Westafrikanische Griots überliefern Geschichte, Genealogien und Epen wie die Sundiata-Erzählung mündlich über Generationen.",
+    "startYear": 1235,
+    "category": "kultur",
+    "continent": "afrika",
+    "culture": "mande",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "tags": ["literatur", "mali", "mündlich"]
+  },
+  {
+    "id": "af-kultur-nollywood",
+    "title": "Nollywood",
+    "description": "Mit „Living in Bondage“ (1992) beginnt der Boom der nigerianischen Videofilm-Industrie, heute eine der größten Filmproduktionen der Welt.",
+    "startYear": 1992,
+    "category": "kultur",
+    "continent": "afrika",
+    "culture": "nigerianisch",
+    "importance": "extended",
+    "minZoomLevel": 4,
+    "tags": ["film", "nigeria", "populärkultur"]
   }
 ]
