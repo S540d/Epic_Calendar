@@ -658,5 +658,70 @@
     "importance": "extended",
     "minZoomLevel": 4,
     "tags": ["sprache", "neuseeland", "maori"]
+  },
+  {
+    "id": "oz-pomare-ii",
+    "title": "Pōmare II. – König von Tahiti",
+    "description": "Pōmare II. einigt Tahiti weitgehend und führt mit Hilfe der Missionare das Christentum ein; 1815 sichert die Schlacht von Fe’i Pī seine Herrschaft.",
+    "startYear": 1803,
+    "endYear": 1821,
+    "category": "herrscher",
+    "continent": "ozeanien",
+    "culture": "tahitisch",
+    "importance": "detail",
+    "minZoomLevel": 3,
+    "iconKey": "crown"
+  },
+  {
+    "id": "oz-tawhiao",
+    "title": "Tāwhiao – Māori-König",
+    "description": "Tāwhiao, zweiter König der Kīngitanga-Bewegung, verteidigt Māori-Land gegen die Einwanderersiedler und sucht nach den Waikato-Kriegen den Ausgleich.",
+    "startYear": 1860,
+    "endYear": 1894,
+    "category": "herrscher",
+    "continent": "ozeanien",
+    "culture": "maori",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "iconKey": "crown"
+  },
+  {
+    "id": "oz-seddon",
+    "title": "Richard Seddon – Premier Neuseelands",
+    "description": "Premier Seddon regiert Neuseeland über 13 Jahre; unter ihm erhalten Frauen 1893 als weltweit erste landesweit das Wahlrecht.",
+    "startYear": 1893,
+    "endYear": 1906,
+    "category": "herrscher",
+    "continent": "ozeanien",
+    "culture": "neuseeländisch",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "iconKey": "crown"
+  },
+  {
+    "id": "oz-liliuokalani",
+    "title": "Lili‘uokalani – letzte Königin Hawaiis",
+    "description": "Lili‘uokalani regiert Hawaii 1891–1893 und wird nach einem von US-Interessen gestützten Putsch abgesetzt; ihre Hymne „Aloha ‘Oe“ ist weltbekannt.",
+    "startYear": 1891,
+    "endYear": 1893,
+    "category": "herrscher",
+    "continent": "ozeanien",
+    "culture": "hawaiisch",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "iconKey": "crown"
+  },
+  {
+    "id": "oz-edmund-barton",
+    "title": "Edmund Barton – erster Premier Australiens",
+    "description": "Barton führt Australien in die Föderation von 1901 und ist dessen erster Premierminister.",
+    "startYear": 1901,
+    "endYear": 1903,
+    "category": "herrscher",
+    "continent": "ozeanien",
+    "culture": "australisch",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "iconKey": "crown"
   }
 ]

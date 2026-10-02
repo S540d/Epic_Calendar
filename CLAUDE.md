@@ -111,7 +111,7 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 
 ### Datenhaltung
 
-- `src/data/` – statische Daten: 8 JSON-Dateien, 736 Events gesamt (europa, asien, afrika, amerika, ozeanien, erdzeitalter, natur-wissenschaft, detail-level)
+- `src/data/` – statische Daten: 8 JSON-Dateien, 781 Events gesamt (europa, asien, afrika, amerika, ozeanien, erdzeitalter, natur-wissenschaft, detail-level)
 - `src/data/schema.ts` – gemeinsames Event-Schema (`TimelineEvent` mit optionalen Feldern: `importance`, `tags`, `lineageId`, `regions` seit Phase 1.2; `tier` seit #70). `importance`/`lineageId`/`tier` sind verdrahtet: `importanceRank`/`passesImportance`-Helfer + `IMPORTANCE_RANK` speisen den Detailgrad-Filter; `lineageId` steuert Track-Zuordnung + Verbindungslinien; `tier` (`tierRank`/`TIER_RANK`) ist die primäre Zeilen-Sortier-Achse in `assignTracks`; `tags` speist sowohl `searchEvents()` als auch (seit #226) den Themen-Filter über `themes.ts`. `regions` bleibt Slot.
 - `src/data/regions.ts` – `RegionConfig`-Typ + `REGIONS`-Skelett für hierarchische Geo-Filter (Phase 1.4; kein UI bis Phase 3)
 - `src/data/themes.ts` – kuratierte, kontrollierte Themen-Vokabular für den Themen-Filter (#226): `Theme = {id, labelKey, tagIds, icon}` + `THEMES` + `themeById()`/`eventMatchesTheme()`. Siehe Besonderheiten oben.
@@ -170,7 +170,7 @@ src/
 │   ├── schema.ts              # Event-Typen (inkl. optionale Slots: importance, tags, lineageId, regions)
 │   ├── regions.ts             # RegionConfig + REGIONS-Skelett (Phase 1.4, kein UI)
 │   ├── themes.ts              # Kuratiertes Themen-Vokabular + eventMatchesTheme() für den Themen-Filter (#226)
-│   ├── events/                # Statische JSON-Daten: europa (215), asien (101), afrika (77), amerika (82), ozeanien (50), erdzeitalter (47), natur-wissenschaft (71), detail-level (93) → 736 Events gesamt
+│   ├── events/                # Statische JSON-Daten: europa (215), asien (101), afrika (85), amerika (88), ozeanien (55), erdzeitalter (47), natur-wissenschaft (97), detail-level (93) → 781 Events gesamt
 │   └── ...
 ├── timeline/
 │   ├── culling.ts             # Viewport-Culling + computeLaneData() (opt. eventIndex, maxImportanceRank) + lineage-aware assignTracks + computeLineageConnectors

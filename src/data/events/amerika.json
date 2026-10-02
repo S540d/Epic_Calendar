@@ -950,5 +950,83 @@
     "importance": "extended",
     "minZoomLevel": 4,
     "tags": ["musik", "usa", "populärkultur"]
+  },
+  {
+    "id": "am-pakal",
+    "title": "K’inich Janaab’ Pakal – Palenque",
+    "description": "Pakal der Große herrscht über 60 Jahre über die Maya-Stadt Palenque; sein Grab im Tempel der Inschriften ist eine der berühmtesten Maya-Stätten.",
+    "startYear": 615,
+    "endYear": 683,
+    "category": "herrscher",
+    "continent": "amerika",
+    "culture": "maya",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "iconKey": "crown"
+  },
+  {
+    "id": "am-nezahualcoyotl",
+    "title": "Nezahualcóyotl – Herrscher von Texcoco",
+    "description": "Nezahualcóyotl, Tlatoani von Texcoco, ist Mitglied des aztekischen Dreierbunds, bekannt als Dichter und Förderer von Recht und Baukunst.",
+    "startYear": 1431,
+    "endYear": 1472,
+    "category": "herrscher",
+    "continent": "amerika",
+    "culture": "aztekisch",
+    "importance": "detail",
+    "minZoomLevel": 3,
+    "iconKey": "crown"
+  },
+  {
+    "id": "am-pachacuti",
+    "title": "Pachacuti – Begründer des Inkareichs",
+    "description": "Pachacuti macht aus dem Fürstentum Cusco das Tawantinsuyu und legt mit Eroberungen und Verwaltungsreformen den Grundstein des Inkareichs.",
+    "startYear": 1438,
+    "endYear": 1471,
+    "category": "herrscher",
+    "continent": "amerika",
+    "culture": "inkaisch",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "iconKey": "crown"
+  },
+  {
+    "id": "am-benito-juarez",
+    "title": "Benito Juárez",
+    "description": "Der indigene Zapoteke Juárez wird mexikanischer Präsident, trennt Kirche und Staat (Reformgesetze) und führt den Widerstand gegen die französische Intervention.",
+    "startYear": 1858,
+    "endYear": 1872,
+    "category": "herrscher",
+    "continent": "amerika",
+    "culture": "lateinamerikanisch",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "iconKey": "crown"
+  },
+  {
+    "id": "am-franklin-roosevelt",
+    "title": "Franklin D. Roosevelt",
+    "description": "Der einzige vierfach gewählte US-Präsident führt das Land mit dem New Deal aus der Weltwirtschaftskrise und durch den Zweiten Weltkrieg.",
+    "startYear": 1933,
+    "endYear": 1945,
+    "category": "herrscher",
+    "continent": "amerika",
+    "culture": null,
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "iconKey": "crown"
+  },
+  {
+    "id": "am-fidel-castro",
+    "title": "Fidel Castro",
+    "description": "Nach der Revolution von 1959 regiert Castro Kuba bis 2008 als Ministerpräsident und Präsident; Kuba wird zum Brennpunkt des Kalten Krieges.",
+    "startYear": 1959,
+    "endYear": 2008,
+    "category": "herrscher",
+    "continent": "amerika",
+    "culture": "lateinamerikanisch",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "iconKey": "crown"
   }
 ]
