@@ -76,6 +76,106 @@
       "erfindungen": {
         "label": "Inventions That Changed Everything",
         "description": "From the wheel through the printing press to the internet – ideas that rebuilt the world."
+      },
+      "entdecker": {
+        "label": "Explorers and seafarers",
+        "description": "From Polynesian navigators to the Panama Canal – voyages that redrew the map."
+      },
+      "aegypten": {
+        "label": "Ancient Egypt",
+        "description": "From Narmer and the pyramids to Cleopatra – three millennia along the Nile."
+      },
+      "amerika-hochkulturen": {
+        "label": "Great civilizations of the Americas",
+        "description": "From Caral through the Maya and Aztecs to the Inca – and their end under Spanish conquest."
+      },
+      "antike-griechen-roemer": {
+        "label": "Greeks and Romans",
+        "description": "Olympic Games, democracy, Alexander and the empire – antiquity around the Mediterranean."
+      },
+      "denker-der-antike": {
+        "label": "Thinkers of antiquity",
+        "description": "From Thales to Epicurus – plus Buddha and Confucius: how people began to question the world."
+      },
+      "wissenschaft-weltbild": {
+        "label": "How our view of the world changed",
+        "description": "From Euclid through Copernicus and Newton to Einstein and DNA – discoveries that overturned our thinking."
+      },
+      "medizin": {
+        "label": "Medicine through the ages",
+        "description": "From Hippocrates to CRISPR – how people learned to understand and heal disease."
+      },
+      "weltraum": {
+        "label": "Reaching for the stars",
+        "description": "From the Big Bang through Galileo’s telescope to the first photo of a black hole."
+      },
+      "revolutionen": {
+        "label": "Revolutions and upheavals",
+        "description": "From the Glorious Revolution to the fall of the Berlin Wall – when societies reinvent themselves."
+      },
+      "maechtige-frauen": {
+        "label": "Powerful women and pioneers",
+        "description": "Cleopatra, Elizabeth I, Nzinga, Maria Theresa, Catherine the Great and Marie Curie."
+      },
+      "afrikas-reiche": {
+        "label": "Africa’s great kingdoms",
+        "description": "From the Bantu expansion through Aksum, Mali and Benin to Mandela."
+      },
+      "pazifik-inseln": {
+        "label": "The Pacific: islands and voyagers",
+        "description": "From the settlement of Australia through the Polynesians to climate change on island nations."
+      },
+      "kriege": {
+        "label": "Wars that changed the world",
+        "description": "From Marathon to the Cold War – battles and wars as turning points."
+      },
+      "handel": {
+        "label": "Trade connects the world",
+        "description": "The Silk Road, Saharan caravans, the triangular trade and canals – how goods and ideas travelled."
+      },
+      "china-dynastien": {
+        "label": "China’s dynasties",
+        "description": "From the Bronze Age through Qin, Han, Tang and Ming to the People’s Republic."
+      },
+      "menschheit-fruehzeit": {
+        "label": "From hunter to city builder",
+        "description": "Out of Africa, cave painting, farming and the first cities."
+      },
+      "mittelalter": {
+        "label": "The Middle Ages",
+        "description": "From the Migration Period through Charlemagne and the Crusades to the fall of Constantinople."
+      },
+      "kunst-kultur": {
+        "label": "Art and culture worldwide",
+        "description": "From cave painting through Baroque, ukiyo-e and Impressionism to Afrobeat and Aboriginal art."
+      },
+      "elektrizitaet": {
+        "label": "Electricity and radio",
+        "description": "From Franklin’s lightning rod through Faraday and Edison to the transistor."
+      },
+      "wege-zur-freiheit": {
+        "label": "Paths to freedom",
+        "description": "From the Haitian Revolution through Gandhi and Martin Luther King to the end of apartheid."
+      },
+      "wikinger": {
+        "label": "Vikings and Normans",
+        "description": "Raids, kingdoms and the discovery of America – the North on the move."
+      },
+      "islamische-welt": {
+        "label": "The Islamic world",
+        "description": "From the rise of Islam through Baghdad and Timbuktu to the Ottoman Empire."
+      },
+      "indien-suedostasien": {
+        "label": "India and Southeast Asia",
+        "description": "From the Indus civilization through Buddha, Angkor and the Mughal Empire to independence."
+      },
+      "usa": {
+        "label": "The USA: from Jamestown to today",
+        "description": "Settlers, revolution, civil war, superpower – and the road to the Moon."
+      },
+      "klima-umwelt": {
+        "label": "Climate and environment",
+        "description": "From the end of the Ice Age through Krakatoa and the ozone hole to the Paris Agreement."
       }
     }
   },
