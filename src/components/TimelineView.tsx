@@ -225,6 +225,7 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
       theme,
       eventIndex,
       stableTracksByLane,
+      fillToCap: true,
     });
   }, [
     canvasWidth,

@@ -4,6 +4,7 @@
 
 ### Changed
 
+- **Adaptive Ereignisdichte beim Zoomen (#254):** Lanes mit weniger als `MAX_EVENTS_PER_LANE` (jetzt 15, vorher 40) Events auf der aktuellen Zoomstufe werden jetzt mit Events tieferer Zoomstufen aufgefüllt (niedrigste `minZoomLevel` zuerst, dann Wichtigkeit, dann Startjahr), sodass beim Hineinzoomen immer bis zur Obergrenze Ereignisse sichtbar sind; die Obergrenze pro Lane sinkt dabei von 40 auf 15. Opt-in über `computeLaneData({ fillToCap })`, in `TimelineView` aktiv; Detailgrad-, Kontinent-, Kultur- und Themenfilter gelten unverändert.
 - **Themen und Lernreisen filtern jetzt konsequent exklusiv:** Ein aktiviertes Thema ersetzt die aktiven Kategorien (statt sie nur zu ergänzen) durch genau die Kategorien seiner treffenden Ereignisse und löscht einen evtl. aktiven Kultur-Filter, der sonst — obwohl Themen kontinentübergreifend sind — trotzdem einzelne Treffer versteckt hätte. Eine Lernreise-Station aktiviert weiterhin genau den Kontinent und jetzt auch **nur noch** die Kategorie des Ziel-Ereignisses (statt sie zu den bisher aktiven zu addieren) — der „nähere Kontext" bleibt dadurch exakt Kategorie + Kontinent der aktuellen Station, ohne dass sich über mehrere Stationen hinweg immer mehr Kategorien ansammeln. Ein Kultur-Filter wird beim Sprung zu einem Such-/Lernreise-Ziel jetzt unabhängig vom Kontinentwechsel gelöscht (vorher blieb er bei gleichbleibendem Kontinent bestehen und konnte das Ziel-Ereignis verdecken).
 
 ### Added
