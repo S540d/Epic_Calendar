@@ -76,6 +76,110 @@
       "erfindungen": {
         "label": "Erfindungen, die alles verändert haben",
         "description": "Vom Rad über den Buchdruck bis zum Internet – Ideen, die die Welt umgebaut haben."
+      },
+      "entdecker": {
+        "label": "Entdecker und Seefahrer",
+        "description": "Von den polynesischen Navigatoren bis zum Panamakanal – Reisen, die die Landkarte veränderten."
+      },
+      "aegypten": {
+        "label": "Das alte Ägypten",
+        "description": "Von Narmer über die Pyramiden bis Kleopatra – drei Jahrtausende am Nil."
+      },
+      "amerika-hochkulturen": {
+        "label": "Hochkulturen Amerikas",
+        "description": "Von Caral über Maya und Azteken bis zu den Inka – und ihr Ende durch die spanische Eroberung."
+      },
+      "antike-griechen-roemer": {
+        "label": "Griechen und Römer",
+        "description": "Olympische Spiele, Demokratie, Alexander und das Imperium – die Antike im Mittelmeerraum."
+      },
+      "denker-der-antike": {
+        "label": "Denker der Antike",
+        "description": "Von Thales bis Epikur – und dazu Buddha und Konfuzius: Wie Menschen anfingen, die Welt zu hinterfragen."
+      },
+      "wissenschaft-weltbild": {
+        "label": "Wie sich unser Weltbild veränderte",
+        "description": "Von Euklid über Kopernikus und Newton bis Einstein und die DNA – Entdeckungen, die das Denken umkrempelten."
+      },
+      "medizin": {
+        "label": "Medizin im Lauf der Zeit",
+        "description": "Von Hippokrates bis CRISPR – wie Menschen lernten, Krankheiten zu verstehen und zu heilen."
+      },
+      "weltraum": {
+        "label": "Griff nach den Sternen",
+        "description": "Vom Urknall über Galileis Fernrohr bis zum ersten Foto eines Schwarzen Lochs."
+      },
+      "revolutionen": {
+        "label": "Revolutionen und Umbrüche",
+        "description": "Von der Glorreichen Revolution bis zum Mauerfall – wenn Gesellschaften sich neu erfinden."
+      },
+      "maechtige-frauen": {
+        "label": "Mächtige Frauen und Pionierinnen",
+        "description": "Kleopatra, Elisabeth I., Nzinga, Maria Theresia, Katharina die Große und Marie Curie."
+      },
+      "afrikas-reiche": {
+        "label": "Afrikas große Reiche",
+        "description": "Von der Bantu-Expansion über Aksum, Mali und Benin bis zu Mandela."
+      },
+      "pazifik-inseln": {
+        "label": "Der Pazifik: Inseln und Seefahrer",
+        "description": "Von der Besiedlung Australiens über die Polynesier bis zum Klimawandel auf den Inselstaaten."
+      },
+      "kriege": {
+        "label": "Kriege, die die Welt veränderten",
+        "description": "Von Marathon bis zum Kalten Krieg – Schlachten und Kriege als Wendepunkte."
+      },
+      "handel": {
+        "label": "Handel verbindet die Welt",
+        "description": "Seidenstraße, Sahara-Karawanen, Dreieckshandel und Kanäle – wie Waren und Ideen reisten."
+      },
+      "china-dynastien": {
+        "label": "Chinas Dynastien",
+        "description": "Von der Bronzezeit über Qin, Han, Tang und Ming bis zur Volksrepublik."
+      },
+      "menschheit-fruehzeit": {
+        "label": "Vom Jäger zum Städtebauer",
+        "description": "Out of Africa, Höhlenmalerei, Ackerbau und die ersten Städte."
+      },
+      "mittelalter": {
+        "label": "Das Mittelalter",
+        "description": "Von der Völkerwanderung über Karl den Großen und die Kreuzzüge bis zum Fall Konstantinopels."
+      },
+      "kunst-kultur": {
+        "label": "Kunst und Kultur weltweit",
+        "description": "Von Höhlenmalerei über Barock, Ukiyo-e und Impressionismus bis Afrobeat und Aborigine-Kunst."
+      },
+      "elektrizitaet": {
+        "label": "Strom und Funk",
+        "description": "Von Franklins Blitzableiter über Faraday und Edison bis zum Transistor."
+      },
+      "wege-zur-freiheit": {
+        "label": "Wege zur Freiheit",
+        "description": "Von der Haitianischen Revolution über Gandhi und Martin Luther King bis zum Ende der Apartheid."
+      },
+      "wikinger": {
+        "label": "Wikinger und Normannen",
+        "description": "Raubzüge, Reichsgründungen und die Entdeckung Amerikas – der Norden in Bewegung."
+      },
+      "islamische-welt": {
+        "label": "Die islamische Welt",
+        "description": "Von der Entstehung des Islam über Bagdad und Timbuktu bis zum Osmanischen Reich."
+      },
+      "indien-suedostasien": {
+        "label": "Indien und Südostasien",
+        "description": "Von der Indus-Kultur über Buddha, Angkor und das Mogulreich bis zur Unabhängigkeit."
+      },
+      "usa": {
+        "label": "Die USA: von Jamestown bis heute",
+        "description": "Siedler, Revolution, Bürgerkrieg, Weltmacht – und der Weg zum Mond."
+      },
+      "klima-umwelt": {
+        "label": "Klima und Umwelt",
+        "description": "Vom Ende der Eiszeit über Krakatau und das Ozonloch bis zum Pariser Klimaabkommen."
+      },
+      "wiege-der-menschheit": {
+        "label": "Afrika – Wiege der Menschheit",
+        "description": "Von den Fußspuren von Laetoli über Lucy bis zum Auszug des Homo sapiens – die Anfänge der Menschheit in Afrika."
       }
     }
   },
