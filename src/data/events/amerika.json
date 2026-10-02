@@ -892,6 +892,66 @@
     "tags": ["musik", "samba", "karneval", "brasilien"]
   },
   {
+    "id": "am-kultur-popol-vuh",
+    "title": "Popol Vuh",
+    "description": "Das heilige Buch der K’iche’-Maya, im 16. Jahrhundert in lateinischer Schrift aufgezeichnet, überliefert Schöpfungsmythen und Heldengeschichten.",
+    "startYear": 1550,
+    "category": "kultur",
+    "continent": "amerika",
+    "culture": "maya",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "tags": ["literatur", "maya", "mythologie"]
+  },
+  {
+    "id": "am-kultur-tango",
+    "title": "Tango",
+    "description": "Im Hafenmilieu am Río de la Plata (Buenos Aires, Montevideo) entsteht ab den 1880er-Jahren der Tango als Musik und Tanz.",
+    "startYear": 1880,
+    "category": "kultur",
+    "continent": "amerika",
+    "culture": "argentinisch",
+    "importance": "extended",
+    "minZoomLevel": 3,
+    "tags": ["musik", "tanz", "argentinien"]
+  },
+  {
+    "id": "am-kultur-jazz",
+    "title": "Jazz",
+    "description": "Um 1900 entsteht in New Orleans der Jazz aus Blues, Ragtime und afroamerikanischen Traditionen und prägt die Musik des 20. Jahrhunderts.",
+    "startYear": 1900,
+    "category": "kultur",
+    "continent": "amerika",
+    "culture": "nordamerikanisch",
+    "importance": "core",
+    "minZoomLevel": 3,
+    "tags": ["musik", "usa", "afroamerikanisch"]
+  },
+  {
+    "id": "am-kultur-rock-n-roll",
+    "title": "Rock ’n’ Roll",
+    "description": "Mitte der 1950er-Jahre wird der Rock ’n’ Roll mit Künstlern wie Elvis Presley zum Massenphänomen der Jugendkultur.",
+    "startYear": 1954,
+    "category": "kultur",
+    "continent": "amerika",
+    "culture": "nordamerikanisch",
+    "importance": "extended",
+    "minZoomLevel": 4,
+    "tags": ["musik", "usa", "jugendkultur"]
+  },
+  {
+    "id": "am-kultur-hiphop",
+    "title": "Hip-Hop",
+    "description": "1973 beginnt in der New Yorker Bronx die Hip-Hop-Kultur aus DJing, Rap, Breakdance und Graffiti.",
+    "startYear": 1973,
+    "category": "kultur",
+    "continent": "amerika",
+    "culture": "nordamerikanisch",
+    "importance": "extended",
+    "minZoomLevel": 4,
+    "tags": ["musik", "usa", "populärkultur"]
+  },
+  {
     "id": "am-pakal",
     "title": "K’inich Janaab’ Pakal – Palenque",
     "description": "Pakal der Große herrscht über 60 Jahre über die Maya-Stadt Palenque; sein Grab im Tempel der Inschriften ist eine der berühmtesten Maya-Stätten.",
