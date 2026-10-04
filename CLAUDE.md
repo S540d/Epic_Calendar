@@ -7,10 +7,10 @@ Visualisiert historische Events, Erdzeitalter und Hochkulturen aus mehreren Kont
 
 **Tech Stack:**
 
-- React Native mit Expo SDK 52
+- React Native mit Expo SDK 57 (React 19, RN 0.86, New Architecture aktiv)
 - TypeScript
 - @shopify/react-native-skia (Canvas-Rendering der Zeitachse)
-- react-native-reanimated 3.x (Animationen)
+- react-native-reanimated 4.x (Animationen)
 - react-native-gesture-handler (Pinch/Pan)
 - @react-native-async-storage/async-storage (Persistenz)
 - i18next / react-i18next (DE/EN)
@@ -251,8 +251,7 @@ Canvas-Overlay-Komponenten (EpochBand, TimelineMinimap, …) nutzen weiterhin st
 - **`package-lock.json` kann trotz grüner CI außer Sync geraten** – `ci.yml` installiert tolerant (`npm install`), `deploy.yml` dagegen strikt (`npm ci`) und deckt eine driftende Lockfile daher erst nach dem Merge auf. **Vor jedem Dependency-Update/SDK-Bump lokal `rm -rf node_modules && npm ci` gegenprüfen** (nicht nur `npm install`). Vorfalls-Details (Datum, betroffene PRs/Runs, Diagnose): lokale `docs/private/INCIDENTS.md` (gitignored, siehe `[GLOBAL POLICY]` → „CLAUDE.MD-WARTUNG" in project-templates, Issue #160).
 - **Web-HTML-Template (#149):** Bei Metro-Web (kein Expo Router) wird das HTML-Template aus `public/index.html` gelesen (nicht `web/index.html` – das ist der alte `@expo/webpack-config`-Pfad und wird von Metro ignoriert). `public/` wird von `expo export --platform web` 1:1 nach `dist/` kopiert – auch `robots.txt`/`sitemap.xml` liegen dort.
 - Skia auf Web: kein `WithSkiaWeb` – weiße Seite → Standard-ScrollView-Fallback
-- `react-native-reanimated` 3.x (nicht 4.x) – Expo SDK 52 Kompatibilität
-- `jest-expo ~52` erwartet `"jest": "^29"` (nicht 30.x!)
+- **Versions-Pins (Stand Upgrade #221):** Expo SDK 57 liefert React 19 / RN 0.86 / Reanimated 4 als Companion-Versionen; `newArchEnabled: true` in `app.json`. Bewusst **nicht** angehoben: `react-native-gesture-handler` bleibt 2.x (3.x ohne Nutzen, siehe Folge-Issue), `eslint` bleibt 9.x (`eslint-plugin-import` ohne ESLint-10-Support), `jest` bleibt 29.x. Dependabot ignoriert Majors dieser Pakete (`.github/dependabot.yml`). Companion-Versionen immer via `npx expo install --check` statt manuell wählen.
 - **Komponenten-Tests für `useTheme()`-Komponenten brauchen den AsyncStorage-Mock:** `jest.config.js`s `testEnvironment: 'node'` hat kein natives AsyncStorage-Modul; jede Komponente, die über `ThemeContext` (`useTheme()`) läuft, importiert es transitiv und crasht beim Require sonst mit `NativeModule: AsyncStorage is null`. `jest.setup.js` (via `setupFiles`) mockt es einmalig zentral (`jest.mock('@react-native-async-storage/async-storage', ...)`) – neue Tests brauchen dafür keinen eigenen Mock mehr.
 - ESLint: **flat-config** in `eslint.config.cjs` (via `@eslint/eslintrc` FlatCompat)
 - `react-hooks/refs` ist eine **valide** Expo-extended ESLint-Regel. Sie flaggt RNGH `.onEnd`-Callbacks in `useMemo` als false positive (Callbacks laufen außerhalb des Renders). Fix: `// eslint-disable-next-line react-hooks/refs` direkt vor `.onEnd(...)`.
