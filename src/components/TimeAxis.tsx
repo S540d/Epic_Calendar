@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { tToYear, yearToT, yearToPixel } from '@/timeline/scale';
+import { formatOneDecimal, formatThousands } from '@/timeline/formatYear';
 import { colors, typography } from '@/theme/tokens';
 import type { ZoomLevel } from '@/data/schema';
 
@@ -33,16 +34,16 @@ function formatYear(year: number, t: (key: string) => string): string {
   const ce = t('axis.ce');
 
   if (abs >= 1_000_000_000) {
-    const n = (abs / 1e9).toFixed(1).replace(/\.0$/, '');
+    const n = formatOneDecimal(abs / 1e9, t);
     return year < 0 ? `${n} ${t('axis.billion')} ${bce}` : `${n} ${t('axis.billion')}`;
   }
   if (abs >= 1_000_000) {
-    const n = Math.round(abs / 1e6);
+    const n = formatOneDecimal(abs / 1e6, t);
     return year < 0 ? `${n} ${t('axis.million')} ${bce}` : `${n} ${t('axis.million')}`;
   }
   if (year === 0) return '0';
   // For all human-scale years: show the full number with locale separator + era suffix.
-  const formatted = abs.toLocaleString();
+  const formatted = formatThousands(abs, t);
   return year < 0 ? `${formatted} ${bce}` : `${formatted} ${ce}`;
 }
 
