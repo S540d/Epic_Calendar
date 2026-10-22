@@ -54,6 +54,7 @@
     "sectionHint": "Guided tours – one stop at a time through history",
     "stations": "{{count}} stops",
     "progress": "Stop {{current}} of {{total}}",
+    "jumpToStation": "Go to stop {{current}}: {{title}}",
     "start": "Start",
     "continue": "Continue",
     "restart": "Start over",

@@ -486,7 +486,8 @@ export function TimelineScreen() {
                 journeyLabelKey={activeJourney.labelKey}
                 event={journeyEvent}
                 stepIndex={journeyStep}
-                stepCount={journeySteps.length}
+                steps={journeySteps}
+                onSelectStep={goToJourneyStep}
                 onPrev={handleJourneyPrev}
                 onNext={handleJourneyNext}
                 onExit={handleJourneyExit}
