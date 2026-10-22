@@ -7,6 +7,7 @@ import { ContinentTabBar } from '@/components/ContinentTabBar';
 import { DetailLevelPrompt } from '@/components/DetailLevelPrompt';
 import { EpochOverviewScreen } from '@/components/EpochOverviewScreen';
 import { FilterSheet } from '@/components/FilterSheet';
+import { journeyFitRange } from '@/timeline/journeyStrip';
 import { LearningJourneyBar } from '@/components/LearningJourneyBar';
 import { SearchModal } from '@/components/SearchModal';
 import { SettingsModal } from '@/components/SettingsModal';
@@ -286,13 +287,7 @@ export function TimelineScreen() {
       setEpochRange(undefined);
       jumpRequestIdRef.current += 1;
       // With neighbours (journey), zoom out just far enough to show them too.
-      const fitEvents = [event, ...neighbours];
-      const fitRange = neighbours.length
-        ? {
-            startYear: Math.min(...fitEvents.map((e) => e.startYear)),
-            endYear: Math.max(...fitEvents.map((e) => e.endYear ?? e.startYear)),
-          }
-        : undefined;
+      const fitRange = neighbours.length ? journeyFitRange(event, neighbours) : undefined;
       setJumpToEvent({ event, requestId: jumpRequestIdRef.current, openDetail, fitRange });
     },
     [continent, setContinent],

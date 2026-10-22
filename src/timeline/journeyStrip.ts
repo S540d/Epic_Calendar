@@ -25,3 +25,33 @@ export function layoutJourneyStrip(events: readonly TimelineEvent[]): JourneyStr
   const positions = events.map((e) => (span > 0 ? (e.startYear - startYear) / span : 0.5));
   return { startYear, endYear, positions };
 }
+
+/** Minimum width zoom-to-fit gives a point event (mirrors `useTimelineViewport`). */
+const POINT_SPAN_YEARS = 200;
+/** The fit range may be at most this many times wider than the station itself. */
+export const MAX_CONTEXT_FACTOR = 50;
+
+/**
+ * Year range the main timeline shows for a journey station: the station plus
+ * its neighbours, but never wider than `MAX_CONTEXT_FACTOR` × the station's own
+ * span. Beyond that the station would shrink to a speck, so far-away neighbours
+ * are clipped (symmetrically around the station) instead of pulled into view.
+ */
+export function journeyFitRange(
+  event: TimelineEvent,
+  neighbours: readonly TimelineEvent[],
+  maxFactor: number = MAX_CONTEXT_FACTOR,
+): { startYear: number; endYear: number } {
+  const eventEnd = event.endYear ?? event.startYear;
+  const all = [event, ...neighbours];
+  let startYear = Math.min(...all.map((e) => e.startYear));
+  let endYear = Math.max(...all.map((e) => e.endYear ?? e.startYear));
+
+  const cap = Math.max(eventEnd - event.startYear, POINT_SPAN_YEARS) * maxFactor;
+  if (endYear - startYear > cap) {
+    const center = (event.startYear + eventEnd) / 2;
+    startYear = Math.max(startYear, center - cap / 2);
+    endYear = Math.min(endYear, center + cap / 2);
+  }
+  return { startYear, endYear };
+}
