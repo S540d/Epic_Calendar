@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Epic Calendar – Interaktiver logarithmischer Zeitstrahl von Urknall bis heute.
+Epic Calendar – Interaktiver linearer Zeitstrahl von Urknall bis heute — zentrales Ziel ist ein Gefühl für echte Zeitdauern, daher bewusst **keine** logarithmische Skala.
 Visualisiert historische Events, Erdzeitalter und Hochkulturen aus mehreren Kontinenten.
 
 **Tech Stack:**
@@ -59,13 +59,13 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 ### Code Style
 
 - TypeScript mit strikter Typisierung
-- Skia-Rendering: alle Koordinaten in logarithmischer Skala berechnen
+- Skia-Rendering: Koordinaten linear über `yearToT`/`ppu` berechnen (Modell B, #93)
 - LOD-Bänder (Level of Detail): Granularität abhängig vom Zoom-Level
 - Keine hardcodierten Texte – immer i18n (`useTranslation`)
 
 ### Besonderheiten der Zeitachse
 
-- Logarithmische Zeitskala: `yearToT(year)` / `tToYear(t)` aus `@/timeline/scale`
+- Zeitskala (linear, Identity): `yearToT(year)` / `tToYear(t)` aus `@/timeline/scale`
 - LOD-Bänder steuern welche Events bei welchem Zoom sichtbar sind (ppu-Schwellen: `2e-6` / `5e-4` / `0.02` / `2` → Level 0–4)
 - `culling.ts`: filtert Events außerhalb des Viewports; `computeLaneData` akzeptiert optionales `eventIndex?` für O(hits+log n)-Queries sowie `maxImportanceRank?` (Detailgrad-Filter) und liefert zusätzlich `connectorsByLane`. `assignTracks` ist lineage-aware (gleiche `lineageId` bevorzugt dieselbe Zeile); `computeLineageConnectors(events, trackMap)` baut die Verbindungslinien zwischen aufeinanderfolgenden Lineage-Events. `buildStableTracksByLane(lanes, continent, maxImportanceRank, eventIndex)` berechnet Tracks einmal viewport-unabhängig über die volle gefilterte Kategorie (siehe #146 B1 unten); wird optional als `stableTracksByLane` an `computeLaneData` übergeben.
 - `eventIndex.ts`: `EventIndex`-Klasse — Kategorie-partitioniert, startYear-sortiert; `buildEventIndex(events)` + `queryVisible(query)` (Binärsuche) + `getFilteredCategory({category, continent, maxImportanceRank})` (alle Events einer Kategorie ohne Zeitraum-/Zoom-Filter, Basis für `buildStableTracksByLane`); in `TimelineView` verdrahtet via `computeLaneData`
