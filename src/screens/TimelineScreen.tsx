@@ -26,6 +26,11 @@ import { spacing, typography, type Category } from '@/theme/tokens';
 import { CHIP_CATEGORIES, DEFAULT_CATEGORIES } from '@/theme/categories';
 import { useTheme, type ThemeColors } from '@/theme/ThemeContext';
 
+// Previous and next station, so a journey jump also shows its surroundings.
+function neighboursOf(steps: readonly TimelineEvent[], i: number): TimelineEvent[] {
+  return [steps[i - 1], steps[i + 1]].filter((e): e is TimelineEvent => e !== undefined);
+}
+
 export function TimelineScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -101,7 +106,13 @@ export function TimelineScreen() {
   const canvasScrollRef = useRef<ScrollView>(null);
   const timelineViewRef = useRef<TimelineViewHandle>(null);
   const [jumpToEvent, setJumpToEvent] = useState<
-    { event: TimelineEvent; requestId: number; openDetail?: boolean } | undefined
+    | {
+        event: TimelineEvent;
+        requestId: number;
+        openDetail?: boolean;
+        fitRange?: { startYear: number; endYear: number };
+      }
+    | undefined
   >(undefined);
   const [jumpToYear, setJumpToYear] = useState<{ year: number; requestId: number } | undefined>(
     undefined,
@@ -258,7 +269,7 @@ export function TimelineScreen() {
   // `isJourneyActive` in the `activeCategories` memo, so this doesn't need
   // its own exclusivity flag.
   const focusEvent = useCallback(
-    (event: TimelineEvent, openDetail: boolean) => {
+    (event: TimelineEvent, openDetail: boolean, neighbours: readonly TimelineEvent[] = []) => {
       setFocusCategory(event.category);
       // On 'all' the target is already visible on every continent — switching
       // away would only narrow the view, so skip the continent change there.
@@ -274,7 +285,15 @@ export function TimelineScreen() {
       setShowOverview(false);
       setEpochRange(undefined);
       jumpRequestIdRef.current += 1;
-      setJumpToEvent({ event, requestId: jumpRequestIdRef.current, openDetail });
+      // With neighbours (journey), zoom out just far enough to show them too.
+      const fitEvents = [event, ...neighbours];
+      const fitRange = neighbours.length
+        ? {
+            startYear: Math.min(...fitEvents.map((e) => e.startYear)),
+            endYear: Math.max(...fitEvents.map((e) => e.endYear ?? e.startYear)),
+          }
+        : undefined;
+      setJumpToEvent({ event, requestId: jumpRequestIdRef.current, openDetail, fitRange });
     },
     [continent, setContinent],
   );
@@ -318,7 +337,7 @@ export function TimelineScreen() {
       setActiveJourneyId(journeyId);
       setShowOverview(false);
       const target = steps[index];
-      if (target) focusEvent(target, false);
+      if (target) focusEvent(target, false, neighboursOf(steps, index));
     },
     [journeyProgress, focusEvent],
   );
@@ -331,7 +350,7 @@ export function TimelineScreen() {
       const clamped = Math.max(0, Math.min(next, journeySteps.length - 1));
       setJourneyProgress((prev) => ({ ...prev, [activeJourneyId]: clamped }));
       const target = journeySteps[clamped];
-      if (target) focusEvent(target, false);
+      if (target) focusEvent(target, false, neighboursOf(journeySteps, clamped));
     },
     [activeJourneyId, journeySteps, setJourneyProgress, focusEvent],
   );
