@@ -15,23 +15,32 @@ const EVENT: TimelineEvent = {
   story: 'Störe meine Kreise nicht!',
 };
 
+const STEPS: TimelineEvent[] = [-500, EVENT.startYear, 0, 1000, 1900].map((y, i) => ({
+  ...EVENT,
+  id: i === 1 ? EVENT.id : `station-${i}`,
+  title: i === 1 ? EVENT.title : `Station ${i}`,
+  startYear: y,
+}));
+
 async function setup(overrides?: Partial<React.ComponentProps<typeof LearningJourneyBar>>) {
   const onPrev = jest.fn();
   const onNext = jest.fn();
   const onExit = jest.fn();
+  const onSelectStep = jest.fn();
   const utils = await render(
     <LearningJourneyBar
       journeyLabelKey="learning.journey.beruehmte-geschichten.label"
       event={EVENT}
       stepIndex={1}
-      stepCount={5}
+      steps={STEPS}
+      onSelectStep={onSelectStep}
       onPrev={onPrev}
       onNext={onNext}
       onExit={onExit}
       {...overrides}
     />,
   );
-  return { ...utils, onPrev, onNext, onExit };
+  return { ...utils, onPrev, onNext, onExit, onSelectStep };
 }
 
 describe('LearningJourneyBar (Lernreise)', () => {
@@ -63,7 +72,7 @@ describe('LearningJourneyBar (Lernreise)', () => {
 
   // The last station must end the journey rather than run past the end of the list.
   it('turns the primary button into "Reise abschließen" on the last station', async () => {
-    const { getByLabelText, onNext, onExit } = await setup({ stepIndex: 4, stepCount: 5 });
+    const { getByLabelText, onNext, onExit } = await setup({ stepIndex: 4 });
     await fireEvent.press(getByLabelText('Reise abschließen'));
     expect(onExit).toHaveBeenCalledTimes(1);
     expect(onNext).not.toHaveBeenCalled();
@@ -79,5 +88,11 @@ describe('LearningJourneyBar (Lernreise)', () => {
     const { getByLabelText, onExit } = await setup();
     await fireEvent.press(getByLabelText('Reise beenden'));
     expect(onExit).toHaveBeenCalledTimes(1);
+  });
+
+  it('jumps to a station when its marker on the overview strip is tapped', async () => {
+    const { getByLabelText, onSelectStep } = await setup();
+    await fireEvent.press(getByLabelText('Zu Station 4: Station 3'));
+    expect(onSelectStep).toHaveBeenCalledWith(3);
   });
 });

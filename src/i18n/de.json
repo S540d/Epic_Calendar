@@ -54,6 +54,7 @@
     "sectionHint": "Geführte Touren – Station für Station durch die Zeit",
     "stations": "{{count}} Stationen",
     "progress": "Station {{current}} von {{total}}",
+    "jumpToStation": "Zu Station {{current}}: {{title}}",
     "start": "Starten",
     "continue": "Fortsetzen",
     "restart": "Von vorn beginnen",
@@ -200,6 +201,10 @@
     "billion": "Mrd.",
     "million": "Mio.",
     "thousand": "Tsd."
+  },
+  "number": {
+    "decimal": ",",
+    "thousands": "."
   },
   "epochNav": {
     "title": "Zeitreise",

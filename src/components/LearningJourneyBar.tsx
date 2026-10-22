@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import type { TimelineEvent } from '@/data/schema';
+import { JourneyStrip } from './JourneyStrip';
 import { formatEventYear } from '@/timeline/formatYear';
 import { CATEGORY_COLORS } from '@/theme/categories';
 import { useTheme, type ThemeColors } from '@/theme/ThemeContext';
@@ -15,8 +16,10 @@ type Props = {
   event: TimelineEvent | null;
   /** 0-based index of the current station. */
   stepIndex: number;
-  /** Total number of stations in this journey. */
-  stepCount: number;
+  /** All stations of the journey, in order; drives the overview strip. */
+  steps: readonly TimelineEvent[];
+  /** Jump straight to a station (tap on the overview strip). */
+  onSelectStep: (index: number) => void;
   onPrev: () => void;
   onNext: () => void;
   onExit: () => void;
@@ -37,7 +40,8 @@ export function LearningJourneyBar({
   journeyLabelKey,
   event,
   stepIndex,
-  stepCount,
+  steps,
+  onSelectStep,
   onPrev,
   onNext,
   onExit,
@@ -46,6 +50,7 @@ export function LearningJourneyBar({
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
+  const stepCount = steps.length;
   const isFirst = stepIndex <= 0;
   const isLast = stepIndex >= stepCount - 1;
   const accent = event ? CATEGORY_COLORS[event.category] : colors.accent;
@@ -80,14 +85,7 @@ export function LearningJourneyBar({
         </Pressable>
       </View>
 
-      <View style={styles.progressTrack} accessibilityElementsHidden importantForAccessibility="no">
-        <View
-          style={[
-            styles.progressFill,
-            { backgroundColor: accent, width: `${((stepIndex + 1) / stepCount) * 100}%` },
-          ]}
-        />
-      </View>
+      <JourneyStrip events={steps} stepIndex={stepIndex} onSelectStep={onSelectStep} />
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentInner}>
         {event && (
@@ -202,18 +200,6 @@ function makeStyles(colors: ThemeColors) {
       fontSize: 14,
       color: colors.textSecondary,
       fontWeight: '600',
-    },
-    progressTrack: {
-      height: 3,
-      marginHorizontal: spacing.lg,
-      marginTop: spacing.sm,
-      borderRadius: radii.pill,
-      backgroundColor: colors.surface,
-      overflow: 'hidden',
-    },
-    progressFill: {
-      height: 3,
-      borderRadius: radii.pill,
     },
     content: {
       flexGrow: 0,
