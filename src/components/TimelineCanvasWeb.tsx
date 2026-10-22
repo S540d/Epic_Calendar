@@ -49,7 +49,7 @@ type Props = {
   zoomAtPoint: (focalX: number, factor: number) => void;
   onEventTap: (event: TimelineEvent) => void;
   zoomToFit: (startYear: number, endYear: number | null | undefined) => void;
-  handleMinimapJump: (newOffsetX: number) => void;
+  handleMinimapJump: (newOffsetX: number, animate?: boolean) => void;
   minimapHighlight?: { startT: number; endT: number } | null;
   /** Shows the live FPS overlay (#5 FPS-Monitoring, opt-in via Settings). */
   showFpsMonitor?: boolean;
