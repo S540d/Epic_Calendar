@@ -14,7 +14,7 @@ type Props = {
   canvasWidth: number;
   zoomLevel: ZoomLevel;
   zoomToFit: (startYear: number, endYear: number | null | undefined) => void;
-  handleMinimapJump: (newOffsetX: number) => void;
+  handleMinimapJump: (newOffsetX: number, animate?: boolean) => void;
   minimapHighlight?: { startT: number; endT: number } | null;
   showFpsMonitor?: boolean;
 };
@@ -37,7 +37,9 @@ type Props = {
  * leaked internal LOD naming ("Level 3") that nobody acts on, and its year
  * range duplicated `TimeAxis`'s own tick labels. The one piece of unique
  * information it carried — ancestors above what the band itself shows — moved
- * into `EpochBand`'s small prefix chip instead of its own row.
+ * into `EpochBand`'s small prefix chip instead of its own row — and from
+ * there into the minimap's context crumbs, once the minimap became a real
+ * overview strip instead of a hairline.
  */
 export function TimelineChrome({
   jsOffsetX,
@@ -52,9 +54,8 @@ export function TimelineChrome({
   return (
     <>
       {/* #214: the minimap lives inside the same sticky wrapper as the axis
-          row — as a slim hairline directly beneath it — so it scrolls (or
-          rather, doesn't) together with the axis instead of separating from
-          it as its own chrome row. */}
+          row, directly beneath it, so it scrolls (or rather, doesn't)
+          together with the axis instead of separating from it. */}
       <View style={Platform.select({ web: { position: 'sticky', top: 0, zIndex: 10 } as any })}>
         <View style={styles.axisRow}>
           <View style={{ width: LANE_LABEL_WIDTH }} />
@@ -76,6 +77,7 @@ export function TimelineChrome({
           pixelsPerUnit={jsPixelsPerUnit}
           canvasWidth={canvasWidth}
           onJump={handleMinimapJump}
+          onZoomTo={zoomToFit}
           highlightRange={minimapHighlight}
         />
       </View>

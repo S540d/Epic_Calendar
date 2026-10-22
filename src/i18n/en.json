@@ -251,6 +251,7 @@
   },
   "minimap": {
     "label": "Timeline overview",
+    "hint": "Tap to jump there, drag to move the visible section",
     "scrollForward": "Scroll forward",
     "scrollBack": "Scroll back"
   },

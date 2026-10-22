@@ -5,8 +5,8 @@ import { TimelineChrome } from '../TimelineChrome';
 
 /**
  * Viewport covering roughly the Hellenistic period, so the epoch band renders
- * its finest level (Hellenismus etc.) while the ancestor prefix chip in
- * `EpochBand` carries the levels above it (Menschheitsgeschichte › Antike ›).
+ * its finest level (Hellenismus etc.) while the minimap's context crumbs
+ * carry the deepest levels of the path (Antike › Hellenismus).
  */
 const HELLENISM = { startYear: -320, endYear: -280 };
 
@@ -30,16 +30,16 @@ async function renderChrome(overrides: Partial<React.ComponentProps<typeof Timel
 }
 
 describe('TimelineChrome (#213)', () => {
-  it('renders the header stack: minimap, epoch band and its ancestor prefix', async () => {
-    const { getByLabelText, getAllByLabelText } = await renderChrome();
+  it('renders the header stack: minimap with context crumbs and epoch band', async () => {
+    const { getByLabelText, getAllByLabelText, queryByLabelText } = await renderChrome();
 
-    // Ancestor prefix chip on EpochBand (levels above what the band itself shows).
-    expect(getByLabelText('Menschheitsgeschichte')).toBeTruthy();
+    // Context crumbs on the minimap (deepest two levels only).
     expect(getByLabelText('Antike')).toBeTruthy();
+    expect(queryByLabelText('Menschheitsgeschichte')).toBeNull();
     // The band's own segment for the current level.
     expect(getAllByLabelText('Hellenismus').length).toBeGreaterThan(0);
     // Minimap is part of the stack.
-    expect(getByLabelText(/Zeitstrahl/i)).toBeTruthy();
+    expect(getByLabelText('Zeitstrahl-Übersicht')).toBeTruthy();
   });
 
   it('there is no separate breadcrumb row with a zoom-level pill', async () => {
@@ -48,7 +48,7 @@ describe('TimelineChrome (#213)', () => {
     expect(queryByText('Jahre')).toBeNull();
   });
 
-  it('zooms to the tapped ancestor rather than the current viewport', async () => {
+  it('zooms to the tapped crumb rather than the current viewport', async () => {
     const { getByLabelText, zoomToFit } = await renderChrome();
 
     await fireEvent.press(getByLabelText('Antike'));
@@ -57,7 +57,7 @@ describe('TimelineChrome (#213)', () => {
     expect(zoomToFit).toHaveBeenCalledWith(-800, 600);
   });
 
-  it('shows no ancestor prefix when zoomed all the way out', async () => {
+  it('shows no narrow sub-epoch when zoomed all the way out', async () => {
     const { queryByLabelText } = await renderChrome({
       jsOffsetX: -13_800_000_000,
       jsPixelsPerUnit: 800 / (2026 - -13_800_000_000),

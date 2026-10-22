@@ -42,7 +42,7 @@ export type TimelineViewport = {
   zoomIn: () => void;
   zoomOut: () => void;
   jumpToToday: () => void;
-  handleMinimapJump: (newOffsetX: number) => void;
+  handleMinimapJump: (newOffsetX: number, animate?: boolean) => void;
 };
 
 type Options = {
@@ -178,8 +178,12 @@ export function useTimelineViewport({
   );
 
   const handleMinimapJump = useCallback(
-    (newOffsetX: number) => {
-      offsetX.value = withTiming(newOffsetX, { duration: ZOOM_STEP_DURATION_MS }); // eslint-disable-line react-hooks/immutability
+    (newOffsetX: number, animate = true) => {
+      // Scrubbing the minimap updates on every move event — animating each
+      // step would make the viewport lag behind the finger.
+      offsetX.value = animate // eslint-disable-line react-hooks/immutability
+        ? withTiming(newOffsetX, { duration: ZOOM_STEP_DURATION_MS })
+        : newOffsetX;
     },
     [offsetX],
   );

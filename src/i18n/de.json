@@ -251,6 +251,7 @@
   },
   "minimap": {
     "label": "Zeitstrahl-Übersicht",
+    "hint": "Tippen springt dorthin, Ziehen verschiebt den Ausschnitt",
     "scrollForward": "Vorwärts scrollen",
     "scrollBack": "Zurück scrollen"
   },
