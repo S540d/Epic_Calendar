@@ -64,7 +64,7 @@ export function contextRangeForViewport(viewStart: number, viewEnd: number): Con
     endYear = CONTEXT_MAX_YEAR;
   } else {
     // With viewSpan ≤ span/8 and the centre in the 3rd quarter-step, the whole
-    // viewport always lies inside the window.
+    // viewport always lies inside the context range.
     const step = span / 4;
     const center = (viewStart + viewEnd) / 2;
     startYear = Math.floor(center / step) * step - 2 * step;
