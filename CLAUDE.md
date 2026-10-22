@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Epic Calendar – Interaktiver logarithmischer Zeitstrahl von Urknall bis heute.
+Epic Calendar – Interaktiver linearer Zeitstrahl von Urknall bis heute — zentrales Ziel ist ein Gefühl für echte Zeitdauern, daher bewusst **keine** logarithmische Skala.
 Visualisiert historische Events, Erdzeitalter und Hochkulturen aus mehreren Kontinenten.
 
 **Tech Stack:**
@@ -59,13 +59,13 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 ### Code Style
 
 - TypeScript mit strikter Typisierung
-- Skia-Rendering: alle Koordinaten in logarithmischer Skala berechnen
+- Skia-Rendering: Koordinaten linear über `yearToT`/`ppu` berechnen (Modell B, #93)
 - LOD-Bänder (Level of Detail): Granularität abhängig vom Zoom-Level
 - Keine hardcodierten Texte – immer i18n (`useTranslation`)
 
 ### Besonderheiten der Zeitachse
 
-- Logarithmische Zeitskala: `yearToT(year)` / `tToYear(t)` aus `@/timeline/scale`
+- Zeitskala (linear, Identity): `yearToT(year)` / `tToYear(t)` aus `@/timeline/scale`
 - LOD-Bänder steuern welche Events bei welchem Zoom sichtbar sind (ppu-Schwellen: `2e-6` / `5e-4` / `0.02` / `2` → Level 0–4)
 - `culling.ts`: filtert Events außerhalb des Viewports; `computeLaneData` akzeptiert optionales `eventIndex?` für O(hits+log n)-Queries sowie `maxImportanceRank?` (Detailgrad-Filter) und liefert zusätzlich `connectorsByLane`. `assignTracks` ist lineage-aware (gleiche `lineageId` bevorzugt dieselbe Zeile); `computeLineageConnectors(events, trackMap)` baut die Verbindungslinien zwischen aufeinanderfolgenden Lineage-Events. `buildStableTracksByLane(lanes, continent, maxImportanceRank, eventIndex)` berechnet Tracks einmal viewport-unabhängig über die volle gefilterte Kategorie (siehe #146 B1 unten); wird optional als `stableTracksByLane` an `computeLaneData` übergeben.
 - `eventIndex.ts`: `EventIndex`-Klasse — Kategorie-partitioniert, startYear-sortiert; `buildEventIndex(events)` + `queryVisible(query)` (Binärsuche) + `getFilteredCategory({category, continent, maxImportanceRank})` (alle Events einer Kategorie ohne Zeitraum-/Zoom-Filter, Basis für `buildStableTracksByLane`); in `TimelineView` verdrahtet via `computeLaneData`
@@ -93,7 +93,8 @@ gh pr create --base testing --title "Fix #XXX: ..." --body "..."
 - **Detailgrad-Filter (`importance` verdrahtet):** Der Detailgrad (**Kinder / Schulwissen** / Standard / Alles) setzt `maxImportanceRank` als kumulativen Schwellwert in `filterVisible`/`queryVisible`. Default „Alles" (= alles sichtbar, abwärtskompatibel); Events ohne `importance` zählen als `extended`. Ergänzt den automatischen Zoom-LOD um eine manuelle Achse; persistiert als `detailLevel`. UI ist eine Segmented-Control direkt in `SettingsModal` (kein eigenständiges Component mehr — die frühere `DetailLevelSelector`-Komponente war verwaist, duplizierte dieselbe UI und wurde entfernt). Die unterste Stufe `core` = **Kinder/Schulwissen** (i18n `detailLevel.core`, EN „Kids / school basics") ist systematisch über **alle** Kategorien mit typischem Schulwissen bespielt (Stand: erdzeitalter 14, herrscher 54, nation 35, zivilisation 88, natur 46, kultur 13 core) — beim Ergänzen neuer Events dieselbe Balance halten und offensichtliches Schulwissen `importance: 'core'` geben. Die oberste Stufe `detail` (Spezialisten-Tiefe) deckt inzwischen alle sechs Kategorien ab (vorher fast ausschließlich `zivilisation`/`nation`) — `npm run coverage` zeigt die aktuelle Verteilung.
 - **Geteilte Renderer-Bausteine (gegen Web/Native-Drift):** Alles, was in beiden Renderern identisch ist, liegt in eigenen Komponenten statt doppelt in den ~400-Zeilen-Dateien: `TimelineChrome` (Achsenzeile inkl. FPS-Overlay + Minimap + EpochBand + Breadcrumb) und `TimelineLaneLabels` (Label-Spalte). In `TimelineCanvasWeb`/`TimelineCanvasNative` bleibt nur, was echt divergiert: Skia-`Canvas` vs. RN-Views, der native Multi-Hit-Popover, der Web-Scroll-Wrapper und der Mausrad-Shim. **Neue gemeinsame Chrome-Elemente gehören in diese Komponenten, nicht in beide Renderer.** Web-only-Styles brauchen dort keinen Platform-Fork, solange das `Platform.select` keinen `default`-Zweig hat (dann ist es auf Native `undefined`) — so sind `position: sticky` auf Achsenzeile und Label-Spalte gelöst.
 - **Zoom-Buttons fix außerhalb der ScrollView (`TimelineZoomCluster`, ⌖/+/−):** Wird **nicht** mehr von `TimelineCanvasWeb`/`TimelineCanvasNative` gerendert (dort scrollte er bei vielen aktiven Lanes mit dem Zeitstrahl-Inhalt aus dem sichtbaren Bereich heraus), sondern von `TimelineScreen` als Overlay-Sibling **über** der `canvasWrap`-`ScrollView`. `TimelineView` ist dafür mit `forwardRef` + `useImperativeHandle` gebaut und exportiert den Typ `TimelineViewHandle` (`{ zoomIn, zoomOut, jumpToToday }`); `TimelineScreen` hält einen `timelineViewRef` und ruft die Kommandos darüber imperativ auf. Neue Chrome-Elemente, die zwingend viewport-fix (nicht scroll-mitlaufend) sein müssen, gehören nach demselben Muster außerhalb der ScrollView in `TimelineScreen`, nicht in die Canvas-Renderer.
-- **Navigation & Orientierung (konsolidiert, #213-Folge):** Der Zeitstrahl hatte mit `EpochBreadcrumbBar` (eigene Zeile unter dem Epochenband: Zoom-Pille + antippbarer Epochenpfad + Zeitraum) ein eigenständiges „Wo bin ich?"-Element, das die früheren `EpochChipBar`, `EpochNavArrows`, `TimelineBreadcrumb` und `ZoomLevelIndicator` ersetzte. #213 entfernte diese Zeile wieder komplett: die Zoom-Pille leakte interne LOD-Namen („Level 3"), die niemand direkt nutzt, und der Zeitraum duplizierte `TimeAxis`s eigene Tick-Labels. Das einzige eigenständige Signal, das sie trug — der Epochenpfad oberhalb dessen, was `EpochBand` selbst zeigt — lebt jetzt als kleiner Präfix-Chip in `EpochBand` selbst (siehe `TimelineChrome.tsx`-Kommentar). Verbleibende Sprung-Mechanismen: `TimelineMinimap` (Position im Gesamtzeitstrahl), `EpochBand` (räumlicher Kontext inkl. Pfad-Chip, scrollt mit) und der Zoom-Cluster. Der Titelblock im Header ist das einzige Home-Control (der zusätzliche ⌂-Button ist entfallen).
+- **Navigation & Orientierung (konsolidiert, #213-Folge):** Der Zeitstrahl hatte mit `EpochBreadcrumbBar` (eigene Zeile unter dem Epochenband: Zoom-Pille + antippbarer Epochenpfad + Zeitraum) ein eigenständiges „Wo bin ich?"-Element, das die früheren `EpochChipBar`, `EpochNavArrows`, `TimelineBreadcrumb` und `ZoomLevelIndicator` ersetzte. #213 entfernte diese Zeile wieder komplett: die Zoom-Pille leakte interne LOD-Namen („Level 3"), die niemand direkt nutzt, und der Zeitraum duplizierte `TimeAxis`s eigene Tick-Labels. Das einzige eigenständige Signal, das sie trug — der Epochenpfad oberhalb dessen, was `EpochBand` selbst zeigt — lebt jetzt als kleiner Präfix-Chip in `EpochBand` selbst (siehe `TimelineChrome.tsx`-Kommentar). Verbleibende Sprung-Mechanismen: `TimelineMinimap` (Übersichtsleiste, s. u.), `EpochBand` (räumlicher Kontext, scrollt mit) und der Zoom-Cluster. Der Titelblock im Header ist das einzige Home-Control (der zusätzliche ⌂-Button ist entfallen).
+- **Übersichtsleiste (`TimelineMinimap` + `contextRange.ts`, Overview + Detail):** Zeigt **nicht** den Gesamtzeitstrahl (linear wäre jeder historische Ausschnitt ein Stummel) und auch nicht die Eltern-Epoche (die Steinzeit macht 99,6 % der Menschheitsgeschichte aus), sondern `contextRangeForViewport()`: ~`CONTEXT_ZOOM_RATIO` (8)× den Viewport, per `niceCeil` auf 1/2/5×10ⁿ gerundet und auf ein Viertel-Raster gesnappt (Fenster bleibt beim Pannen stehen, die Box wandert), geklemmt auf `TIMELINE_START_YEAR..PRESENT_YEAR + PRESENT_RIGHT_BUFFER_YEARS`. Interaktion über das RN-Responder-System (Tap = animierter Sprung, Drag = Live-Scrub mit `handleMinimapJump(offset, false)`); das Fenster ist während eines Drags eingefroren. Links die zwei tiefsten Ebenen von `epochPathForViewport` des **Viewports** als Brotkrumen (`onZoomTo` → `zoomToFit`) — ersetzt den früheren Pfad-Chip in `EpochBand`.
 - **Settings-Menü (`SettingsModal`):** Bottom-Sheet-Modal, öffnet per ⚙-Icon im Header beider Screens. Drei Sections: Erscheinungsbild (Dark/Light-Mode-Toggle), Darstellung (Detailgrad, FPS-Monitor-Toggle), Sprache (DE/EN). Dark Mode via `ThemeContext`; Sprache via i18next + AsyncStorage-Persistenz.
 - **Detailgrad-Hinweis beim ersten Start (`DetailLevelPrompt`):** Zentraler, einmaliger Dialog auf der Landing Page (nicht im Zeitstrahl), der auf den Detailgrad-Regler in den Einstellungen verweist statt ihn zu duplizieren. Persistiert als `detailLevelPromptSeen` (AsyncStorage via `usePersistedState`); „Zu den Einstellungen" setzt das Flag und öffnet direkt `SettingsModal`, „Später" setzt nur das Flag. Wird als Sibling neben `EpochOverviewScreen` gerendert, sichtbar solange `!detailPromptSeen`.
 - **FPS-Monitor (#5):** `useFpsMonitor(enabled)` misst die Bildrate via Reanimated `useFrameCallback` (UI-Thread, 500ms-Sample-Fenster, `runOnJS` zurück zu React State); läuft nur bei `enabled=true` (kein Overhead im Default-Fall). `FpsMonitor`-Komponente rendert eine farbcodierte Pill (≥50 FPS grün, ≥30 gelb, sonst rot), non-interactive. In beiden Renderern (`TimelineCanvasWeb`/`TimelineCanvasNative`) im `topRightGroup`-Flex-Container (`timelineRenderShared.ts`); Kinder dieses Containers dürfen **nicht** selbst `position: absolute` sein, sonst überlappen sie sich am selben Eck. Seit der Navigations-Konsolidierung ist der FPS-Monitor das einzige Kind. Toggle „FPS-Monitor anzeigen" im Settings-Menü, persistiert als `showFpsMonitor` (Default: aus).
@@ -155,7 +156,7 @@ src/
 │   ├── TimeAxis.tsx               # Zeitachse
 │   ├── FpsMonitor.tsx             # FPS-Overlay-Pill (#5, opt-in via Settings, Layout via topRightGroup)
 │   ├── useFpsMonitor.ts           # Reanimated useFrameCallback-Hook für FpsMonitor
-│   ├── TimelineMinimap.tsx        # Übersichtsleiste (Tap + a11y-Actions)
+│   ├── TimelineMinimap.tsx        # Übersichtsleiste: adaptives Kontextfenster + Viewport-Box + Pfad-Brotkrumen (Tap/Drag + a11y)
 │   ├── EpochBand.tsx              # Visuelles Epochen-Band, zoomabhängig verfeinert (Ebene via epochBandDepth)
 │   ├── EpochOverviewScreen.tsx    # Landing Page: drei Sektionen (Zeitreise/Lernreisen/Themen), je eine aufklappbare DiscoveryTile-Liste + "Eigener Filter"-Kachel
 │   ├── DiscoveryTile.tsx          # Geteilte Akkordeon-Kachel + flattenTiles() für Lernreisen/Themen (generalisiert aus EpochOverviewScreens EpochTile)
@@ -180,6 +181,7 @@ src/
 │   ├── epoch.ts               # Einzige Epochen-Quelle: NAVIGATION_EPOCHS-Baum + Pfad-/Tiefen-Helfer
 │   ├── formatYear.ts          # Jahr-Formatierung
 │   ├── search.ts              # searchEvents (title/culture/tags) + parseYearQuery (#146 A)
+│   ├── contextRange.ts        # Kontextfenster der Übersichtsleiste (contextRangeForViewport, niceCeil)
 │   └── __tests__/
 │       └── testUtils.ts       # makeEvent() + baseVisibilityFilter — geteilte Fixtures für Timeline-Logik-Tests
 ├── theme/
@@ -294,7 +296,6 @@ _Keine offenen Issues aus der letzten Runde — #76 (Mehr Inhalte), #162 (Farblo
 - [project-templates Standards](https://github.com/S540d/project-templates)
 
 <!-- GLOBAL POLICY:START -->
-
 ## [GLOBAL POLICY]
 
 > Automatisch synchronisiert aus project-templates (Issue #7). Nicht manuell editieren –
@@ -307,6 +308,7 @@ _Keine offenen Issues aus der letzten Runde — #76 (Mehr Inhalte), #162 (Farblo
 - `--no-verify` nur auf explizite Bitte
 - **Vor jedem Push: lokale Tests ausführen** (`npm test` bzw. projektspezifischer Test-Befehl) – kein Push ohne grüne lokale Tests
 - **Kein Merge bei CI-Fail** – Branch Protection erzwingt das technisch; nie mit `--admin` umgehen außer auf explizite Bitte
+- **Zugehöriges Issue beim Merge schließen** (Issue #111): `Closes #X` im PR-Body greift nur beim Merge in den Default-Branch (`main`) — bei PRs nach `testing` also **nie**. Das Issue nach dem Merge manuell schließen (`gh issue close <N> -c "Umgesetzt in #<PR>, gemergt nach \`testing\`."`), sonst bleiben erledigte Issues offen liegen. Ausnahme: Sammel-/Meta-Issues, die ein Teil-PR nur anteilig abarbeitet — die bleiben offen. `Closes #X` trotzdem im PR-Body lassen: es erzeugt die sichtbare Verknüpfung.
 
 ## [ANDROID BUILD – PFLICHTREGELN]
 
@@ -316,6 +318,24 @@ _Keine offenen Issues aus der letzten Runde — #76 (Mehr Inhalte), #162 (Farblo
 - **JAVA_HOME** für EAS/Expo-Builds explizit auf Android Studio JBR setzen: `export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"`
 - **Gradle-Lock nach Absturz:** Bei "Cannot lock file hash cache"-Fehler Daemons stoppen: `pkill -f GradleDaemon`, dann Workingdir leeren und neu starten
 - **AAB-Archiv:** Gebaute Release-AABs in einem **gitignored** `aab-archive/`-Verzeichnis im Repo-Root ablegen (in `.gitignore` aufnehmen – AABs sind 3–110 MB und gehören nie in die Git-History). Benennung: `<Projekt>-vX.Y.Z-vc<versionCode>-YYYY-MM-DD.aab`. **Retention: max. 2 Dateien** (aktuelles Release + ein Vorgänger für schnelles Rollback); ältere AABs löschen. Der Git-Tag `vX.Y.Z` ist die eigentliche Release-Baseline – ältere AABs lassen sich daraus jederzeit neu bauen.
+
+## [CLAUDE.MD-WARTUNG]
+
+- **CLAUDE.md bleibt bei maximal 300 Zeilen** (Issue #160): Sie wird bei jeder Session vollständig in den Kontext geladen. Beschreibt ein Abschnitt einen konkreten Vorfall, gehören maximal 2-3 Zeilen (Kernregel + kurzer Auslöser-Kontext) + ein Link auf `docs/private/INCIDENTS.md` hinein; aktuell gültiges Architektur-/Prozesswissen, das kein Vorfall ist, aber zu ausführlich für CLAUDE.md, gehört in versionierte `docs/*.md`-Dateien (z. B. `docs/ARCHITECTURE.md`). Die Schwelle ist ein Prüf-Auslöser, kein Zwang, bewusst dort gehaltenes, aktuelles Architekturwissen aus CLAUDE.md zu verdrängen. Aktiv gekürzt wird erst ab 500 Zeilen; Dateien zwischen 300 und 500 Zeilen werden im Turnus nicht angefasst. Ausführlicher Prozess, Checkliste und Stand pro Projekt: https://github.com/S540d/project-templates/blob/main/dev-standards/claude-md-maintenance.md
+- **`docs/private/INCIDENTS.md` ist bewusst gitignored** — reine lokale Gedächtnisstütze wie Memory, kein Teil des geteilten Repo-Zustands. In jedem Projekt mit dieser Datei muss `.gitignore` einen Eintrag `docs/private/` enthalten; existiert die Datei bereits versioniert (z. B. als `docs/INCIDENTS.md`), gehört sie nach `docs/private/` verschoben und per `git rm --cached` aus dem Tracking genommen.
+- **Regelmäßig `/simplify` auf CLAUDE.md ausführen**, nicht nur einmalig beim Überschreiten der Schwelle — Ziel ist dauerhaft niedriger Token-Verbrauch pro Session statt zyklischem Anwachsen und Zurückkürzen in großen Sprüngen.
+
+## [CODE HEALTH AUDIT]
+
+- **Wiederkehrendes Code-Health-Audit** (Ballast/Architektur: God Components, Boilerplate-Duplikation, toter Code, Dependency-Bloat, Test-Integrität, Design-Konsistenz, Bundle-Größe) alle ~3 Monate oder ~15 gemergte Feature-PRs (je nachdem was zuerst eintritt). Checkliste + Ablauf: https://github.com/S540d/project-templates/blob/main/dev-standards/code-health-audit.md — Ergebnis ist immer ein Issue im jeweiligen Projekt-Repo, nie in project-templates.
+
+## [SIMPLIFY-AUDIT]
+
+- **Wiederkehrender `/simplify`-Durchlauf auf den Quellcode** (Reuse, Simplification, Efficiency, Altitude) alle ~3 Monate oder ~15 gemergte Feature-PRs (je nachdem was zuerst eintritt), gleiche Kadenz wie das Code-Health-Audit. Anders als dieses wendet er die Fixes direkt an: Ergebnis ist ein PR gegen den projektüblichen Ziel-Branch, nur kleine, verhaltensneutrale Refactorings (bei Unsicherheit Finding auslassen). Ablauf: https://github.com/S540d/project-templates/blob/main/dev-standards/simplify-audit.md
+
+## [ÜBER-ABSCHNITT]
+
+- **Einheitlicher „Über"-Abschnitt im Settingsmenü** (Issue #150): Jedes Web-Projekt zeigt „Über" als Eintrag in einem `⋮`-Settingsmenü (kein Footer — wird bei Bedarf neu angelegt, auch für aktuell menülose Projekte). Fester Vollausbau: App-Name, Version, Impressum, Datenschutz, Quellcode, Play Store, Feedback — nicht zutreffende Felder werden weggelassen, nie umsortiert. Spezifikation: https://github.com/S540d/project-templates/blob/main/dev-standards/about-section.md — Umsetzung ist immer ein Issue im jeweiligen Projekt-Repo, nie in project-templates.
 
 ## [CI – CACHE-CLEANUP]
 

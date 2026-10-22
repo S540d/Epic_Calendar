@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import type { NavigationEpoch } from '@/timeline/epoch';
 import { NAVIGATION_EPOCHS } from '@/timeline/epoch';
-import { formatEventYear } from '@/timeline/formatYear';
+import { formatEventYear, formatOneDecimal, formatThousands } from '@/timeline/formatYear';
 import { ALL_EVENTS } from '@/data/events';
 import { LEARNING_JOURNEYS } from '@/data/learningJourneys';
 import { childrenOf, eventMatchesTheme, topLevelThemes, type Theme } from '@/data/themes';
@@ -49,15 +49,15 @@ function sortByLabel<T>(items: readonly T[], labelOf: (item: T) => string, local
 function formatDuration(startYear: number, endYear: number, t: TFunction): string {
   const durationYears = Math.abs(endYear - startYear);
   if (durationYears >= 1_000_000_000) {
-    return t('epochNav.durationBillion', { n: (durationYears / 1_000_000_000).toFixed(1) });
+    return t('epochNav.durationBillion', { n: formatOneDecimal(durationYears / 1_000_000_000, t) });
   }
   if (durationYears >= 1_000_000) {
-    return t('epochNav.durationMillion', { n: Math.round(durationYears / 1_000_000) });
+    return t('epochNav.durationMillion', { n: formatOneDecimal(durationYears / 1_000_000, t) });
   }
   if (durationYears >= 10_000) {
     return t('epochNav.durationThousand', { n: Math.round(durationYears / 1_000) });
   }
-  return t('epochNav.durationYears', { n: durationYears.toLocaleString() });
+  return t('epochNav.durationYears', { n: formatThousands(durationYears, t) });
 }
 
 function formatYearLabel(year: number, t: TFunction): string {

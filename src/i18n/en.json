@@ -1,7 +1,7 @@
 {
   "app": {
     "title": "Epic Calendar",
-    "subtitle": "Logarithmic timeline – from the Big Bang to today"
+    "subtitle": "Linear timeline – true durations from the Big Bang to today"
   },
   "settings": {
     "title": "Settings",
@@ -54,6 +54,7 @@
     "sectionHint": "Guided tours – one stop at a time through history",
     "stations": "{{count}} stops",
     "progress": "Stop {{current}} of {{total}}",
+    "jumpToStation": "Go to stop {{current}}: {{title}}",
     "start": "Start",
     "continue": "Continue",
     "restart": "Start over",
@@ -201,6 +202,10 @@
     "million": "M",
     "thousand": "k"
   },
+  "number": {
+    "decimal": ".",
+    "thousands": ","
+  },
   "epochNav": {
     "title": "Time Journey",
     "subtitle": "Choose an epoch to explore",
@@ -246,6 +251,7 @@
   },
   "minimap": {
     "label": "Timeline overview",
+    "hint": "Tap to jump there, drag to move the visible section",
     "scrollForward": "Scroll forward",
     "scrollBack": "Scroll back"
   },

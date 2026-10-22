@@ -26,8 +26,9 @@ describe('formatEventYear', () => {
     expect(formatEventYear(12_400, t)).toBe('12,400 CE');
   });
 
-  it('formats millions rounded', () => {
-    expect(formatEventYear(65_400_000, t)).toBe('65 Mio. CE');
+  it('formats millions with one decimal', () => {
+    expect(formatEventYear(65_400_000, t)).toBe('65.4 Mio. CE');
+    expect(formatEventYear(-252_000_000, t)).toBe('252 Mio. BCE');
   });
 
   it('formats six-digit years as Mio. instead of a raw thousands number', () => {
@@ -44,5 +45,17 @@ describe('formatEventYear', () => {
 
   it('handles year zero', () => {
     expect(formatEventYear(0, t)).toBe('0 CE');
+  });
+
+  it('uses the language-specific separators when provided', () => {
+    const de = (key: string) =>
+      ({
+        'number.decimal': ',',
+        'number.thousands': '.',
+        'event.ce': 'n. Chr.',
+        'event.million': 'Mio.',
+      })[key] ?? t(key);
+    expect(formatEventYear(1492, de)).toBe('1.492 n. Chr.');
+    expect(formatEventYear(65_400_000, de)).toBe('65,4 Mio. n. Chr.');
   });
 });

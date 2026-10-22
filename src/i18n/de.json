@@ -1,7 +1,7 @@
 {
   "app": {
     "title": "Epic Calendar",
-    "subtitle": "Logarithmischer Zeitstrahl – vom Urknall bis heute"
+    "subtitle": "Linearer Zeitstrahl – echte Zeitdauern vom Urknall bis heute"
   },
   "settings": {
     "title": "Einstellungen",
@@ -54,6 +54,7 @@
     "sectionHint": "Geführte Touren – Station für Station durch die Zeit",
     "stations": "{{count}} Stationen",
     "progress": "Station {{current}} von {{total}}",
+    "jumpToStation": "Zu Station {{current}}: {{title}}",
     "start": "Starten",
     "continue": "Fortsetzen",
     "restart": "Von vorn beginnen",
@@ -201,6 +202,10 @@
     "million": "Mio.",
     "thousand": "Tsd."
   },
+  "number": {
+    "decimal": ",",
+    "thousands": "."
+  },
   "epochNav": {
     "title": "Zeitreise",
     "subtitle": "Wähle eine Epoche zum Erkunden",
@@ -246,6 +251,7 @@
   },
   "minimap": {
     "label": "Zeitstrahl-Übersicht",
+    "hint": "Tippen springt dorthin, Ziehen verschiebt den Ausschnitt",
     "scrollForward": "Vorwärts scrollen",
     "scrollBack": "Zurück scrollen"
   },

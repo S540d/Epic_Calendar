@@ -65,7 +65,13 @@ type Props = {
    * because it renders the station content in its own bar instead of a modal
    * that would cover the timeline.
    */
-  jumpToEvent?: { event: TimelineEvent; requestId: number; openDetail?: boolean } | null;
+  jumpToEvent?: {
+    event: TimelineEvent;
+    requestId: number;
+    openDetail?: boolean;
+    /** Year range to fit instead of the event's own (e.g. event plus its journey neighbours). */
+    fitRange?: { startYear: number; endYear: number };
+  } | null;
   /**
    * Set (e.g. from search) to center the viewport on a specific year without
    * opening a detail modal. Same `requestId` re-trigger semantics as `jumpToEvent`.
@@ -481,14 +487,18 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
     if (canvasWidth <= 0) return;
     if (lastJumpRequestIdRef.current === jumpToEvent.requestId) return;
     lastJumpRequestIdRef.current = jumpToEvent.requestId;
-    const { event, openDetail = true } = jumpToEvent;
+    const { event, openDetail = true, fitRange } = jumpToEvent;
     setMinimapHighlight({
       startT: yearToT(event.startYear),
       endT: yearToT(event.endYear ?? event.startYear),
     });
     let scrollTimer: ReturnType<typeof setTimeout> | undefined;
     const zoomTimer = setTimeout(() => {
-      zoomToFitRef.current(event.startYear, event.endYear, true);
+      zoomToFitRef.current(
+        fitRange?.startYear ?? event.startYear,
+        fitRange ? fitRange.endYear : event.endYear,
+        true,
+      );
       // Wait for the zoom-to-fit animation to actually settle (same delay as
       // the detail-modal open below) before scrolling — `lanes`/`laneTops`
       // only reflect the new viewport once it does (see doc comment above).

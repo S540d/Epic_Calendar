@@ -68,7 +68,7 @@ type Props = {
   heuteVisible: boolean;
   gesture: ComposedGesture | GestureType;
   zoomToFit: (startYear: number, endYear: number | null | undefined) => void;
-  handleMinimapJump: (newOffsetX: number) => void;
+  handleMinimapJump: (newOffsetX: number, animate?: boolean) => void;
   popoverState: PopoverState | null;
   onPopoverClose: () => void;
   onPopoverSelect: (event: TimelineEvent) => void;
