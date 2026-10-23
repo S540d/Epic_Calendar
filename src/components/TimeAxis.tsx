@@ -13,17 +13,16 @@ const CURRENT_YEAR = 2026;
 const T_NOW = yearToT(CURRENT_YEAR);
 
 /**
- * Candidate step sizes in years, ordered from finest to coarsest.
- * The algorithm picks the coarsest step that still yields at least MIN_TICKS
- * and no more than MAX_TICKS visible ticks.
+ * Candidate step sizes in years, ordered from finest to coarsest, as a gapless
+ * 1-2-5 series: a ×5 jump between neighbours (e.g. 10 000 → 50 000) could skip
+ * every step whose spacing fits a narrow phone canvas.
  */
 const STEP_CANDIDATES = [
-  1, 2, 5, 10, 20, 50, 100, 200, 500, 1_000, 2_000, 5_000, 10_000, 50_000, 100_000, 500_000,
-  1_000_000, 5_000_000, 10_000_000, 50_000_000, 100_000_000, 500_000_000, 1_000_000_000,
-  5_000_000_000,
+  1, 2, 5, 10, 20, 50, 100, 200, 500, 1_000, 2_000, 5_000, 10_000, 20_000, 50_000, 100_000, 200_000,
+  500_000, 1_000_000, 2_000_000, 5_000_000, 10_000_000, 20_000_000, 50_000_000, 100_000_000,
+  200_000_000, 500_000_000, 1_000_000_000, 2_000_000_000, 5_000_000_000,
 ];
 
-const MIN_TICKS = 3;
 const MAX_TICKS = 9;
 /** Minimum pixel gap between two adjacent tick labels to avoid overlap. */
 const MIN_TICK_PX_GAP = 90;
@@ -49,7 +48,7 @@ function formatYear(year: number, t: (key: string) => string): string {
 
 type Tick = { label: string; px: number; year: number };
 
-function generateTicks(
+export function generateTicks(
   offsetX: number,
   pixelsPerUnit: number,
   canvasWidth: number,
@@ -59,21 +58,14 @@ function generateTicks(
   const endYear = tToYear(offsetX + canvasWidth / pixelsPerUnit);
   const span = endYear - startYear;
 
-  // Pick the finest step that keeps ticks within [MIN_TICKS, MAX_TICKS] and
-  // has enough pixel gap between adjacent ticks to avoid label collisions.
+  // Pick the finest step whose ticks are far enough apart to avoid label
+  // collisions and that stays within MAX_TICKS. No minimum tick count: on a
+  // phone the canvas (~250px) cannot fit three labels 90px apart, and a minimum
+  // made every step fail — leaving only the anchor label.
   let chosenStep: number = STEP_CANDIDATES[STEP_CANDIDATES.length - 1]!;
   for (const step of STEP_CANDIDATES) {
-    const count = Math.floor(span / step);
-    if (count < MIN_TICKS) continue;
-    if (count > MAX_TICKS) continue;
-
-    // Estimate pixel gap: two consecutive round multiples of step.
-    const sampleYear = Math.ceil(startYear / step) * step;
-    const nextYear = sampleYear + step;
-    const pxA = yearToPixel(sampleYear, offsetX, pixelsPerUnit);
-    const pxB = yearToPixel(nextYear, offsetX, pixelsPerUnit);
-    if (Math.abs(pxB - pxA) < MIN_TICK_PX_GAP) continue;
-
+    if (step * pixelsPerUnit < MIN_TICK_PX_GAP) continue;
+    if (Math.floor(span / step) > MAX_TICKS) continue;
     chosenStep = step;
     break;
   }
@@ -89,16 +81,32 @@ function generateTicks(
   }
 
   // Anchor: if the first regular tick is too far from the left edge, prepend
-  // a label pinned to px=0 showing the viewport start year. Also drop any
-  // regular ticks that would overlap with the anchor label (within the first
-  // TICK_LABEL_WIDTH pixels) to avoid visual collisions.
+  // a label pinned to px=0 showing the viewport start year.
   const firstTickPx = ticks[0]?.px ?? canvasWidth;
   if (firstTickPx > TICK_LABEL_WIDTH) {
-    const regularTicks = ticks.filter((tk) => tk.px >= TICK_LABEL_WIDTH);
-    return [{ label: formatYear(startYear, t), px: 0, year: startYear }, ...regularTicks];
+    ticks.unshift({ label: formatYear(startYear, t), px: 0, year: startYear });
   }
 
-  return ticks;
+  // Labels are clamped into the canvas (see `tickLabelLeft`), so a tick near
+  // either edge can end up closer to its neighbour than the step suggests.
+  // Drop any tick whose clamped label would collide with the previous one.
+  const kept: Tick[] = [];
+  for (const tick of ticks) {
+    const prev = kept[kept.length - 1];
+    if (
+      prev &&
+      tickLabelLeft(tick.px, canvasWidth) - tickLabelLeft(prev.px, canvasWidth) < MIN_TICK_PX_GAP
+    ) {
+      continue;
+    }
+    kept.push(tick);
+  }
+  return kept;
+}
+
+/** Left edge of a tick label: centred on the tick, clamped into the canvas. */
+function tickLabelLeft(px: number, canvasWidth: number): number {
+  return Math.max(0, Math.min(canvasWidth - TICK_LABEL_WIDTH, px - TICK_LABEL_WIDTH / 2));
 }
 
 type Props = {
@@ -128,10 +136,7 @@ export function TimeAxis({ offsetX, pixelsPerUnit, canvasWidth }: Props) {
         // No ticks/labels after "Heute": the future has no events to anchor them
         // (relevant once the viewport can be panned to center the present).
         if (year > CURRENT_YEAR) return null;
-        const labelLeft = Math.max(
-          0,
-          Math.min(canvasWidth - TICK_LABEL_WIDTH, px - TICK_LABEL_WIDTH / 2),
-        );
+        const labelLeft = tickLabelLeft(px, canvasWidth);
         // Suppress a tick label that would collide with the "Heute" label.
         const collidesHeute = heuteVisible && Math.abs(px - heutePx) < HEUTE_LABEL_CLEARANCE;
         return (
