@@ -64,6 +64,17 @@ describe('TimelineMinimap (overview strip)', () => {
     expect(queryByLabelText('Frühe Hochkulturen')).toBeNull();
   });
 
+  it('drops a crumb the epoch band already shows (#289)', async () => {
+    // Phone in the Palaeozoic: ~410 Mio years on 245px. The band shows
+    // "Paläozoikum" as a segment, so the crumb would only repeat it.
+    const { queryByLabelText } = await renderMinimap({
+      offsetX: -602_800_000,
+      pixelsPerUnit: 245 / 410_000_000,
+      canvasWidth: 245,
+    });
+    expect(queryByLabelText('Paläozoikum')).toBeNull();
+  });
+
   it('context crumbs zoom to their epoch', async () => {
     const { getByLabelText, onZoomTo } = await renderMinimap();
     await fireEvent.press(getByLabelText('Menschheitsgeschichte'));

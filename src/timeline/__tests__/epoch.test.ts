@@ -1,5 +1,6 @@
 import {
   NAVIGATION_EPOCHS,
+  bandEpochsInView,
   epochPathAt,
   epochPathForViewport,
   epochsAtDepth,
@@ -168,5 +169,23 @@ describe('NAVIGATION_EPOCHS data integrity', () => {
   it('ends at the present', () => {
     const last = NAVIGATION_EPOCHS[NAVIGATION_EPOCHS.length - 1]!;
     expect(last.endYear).toBe(PRESENT_YEAR);
+  });
+});
+
+describe('bandEpochsInView', () => {
+  it('returns the band level segments overlapping the viewport', () => {
+    expect(keys(bandEpochsInView(-602_800_000, -192_800_000))).toEqual([
+      'earlyEarth',
+      'paleozoic',
+      'mesozoic',
+    ]);
+  });
+
+  it('ignores slivers below the minimum overlap', () => {
+    expect(keys(bandEpochsInView(-602_800_000, -192_800_000, 70_000_000))).toEqual(['paleozoic']);
+  });
+
+  it('uses the deeper band level when zoomed in', () => {
+    expect(keys(bandEpochsInView(700, 1200))).toEqual(['earlyMiddleAges', 'highMiddleAges']);
   });
 });

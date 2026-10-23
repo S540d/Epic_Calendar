@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **Kein doppelter Epochenname mehr über dem Zeitstrahl (#289):** Der Epochenpfad links in der Übersichtsleiste wiederholte oft genau die Epoche, die das Epochenband direkt darunter schon zeigt (z. B. zweimal „Paläozoikum“) und nahm auf dem Handy fast die halbe Leiste ein. Pfad-Einträge, die im Epochenband bereits als Segment sichtbar sind, werden jetzt ausgeblendet; übergeordnete Epochen, die das Band nicht zeigt, bleiben stehen.
+
 ### Changed
 
 - **Untertitel korrigiert:** „Logarithmischer Zeitstrahl" → „Linearer Zeitstrahl – echte Zeitdauern vom Urknall bis heute" (EN analog). Die Skala ist seit #93 linear; der alte Text widersprach dem Kernanliegen der App, echte Zeitdauern erfahrbar zu machen.

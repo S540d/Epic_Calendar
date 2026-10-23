@@ -11,6 +11,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { clampOffsetX } from '@/timeline/lod';
 import { contextRangeForViewport, type ContextRange } from '@/timeline/contextRange';
+import { bandEpochsInView } from '@/timeline/epoch';
 import { tToYear, yearToT } from '@/timeline/scale';
 import { colors, LANE_LABEL_WIDTH, spacing, typography } from '@/theme/tokens';
 
@@ -165,10 +166,18 @@ export function TimelineMinimap({
 
   if (!pixelsPerUnit || !canvasWidth) return null;
 
-  const crumbs = range.path.slice(-MAX_CRUMBS);
-  const toX = (year: number) => ((year - range.startYear) / rangeSpan) * barWidth;
   const viewStartYear = tToYear(offsetX);
   const viewEndYear = tToYear(offsetX + tSpan);
+  // A crumb the EpochBand right below already shows as a labelled segment only
+  // repeats it (and costs a phone a third of the strip) — keep the ancestors
+  // the band doesn't show (#289).
+  const bandKeys = new Set(
+    bandEpochsInView(viewStartYear, viewEndYear, MIN_LABEL_SEGMENT_WIDTH / pixelsPerUnit).map(
+      (ep) => ep.key,
+    ),
+  );
+  const crumbs = range.path.slice(-MAX_CRUMBS).filter((ep) => !bandKeys.has(ep.key));
+  const toX = (year: number) => ((year - range.startYear) / rangeSpan) * barWidth;
   const boxRawLeft = toX(viewStartYear);
   const boxRawWidth = toX(viewEndYear) - boxRawLeft;
   const boxWidth = Math.min(barWidth, Math.max(MIN_BOX_WIDTH, boxRawWidth));
