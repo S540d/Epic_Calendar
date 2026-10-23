@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **Zeitachse auf dem Handy:** Auf schmalen Bildschirmen (~250 px Zeichenfläche) zeigte die Zeitachse nur noch den Startwert am linken Rand, weil sie mindestens drei Beschriftungen mit je 90 px Abstand verlangte. Die Mindestanzahl entfällt, die Schrittweiten sind jetzt eine lückenlose 1-2-5-Reihe — dadurch erscheinen auch dort wieder Zwischenwerte. Zusätzlich überlappen sich Beschriftungen am linken und rechten Rand nicht mehr.
+
 ### Changed
 
 - **Untertitel korrigiert:** „Logarithmischer Zeitstrahl" → „Linearer Zeitstrahl – echte Zeitdauern vom Urknall bis heute" (EN analog). Die Skala ist seit #93 linear; der alte Text widersprach dem Kernanliegen der App, echte Zeitdauern erfahrbar zu machen.
