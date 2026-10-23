@@ -61,7 +61,42 @@ updates:
     # React 19/RN 0.87s Ref-Modell, RNGH 3s Gesture-API und Testing-Library
     # 14s async render()). Minor/Patch bleiben für alle Pakete weiter aktiv.
     # Nach Abschluss von #221 wieder entfernen.
+    #
+    # Zusätzlich (Sammel-PR #266, geschlossen): SDK-gebundene Pakete werden
+    # auch bei Minor ignoriert — bei 0.x-Versionen (react-native 0.86→0.87,
+    # worklets 0.10→0.13) sind Minors faktisch Majors, und die Companion-
+    # Versionen legt Expo fest. Anheben nur via `npx expo install --check`.
+    # Eigenständige Majors (async-storage 3, babel 8, lint-staged 17) werden
+    # einzeln und manuell geprüft.
     ignore:
+      - dependency-name: 'react'
+        update-types: ['version-update:semver-minor']
+      - dependency-name: 'react-dom'
+        update-types: ['version-update:semver-minor']
+      - dependency-name: '@types/react'
+        update-types: ['version-update:semver-minor']
+      - dependency-name: 'react-test-renderer'
+        update-types: ['version-update:semver-minor']
+      - dependency-name: 'react-native'
+        update-types: ['version-update:semver-minor']
+      - dependency-name: '@react-native/*'
+        update-types: ['version-update:semver-minor', 'version-update:semver-major']
+      - dependency-name: 'react-native-reanimated'
+        update-types: ['version-update:semver-minor']
+      - dependency-name: 'react-native-worklets'
+        update-types: ['version-update:semver-minor', 'version-update:semver-major']
+      - dependency-name: '@shopify/react-native-skia'
+        update-types: ['version-update:semver-minor']
+      - dependency-name: 'react-native-safe-area-context'
+        update-types: ['version-update:semver-minor', 'version-update:semver-major']
+      - dependency-name: 'react-native-gesture-handler'
+        update-types: ['version-update:semver-minor']
+      - dependency-name: '@react-native-async-storage/async-storage'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@babel/core'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'lint-staged'
+        update-types: ['version-update:semver-major']
       - dependency-name: 'expo'
         update-types: ['version-update:semver-major']
       - dependency-name: 'expo-*'
