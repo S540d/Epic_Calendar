@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- **Keine leeren Kategorie-Zeilen mehr (#279):** Aktive Kategorien ohne Ereignis im sichtbaren Ausschnitt werden ausgeblendet, statt als leere Zeile Platz zu belegen (z. B. Zivilisationen/Herrscher/Kultur im Paläozoikum). Sind alle aktiven Kategorien leer, bleiben sie sichtbar, damit erkennbar ist, welche eingeschaltet sind.
 - **Kein doppelter Epochenname mehr über dem Zeitstrahl (#289):** Der Epochenpfad links in der Übersichtsleiste wiederholte oft genau die Epoche, die das Epochenband direkt darunter schon zeigt (z. B. zweimal „Paläozoikum“) und nahm auf dem Handy fast die halbe Leiste ein. Pfad-Einträge, die im Epochenband bereits als Segment sichtbar sind, werden jetzt ausgeblendet; übergeordnete Epochen, die das Band nicht zeigt, bleiben stehen.
 - **Zeitachse auf dem Handy:** Auf schmalen Bildschirmen (~250 px Zeichenfläche) zeigte die Zeitachse nur noch den Startwert am linken Rand, weil sie mindestens drei Beschriftungen mit je 90 px Abstand verlangte. Die Mindestanzahl entfällt, die Schrittweiten sind jetzt eine lückenlose 1-2-5-Reihe — dadurch erscheinen auch dort wieder Zwischenwerte. Zusätzlich überlappen sich Beschriftungen am linken und rechten Rand nicht mehr.
 
