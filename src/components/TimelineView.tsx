@@ -11,7 +11,12 @@ import {
 import { Platform, useWindowDimensions, type ScrollView, type View } from 'react-native';
 
 import { ALL_EVENTS } from '@/data/events';
-import { buildStableTracksByLane, computeLaneData, type TrackMap } from '@/timeline/culling';
+import {
+  buildStableTracksByLane,
+  computeLaneData,
+  nonEmptyLanes,
+  type TrackMap,
+} from '@/timeline/culling';
 import { globalEventIndex } from '@/timeline/globalEventIndex';
 import { useTimelineViewport } from './useTimelineViewport';
 import { useTimelineGestures } from './useTimelineGestures';
@@ -200,7 +205,7 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
     return () => clearTimeout(timer);
   }, [pendingSelectEvent]);
 
-  const lanes = useMemo(
+  const activeLanes = useMemo(
     () => LANE_ORDER.filter((c) => activeCategories.has(c)),
     [activeCategories],
   );
@@ -211,8 +216,16 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
   // when the filtered event set changes (continent/detail/active lanes), NOT on
   // every pan/zoom frame. Keeps an event's row stable while scrolling.
   const stableTracksByLane = useMemo(
-    () => buildStableTracksByLane(lanes, continent, maxImportanceRank, eventIndex, culture, theme),
-    [lanes, continent, maxImportanceRank, culture, theme],
+    () =>
+      buildStableTracksByLane(
+        activeLanes,
+        continent,
+        maxImportanceRank,
+        eventIndex,
+        culture,
+        theme,
+      ),
+    [activeLanes, continent, maxImportanceRank, culture, theme],
   );
 
   // Lane data for both web and native — driven by jsOffsetX (viewport-relative).
@@ -223,7 +236,7 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
       startYear: range.startYear,
       endYear: range.endYear,
       zoomLevel,
-      lanes,
+      lanes: activeLanes,
       continent,
       maxEventsPerLane: MAX_EVENTS_PER_LANE,
       maxImportanceRank,
@@ -237,7 +250,7 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
     canvasWidth,
     jsOffsetX,
     jsPixelsPerUnit,
-    lanes,
+    activeLanes,
     zoomLevel,
     continent,
     maxImportanceRank,
@@ -246,6 +259,12 @@ export const TimelineView = forwardRef<TimelineViewHandle, Props>(function Timel
     stableTracksByLane,
   ]);
   const { visibleByLane, overflowCounts, tracksByLane, connectorsByLane } = laneData;
+
+  // Only lanes with events in the viewport are rendered (#279).
+  const lanes = useMemo(
+    () => nonEmptyLanes(activeLanes, visibleByLane),
+    [activeLanes, visibleByLane],
+  );
 
   const laneTrackCounts = useMemo(() => {
     const out = new Map<Category, number>();

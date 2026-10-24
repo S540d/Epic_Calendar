@@ -424,3 +424,18 @@ export function computeLaneData(input: LaneDataInput): LaneData {
 
   return { visibleByLane, overflowCounts, tracksByLane, connectorsByLane };
 }
+
+/**
+ * Lanes worth rendering for a viewport: active lanes that hold at least one
+ * visible event (#279) — an active category with nothing in view (e.g.
+ * "Herrscher" in the Palaeozoic) would otherwise be an empty band. If every
+ * lane is empty, all active lanes are kept so the canvas still shows which
+ * categories are switched on.
+ */
+export function nonEmptyLanes(
+  lanes: readonly Category[],
+  visibleByLane: ReadonlyMap<Category, readonly TimelineEvent[]>,
+): Category[] {
+  const filled = lanes.filter((cat) => (visibleByLane.get(cat)?.length ?? 0) > 0);
+  return filled.length > 0 ? filled : [...lanes];
+}
