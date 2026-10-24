@@ -4,6 +4,7 @@ import {
   computeLaneData,
   computeLineageConnectors,
   filterVisible,
+  nonEmptyLanes,
 } from '../culling';
 import { buildEventIndex } from '../eventIndex';
 import type { Category } from '@/theme/tokens';
@@ -577,5 +578,22 @@ describe('timeline/culling.computeLaneData with stableTracksByLane (#146 B1)', (
     // Dense-remapped: only 2 distinct global rows are present → rendered as 0 and 1.
     expect(tracks.get('a')).toBe(0);
     expect(tracks.get('far')).toBe(1);
+  });
+});
+
+describe('timeline/culling.nonEmptyLanes (#279)', () => {
+  const lanes: Category[] = ['erdzeitalter', 'zivilisation', 'herrscher'];
+
+  it('drops active lanes without visible events, keeping lane order', () => {
+    const visible = new Map<Category, ReturnType<typeof ev>[]>([
+      ['erdzeitalter', [ev({ id: 'a', startYear: 0 })]],
+      ['zivilisation', []],
+      ['herrscher', [ev({ id: 'b', startYear: 0 })]],
+    ]);
+    expect(nonEmptyLanes(lanes, visible)).toEqual(['erdzeitalter', 'herrscher']);
+  });
+
+  it('keeps all active lanes when every lane is empty', () => {
+    expect(nonEmptyLanes(lanes, new Map())).toEqual(lanes);
   });
 });
