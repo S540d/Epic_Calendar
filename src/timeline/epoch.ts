@@ -136,6 +136,23 @@ export function epochBandDepth(visibleSpanYears: number): EpochDepth {
 }
 
 /**
+ * Epochs the EpochBand shows for a viewport: its tree level for the visible
+ * span, limited to segments overlapping the viewport by at least
+ * `minOverlapYears` (so a sliver too narrow to carry a label doesn't count).
+ */
+export function bandEpochsInView(
+  startYear: number,
+  endYear: number,
+  minOverlapYears = 0,
+): NavigationEpoch[] {
+  return epochsAtDepthCached(epochBandDepth(endYear - startYear)).filter(
+    (ep) =>
+      Math.min(endYear, ep.endYear) - Math.max(startYear, ep.startYear) >
+      Math.max(0, minOverlapYears),
+  );
+}
+
+/**
  * True when `year` falls inside `epoch`. Ranges are half-open on the right so a
  * year sitting exactly on a shared boundary (600, 1500) belongs to the *later*
  * epoch — "the year 1500 is Neuzeit", matching how the axis reads. The very end
