@@ -18,6 +18,10 @@ import {
  *  to actually fit any text. */
 export const LABEL_MIN_BAR_PX = 8;
 export const LABEL_MAX_WIDTH = 96;
+/** Minimum text width (px) for an event label. Narrower bars stay unlabelled
+ *  rather than showing unreadable stubs like "J…" (#284); the full title is in
+ *  the detail modal on tap. */
+export const LABEL_MIN_TEXT_PX = 40;
 export const POPOVER_MAX_WIDTH = 220;
 export const POPOVER_MAX_HEIGHT = 200;
 
@@ -80,7 +84,7 @@ export function computeLabelVisibleIds(
         const w = isPoint ? LABEL_MAX_WIDTH : barW;
         const visibleLeft = Math.max(x, 0);
         const visibleRight = Math.min(x + w, canvasWidth);
-        if (visibleRight - visibleLeft < 6) continue;
+        if (visibleRight - visibleLeft - 6 < LABEL_MIN_TEXT_PX) continue;
         const lx = visibleLeft + 3;
         const rx = lx + Math.min(LABEL_MAX_WIDTH, visibleRight - visibleLeft - 6);
         if (placed.some((p) => lx < p.r && rx > p.l)) continue;
