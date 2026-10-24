@@ -9,7 +9,7 @@ import { type SharedValue } from 'react-native-reanimated';
 import { TimelineChrome } from './TimelineChrome';
 import { TimelineLaneLabels } from './TimelineLaneLabels';
 import { clampOffsetX } from '@/timeline/lod';
-import { eventLabelFontSize, eventLabelMaxLines } from '@/timeline/lod';
+import { eventLabelFontSize } from '@/timeline/lod';
 import { yearToT, T_PRESENT as T_HEUTE } from '@/timeline/scale';
 import { type TimelineEvent, type ZoomLevel } from '@/data/schema';
 import {
@@ -193,7 +193,6 @@ export const TimelineCanvasWeb = forwardRef<View, Props>(function TimelineCanvas
                 const trackMap = tracksByLane.get(cat);
                 const connectors = connectorsByLane.get(cat) ?? [];
                 const lblSize = eventLabelFontSize(zoomLevel);
-                const maxLines = eventLabelMaxLines(zoomLevel);
                 return (
                   <View key={cat}>
                     <View
@@ -253,8 +252,7 @@ export const TimelineCanvasWeb = forwardRef<View, Props>(function TimelineCanvas
                       const visibleRight = Math.min(x + labelSlotW, canvasWidth);
                       const labelLeft = visibleLeft + 3;
                       const labelMaxW = Math.max(0, visibleRight - visibleLeft - 6);
-                      const labelTopPos =
-                        maxLines === 1 ? barTop + barHeight / 2 - lblSize / 2 : barTop + 4;
+                      const labelTopPos = barTop + barHeight / 2 - lblSize / 2;
 
                       // Expand thin/short bars to >=44px touch target without
                       // changing the visual size (#206-Folge: bars are
@@ -296,7 +294,7 @@ export const TimelineCanvasWeb = forwardRef<View, Props>(function TimelineCanvas
                               }}
                             >
                               <Text
-                                numberOfLines={maxLines}
+                                numberOfLines={1}
                                 ellipsizeMode="tail"
                                 style={{
                                   ...typography.caption,
