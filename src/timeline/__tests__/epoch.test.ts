@@ -1,5 +1,6 @@
 import {
   NAVIGATION_EPOCHS,
+  categoriesForEpochRange,
   bandEpochsInView,
   epochPathAt,
   epochPathForViewport,
@@ -187,5 +188,36 @@ describe('bandEpochsInView', () => {
 
   it('uses the deeper band level when zoomed in', () => {
     expect(keys(bandEpochsInView(700, 1200))).toEqual(['earlyMiddleAges', 'highMiddleAges']);
+  });
+});
+
+describe('categoriesForEpochRange (#279)', () => {
+  const sorted = (s: Set<string>) => [...s].sort();
+
+  it('deep-time epochs show geology and nature only', () => {
+    expect(sorted(categoriesForEpochRange(-541_000_000, -252_000_000))).toEqual([
+      'erdzeitalter',
+      'natur',
+    ]);
+  });
+
+  it('human history and its sub-epochs leave out the geological lane', () => {
+    for (const [s, e] of [
+      [-2_580_000, PRESENT_YEAR],
+      [600, 1500],
+    ] as const) {
+      const cats = categoriesForEpochRange(s, e);
+      expect(cats.has('erdzeitalter')).toBe(false);
+      expect(sorted(cats)).toEqual(['herrscher', 'kultur', 'nation', 'natur', 'zivilisation']);
+    }
+  });
+
+  it('a range spanning both eras gets the union', () => {
+    expect(categoriesForEpochRange(-66_000_000, PRESENT_YEAR).has('erdzeitalter')).toBe(true);
+    expect(categoriesForEpochRange(-66_000_000, PRESENT_YEAR).has('herrscher')).toBe(true);
+  });
+
+  it('every root epoch defines categories', () => {
+    for (const root of NAVIGATION_EPOCHS) expect(root.categories?.length).toBeGreaterThan(0);
   });
 });

@@ -8,7 +8,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { TimelineChrome } from './TimelineChrome';
 import { TimelineLaneLabels } from './TimelineLaneLabels';
-import { eventLabelFontSize, eventLabelMaxLines } from '@/timeline/lod';
+import { eventLabelFontSize } from '@/timeline/lod';
 import { yearToT } from '@/timeline/scale';
 import { type TimelineEvent, type ZoomLevel } from '@/data/schema';
 import {
@@ -224,7 +224,6 @@ export const TimelineCanvasNative = forwardRef<View, Props>(function TimelineCan
                 const events = visibleByLane.get(cat) ?? [];
                 const trackMap = tracksByLane.get(cat);
                 const lblSize = eventLabelFontSize(zoomLevel);
-                const maxLines = eventLabelMaxLines(zoomLevel);
                 return [
                   ...events.map((ev) => {
                     if (!labelVisibleIds.has(ev.id)) return null;
@@ -238,7 +237,7 @@ export const TimelineCanvasNative = forwardRef<View, Props>(function TimelineCan
                     if (trackIdx === undefined) return null; // beyond MAX_EVENTS_PER_LANE cap
                     const barY = laneTop + LANE_PADDING_V + trackIdx * TRACK_HEIGHT + 4;
                     const barH = TRACK_HEIGHT - 8;
-                    const labelTop = maxLines === 1 ? barY + barH / 2 - lblSize / 2 : barY + 4;
+                    const labelTop = barY + barH / 2 - lblSize / 2;
                     // Point events render as a fixed-width dot (w=2) — give the
                     // label a virtual slot to its right instead of clamping to 0.
                     const labelSlotW = w < LABEL_MIN_BAR_PX ? LABEL_MAX_WIDTH : w;
@@ -262,7 +261,7 @@ export const TimelineCanvasNative = forwardRef<View, Props>(function TimelineCan
                             fontSize: lblSize,
                             color: colors.textPrimary,
                           }}
-                          numberOfLines={maxLines}
+                          numberOfLines={1}
                           ellipsizeMode="tail"
                         >
                           {ev.title}
