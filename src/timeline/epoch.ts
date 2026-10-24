@@ -1,3 +1,4 @@
+import type { Category } from '@/theme/tokens';
 import { PRESENT_YEAR } from './scale';
 
 /**
@@ -16,8 +17,28 @@ export type NavigationEpoch = {
   readonly endYear: number;
   /** Hex colour, shared by the band segment, the tile accent and the crumb dot. */
   readonly color: string;
+  /**
+   * Categories shown while travelling through this epoch from the landing
+   * page (#279). Set on the roots only; sub-epochs inherit their root's set.
+   */
+  readonly categories?: readonly Category[];
   readonly children?: readonly NavigationEpoch[];
 };
+
+/** Deep time: geology and nature only — no humans to show yet. */
+const EARTH_CATEGORIES: readonly Category[] = ['erdzeitalter', 'natur'];
+/**
+ * Human history: everything except the geological periods (a single
+ * "Quartär/Holozän" bar carries no information here). `natur` stays —
+ * for this era it's science & technology (printing press, Newton, vaccines).
+ */
+const HUMAN_CATEGORIES: readonly Category[] = [
+  'zivilisation',
+  'natur',
+  'nation',
+  'herrscher',
+  'kultur',
+];
 
 export const NAVIGATION_EPOCHS: readonly NavigationEpoch[] = [
   {
@@ -25,16 +46,42 @@ export const NAVIGATION_EPOCHS: readonly NavigationEpoch[] = [
     startYear: -13_800_000_000,
     endYear: -4_600_000_000,
     color: '#6B4BB8',
+    categories: EARTH_CATEGORIES,
   },
-  { key: 'earlyEarth', startYear: -4_600_000_000, endYear: -541_000_000, color: '#4A8FA8' },
-  { key: 'paleozoic', startYear: -541_000_000, endYear: -252_000_000, color: '#4FA86A' },
-  { key: 'mesozoic', startYear: -252_000_000, endYear: -66_000_000, color: '#B87C3A' },
-  { key: 'cenozoic', startYear: -66_000_000, endYear: -2_580_000, color: '#7C9CFF' },
+  {
+    key: 'earlyEarth',
+    startYear: -4_600_000_000,
+    endYear: -541_000_000,
+    color: '#4A8FA8',
+    categories: EARTH_CATEGORIES,
+  },
+  {
+    key: 'paleozoic',
+    startYear: -541_000_000,
+    endYear: -252_000_000,
+    color: '#4FA86A',
+    categories: EARTH_CATEGORIES,
+  },
+  {
+    key: 'mesozoic',
+    startYear: -252_000_000,
+    endYear: -66_000_000,
+    color: '#B87C3A',
+    categories: EARTH_CATEGORIES,
+  },
+  {
+    key: 'cenozoic',
+    startYear: -66_000_000,
+    endYear: -2_580_000,
+    color: '#7C9CFF',
+    categories: EARTH_CATEGORIES,
+  },
   {
     key: 'humanHistory',
     startYear: -2_580_000,
     endYear: PRESENT_YEAR,
     color: '#C28B4A',
+    categories: HUMAN_CATEGORIES,
     children: [
       { key: 'stoneAge', startYear: -2_580_000, endYear: -10_000, color: '#8E9E6A' },
       { key: 'ancientCiv', startYear: -10_000, endYear: -800, color: '#B88B4A' },
@@ -207,4 +254,20 @@ export function epochPathForViewport(startYear: number, endYear: number): Naviga
     path.push(epoch);
   }
   return path;
+}
+
+/**
+ * Categories for a time journey over `[startYear, endYear)` (#279): the union
+ * of the `categories` of every root epoch the range overlaps. A range inside
+ * one root (any landing-page tile) gets exactly that root's set; a range
+ * spanning deep time and human history gets both.
+ */
+export function categoriesForEpochRange(startYear: number, endYear: number): Set<Category> {
+  const out = new Set<Category>();
+  for (const root of NAVIGATION_EPOCHS) {
+    if (root.startYear < endYear && root.endYear > startYear) {
+      for (const cat of root.categories ?? []) out.add(cat);
+    }
+  }
+  return out;
 }

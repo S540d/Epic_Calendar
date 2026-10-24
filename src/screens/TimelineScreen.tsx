@@ -23,6 +23,7 @@ import { journeyById, resolveJourneySteps } from '@/data/learningJourneys';
 import { eventMatchesTheme } from '@/data/themes';
 import type { ContinentFilter, ImportanceLevel, TimelineEvent } from '@/data/schema';
 import { globalEventIndex } from '@/timeline/globalEventIndex';
+import { categoriesForEpochRange } from '@/timeline/epoch';
 import { spacing, typography, type Category } from '@/theme/tokens';
 import { CHIP_CATEGORIES, DEFAULT_CATEGORIES } from '@/theme/categories';
 import { useTheme, type ThemeColors } from '@/theme/ThemeContext';
@@ -94,13 +95,18 @@ export function TimelineScreen() {
   // "near context" purpose); otherwise it's additive on top of the user's
   // actual selection.
   const [focusCategory, setFocusCategory] = useState<Category | null>(null);
+  // Categories of the epoch picked on the landing page (#279) — session-only,
+  // like `themeCategories`: "Menschheitsgeschichte" shouldn't show the
+  // geological lanes, and the stored selection must survive the trip.
+  // Manual toggles while it's set edit this set, not the stored one.
+  const [epochCategories, setEpochCategories] = useState<Set<Category> | null>(null);
   const activeCategories = useMemo(() => {
     if (themeCategories) return themeCategories;
     if (isJourneyActive && focusCategory) return new Set<Category>([focusCategory]);
-    const set = new Set<Category>(persistedCategories);
+    const set = new Set<Category>(epochCategories ?? persistedCategories);
     if (focusCategory) set.add(focusCategory);
     return set;
-  }, [themeCategories, isJourneyActive, focusCategory, persistedCategories]);
+  }, [themeCategories, isJourneyActive, focusCategory, epochCategories, persistedCategories]);
   const [epochRange, setEpochRange] = useState<{ startYear: number; endYear: number } | undefined>(
     undefined,
   );
@@ -130,6 +136,13 @@ export function TimelineScreen() {
     // unchecking a category the user just jumped to would appear to do
     // nothing.
     setFocusCategory(null);
+    if (epochCategories) {
+      const next = new Set(epochCategories);
+      if (next.has(cat)) next.delete(cat);
+      else next.add(cat);
+      setEpochCategories(next);
+      return;
+    }
     setPersistedCategories((prev) => {
       const set = new Set(prev);
       if (set.has(cat)) set.delete(cat);
@@ -140,17 +153,22 @@ export function TimelineScreen() {
 
   const handleSelectEpoch = useCallback((startYear: number, endYear: number) => {
     setEpochRange({ startYear, endYear });
+    const cats = categoriesForEpochRange(startYear, endYear);
+    setEpochCategories(cats.size > 0 ? cats : null);
     setShowOverview(false);
   }, []);
 
   const handleShowFullTimeline = useCallback(() => {
     setEpochRange({ startYear: -13_800_000_000, endYear: 2026 });
+    // Whole timeline = the user's own category selection, no epoch preset.
+    setEpochCategories(null);
     setShowOverview(false);
   }, []);
 
   const handleHomePress = useCallback(() => {
     setShowOverview(true);
     setEpochRange(undefined);
+    setEpochCategories(null);
     // Going home leaves the journey mode but keeps its progress, so it can be
     // resumed from the landing page.
     setActiveJourneyId(null);
@@ -209,6 +227,7 @@ export function TimelineScreen() {
     // only needs to drop the culture restriction to guarantee every matching
     // event is actually visible.
     setCultureFilter(null);
+    setEpochCategories(null);
     setThemeFilter(themeId);
     setShowOverview(false);
   }, []);
@@ -382,7 +401,10 @@ export function TimelineScreen() {
     return persistedCategories.every((c) => defaults.has(c));
   }, [persistedCategories]);
   const showFilterBadge =
-    !isDefaultCategorySelection || cultureFilter !== null || themeFilter !== null;
+    !isDefaultCategorySelection ||
+    cultureFilter !== null ||
+    themeFilter !== null ||
+    epochCategories !== null;
   const filterBadgeLabel = `${activeCategories.size}/${CHIP_CATEGORIES.length}`;
 
   const styles = useMemo(() => makeStyles(colors), [colors]);

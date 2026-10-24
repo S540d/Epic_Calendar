@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- **Zeitreisen zeigen passende Kategorien (#279):** Eine Epoche von der Startseite blendet jetzt die zu ihr passenden Kategorien ein, statt die gespeicherte Auswahl unverändert zu übernehmen: Erdgeschichte (Kosmische Frühzeit bis Känozoikum) zeigt Erdzeitalter und Natur & Wissenschaft, die Menschheitsgeschichte alle Kategorien außer Erdzeitalter. Die Auswahl gilt nur für die Zeitreise – die gespeicherte Kategorie-Auswahl bleibt erhalten; Umschalten über das Filter-Symbol wirkt währenddessen auf die Zeitreise-Auswahl. Das Filter-Symbol zeigt während einer Zeitreise die Anzahl aktiver Kategorien.
 - **Kein doppelter Epochenname mehr über dem Zeitstrahl (#289):** Der Epochenpfad links in der Übersichtsleiste wiederholte oft genau die Epoche, die das Epochenband direkt darunter schon zeigt (z. B. zweimal „Paläozoikum“) und nahm auf dem Handy fast die halbe Leiste ein. Pfad-Einträge, die im Epochenband bereits als Segment sichtbar sind, werden jetzt ausgeblendet; übergeordnete Epochen, die das Band nicht zeigt, bleiben stehen.
 - **Zeitachse auf dem Handy:** Auf schmalen Bildschirmen (~250 px Zeichenfläche) zeigte die Zeitachse nur noch den Startwert am linken Rand, weil sie mindestens drei Beschriftungen mit je 90 px Abstand verlangte. Die Mindestanzahl entfällt, die Schrittweiten sind jetzt eine lückenlose 1-2-5-Reihe — dadurch erscheinen auch dort wieder Zwischenwerte. Zusätzlich überlappen sich Beschriftungen am linken und rechten Rand nicht mehr.
 
