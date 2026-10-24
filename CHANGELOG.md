@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- **Lesbare Ereignis-Beschriftungen (#284):** Beschriftungen in den Ereignisbalken werden nicht mehr mitten im Wort umgebrochen („Völkerwanderun|g“), sondern stehen immer einzeilig und werden bei Platzmangel mit „…“ gekürzt. Balken mit weniger als 40 px Platz für Text bleiben unbeschriftet statt Fragmente wie „J|a.“ zu zeigen; der volle Titel steht weiterhin im Detail-Fenster beim Antippen.
 - **Kein doppelter Epochenname mehr über dem Zeitstrahl (#289):** Der Epochenpfad links in der Übersichtsleiste wiederholte oft genau die Epoche, die das Epochenband direkt darunter schon zeigt (z. B. zweimal „Paläozoikum“) und nahm auf dem Handy fast die halbe Leiste ein. Pfad-Einträge, die im Epochenband bereits als Segment sichtbar sind, werden jetzt ausgeblendet; übergeordnete Epochen, die das Band nicht zeigt, bleiben stehen.
 - **Zeitachse auf dem Handy:** Auf schmalen Bildschirmen (~250 px Zeichenfläche) zeigte die Zeitachse nur noch den Startwert am linken Rand, weil sie mindestens drei Beschriftungen mit je 90 px Abstand verlangte. Die Mindestanzahl entfällt, die Schrittweiten sind jetzt eine lückenlose 1-2-5-Reihe — dadurch erscheinen auch dort wieder Zwischenwerte. Zusätzlich überlappen sich Beschriftungen am linken und rechten Rand nicht mehr.
 
