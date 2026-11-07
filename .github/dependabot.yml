@@ -49,9 +49,14 @@ updates:
     commit-message:
       prefix: 'chore'
     groups:
-      # Ein PR für alles — inklusive Major. Breaking Changes stehen damit
-      # gesammelt im PR-Body und werden dort geprüft, nicht pro Paket.
-      npm-all:
+      # Minor/Patch gesammelt – blockiert nicht mehr durch einen einzelnen Major.
+      npm-minor-patch:
+        update-types: ['minor', 'patch']
+        patterns:
+          - '*'
+      # Majors gesammelt – Breaking Changes stehen im PR-Body, dort prüfen.
+      npm-major:
+        update-types: ['major']
         patterns:
           - '*'
     # Major-Versionen der Expo/RN-Kernkette pausiert, solange die gestufte
