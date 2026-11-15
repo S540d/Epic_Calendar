@@ -13,3 +13,7 @@ Ein interaktiver Zeitstrahl durch die Geschichte: vom Urknall über Erdzeitalter
 - **Detailgrad** von „Kinder / Schulwissen“ bis „Alles“.
 - **Suche** nach Ereignissen oder Jahreszahlen mit direktem Sprung.
 - Ereignisse mit Beschreibung, Merksprüchen und Anekdoten; Dark Mode, Deutsch und Englisch.
+
+## Lizenz
+
+PolyForm Noncommercial 1.0.0 (nicht-kommerzielle Nutzung) — siehe [LICENSE](LICENSE).
